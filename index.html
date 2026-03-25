@@ -22,38 +22,29 @@ input[type=search]::placeholder{color:var(--muted);}
 .sort-btn{background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--muted);padding:9px 14px;font-size:0.82rem;cursor:pointer;transition:all .2s;white-space:nowrap;}
 .sort-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(124,106,247,.1);}
 .alpha-bar{display:flex;gap:4px;flex-wrap:wrap;margin-top:12px;}
-.alpha-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);width:28px;height:28px;font-size:0.75rem;font-weight:500;cursor:pointer;transition:all .15s;}
-.alpha-btn:hover,.alpha-btn:active{border-color:var(--accent);color:var(--text);}
+.alpha-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);width:28px;height:28px;font-size:0.75rem;font-weight:500;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;}
 .alpha-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
 .alpha-btn.all{width:auto;padding:0 9px;font-size:0.72rem;}
 .stats-bar{padding:10px 24px;color:var(--muted);font-size:0.8rem;border-bottom:1px solid var(--border);background:var(--bg);}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;padding:16px 24px;}
-.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;transition:all .2s;position:relative;overflow:hidden;}
-.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:0;transition:opacity .2s;}
-.card:hover{border-color:rgba(124,106,247,.4);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3);}
-.card:hover::before{opacity:1;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;transition:border-color .2s;position:relative;overflow:hidden;}
 .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;}
 .word{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--text);line-height:1.2;}
-.speak-btn{background:rgba(124,106,247,.15);border:1px solid rgba(124,106,247,.25);border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;flex-shrink:0;color:var(--accent);-webkit-tap-highlight-color:transparent;}
-.speak-btn:active{transform:scale(0.92);background:var(--accent);color:#fff;}
+.speak-btn{background:rgba(124,106,247,.15);border:1px solid rgba(124,106,247,.25);border-radius:8px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0;color:var(--accent);-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 .speak-btn.playing{background:var(--accent);color:#fff;animation:pulse .6s ease-in-out infinite alternate;}
 @keyframes pulse{from{box-shadow:0 0 0 0 rgba(124,106,247,.5);}to{box-shadow:0 0 0 6px rgba(124,106,247,0);}}
 .pos-tag{display:inline-block;background:var(--tag-bg);color:var(--accent2);font-size:0.7rem;font-weight:500;padding:2px 7px;border-radius:4px;margin-bottom:5px;}
 .zh-def{color:var(--muted);font-size:0.86rem;line-height:1.5;}
 .pagination{display:flex;justify-content:center;align-items:center;gap:6px;padding:20px 24px;flex-wrap:wrap;}
-.page-btn{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted);padding:8px 13px;font-size:0.82rem;cursor:pointer;transition:all .2s;}
-.page-btn:active{transform:scale(0.96);}
+.page-btn{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted);padding:8px 13px;font-size:0.82rem;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 .page-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;}
-.page-btn:disabled{opacity:0.3;cursor:default;}
+.page-btn:disabled{opacity:0.3;}
 .page-info{color:var(--muted);font-size:0.82rem;padding:0 6px;}
 .empty{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--muted);}
 .empty h3{font-size:1.1rem;margin-bottom:8px;color:var(--text);}
 @media(max-width:480px){
-  header{padding:16px 16px 12px;}
-  .grid{padding:12px 16px;gap:8px;}
-  .stats-bar{padding:8px 16px;}
-  .pagination{padding:14px 16px;}
-  header h1{font-size:1.3rem;}
+  header{padding:16px 16px 12px;} .grid{padding:12px 16px;gap:8px;}
+  .stats-bar{padding:8px 16px;} .pagination{padding:14px 16px;} header h1{font-size:1.3rem;}
 }
 </style>
 </head>
@@ -83,11 +74,13 @@ const PER_PAGE=60;
 let filtered=[...WORDS],currentPage=1,currentLetter='',currentSort='az',searchQ='';
 let currentBtn=null;
 let voiceList=[];
+let iosUnlocked=false;
 const isIOS=/iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-/* 保持 Edge 語音引擎活躍 */
+/* ── Edge 保活 ── */
 setInterval(()=>{try{if(speechSynthesis.paused)speechSynthesis.resume();}catch(e){}},4000);
 
+/* ── 載入語音清單 ── */
 function loadVoices(){
   voiceList=speechSynthesis.getVoices();
 }
@@ -96,7 +89,8 @@ speechSynthesis.onvoiceschanged=loadVoices;
 
 function getBestVoice(){
   if(!voiceList.length) voiceList=speechSynthesis.getVoices();
-  return voiceList.find(v=>v.lang==='en-US'&&v.name.includes('Samantha'))  // iOS 最自然
+  return voiceList.find(v=>v.name==='Samantha')
+      || voiceList.find(v=>v.lang==='en-US'&&v.name.includes('Samantha'))
       || voiceList.find(v=>v.lang==='en-US'&&v.name.includes('Google'))
       || voiceList.find(v=>v.name.includes('Microsoft')&&v.lang==='en-US')
       || voiceList.find(v=>v.lang==='en-US')
@@ -104,19 +98,38 @@ function getBestVoice(){
       || null;
 }
 
-/* ── 核心發音函數 ──
-   iOS 規則：speechSynthesis.speak() 必須在 click 事件的同步呼叫堆疊內執行
-   不能有 setTimeout、Promise、await，否則 iOS 會封鎖
-*/
+/* ── iOS 音訊解鎖 ──
+   iOS 要求：在使用者手勢事件（touchstart/click）的同步堆疊中，
+   先 speak 一個空字串讓音訊引擎初始化，之後才能正常發音。
+   只需做一次。
+── */
+function iosUnlock(){
+  if(iosUnlocked||!isIOS) return;
+  iosUnlocked=true;
+  const u=new SpeechSynthesisUtterance('');
+  u.volume=0;
+  u.rate=1;
+  speechSynthesis.speak(u);
+  speechSynthesis.cancel();
+}
+
+/* 頁面任何地方第一次 touchstart 就解鎖 */
+document.addEventListener('touchstart', function unlock(){
+  iosUnlock();
+  document.removeEventListener('touchstart', unlock);
+}, {once:true});
+
+/* ── 核心發音函數 ── */
 function speak(word, btn){
-  /* 再點同一個 → 停止 */
+  /* iOS：每次點擊都確保已解鎖 */
+  iosUnlock();
+
   if(currentBtn===btn){
     speechSynthesis.cancel();
     btn.classList.remove('playing');
     currentBtn=null;
     return;
   }
-  /* 停止前一個 */
   speechSynthesis.cancel();
   if(currentBtn){currentBtn.classList.remove('playing');}
   currentBtn=btn;
@@ -124,7 +137,7 @@ function speak(word, btn){
 
   const u=new SpeechSynthesisUtterance(word);
   u.lang='en-US';
-  u.rate=isIOS?0.9:0.85;
+  u.rate=0.85;
   u.pitch=1.0;
   u.volume=1.0;
   const v=getBestVoice();
@@ -137,11 +150,11 @@ function speak(word, btn){
     if(currentBtn===btn)currentBtn=null;
   };
 
-  /* iOS：直接呼叫，絕對不加 setTimeout */
+  /* 同步直接呼叫，不加任何延遲 */
   speechSynthesis.speak(u);
 }
 
-/* Alpha bar */
+/* ── Alpha bar ── */
 const letters=[...new Set(WORDS.map(w=>w.word[0].toUpperCase()))].sort();
 const alphaBar=document.getElementById('alphaBar');
 const allBtn=document.createElement('button');
@@ -194,7 +207,7 @@ function update(){
       <div class="card">
         <div class="card-top">
           <div class="word">${w.word}</div>
-          <button class="speak-btn" title="播放發音" onclick="speak(${JSON.stringify(w.word)},this)">
+          <button class="speak-btn" onclick="speak(${JSON.stringify(w.word)},this)">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
               <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
