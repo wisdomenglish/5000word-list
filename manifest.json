@@ -1,0 +1,17 @@
+{
+  "name": "5000英文單字學習",
+  "short_name": "英文單字",
+  "description": "5000英文單字瀏覽 + Claude AI 測驗 + 複習清單",
+  "start_url": "/5000word-list/",
+  "scope": "/5000word-list/",
+  "display": "standalone",
+  "background_color": "#0f0f14",
+  "theme_color": "#7c6af7",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
