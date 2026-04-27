@@ -1,4 +1,4 @@
-const CACHE = 'vocab-app-v1';
+const CACHE = 'vocab-app-v2';
 const BASE  = '/5000word-list';
 
 self.addEventListener('install', e => {
@@ -20,7 +20,7 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const url = e.request.url;
   // 不快取 Firebase API 呼叫
-  if (url.includes('cloudfunctions.net') || url.includes('googleapis.com/v1beta')) return;
+  if (url.includes('cloudfunctions.net') || url.includes('.run.app') || url.includes('googleapis.com/v1beta')) return;
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
