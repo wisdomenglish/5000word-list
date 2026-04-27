@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>5000英文單字學習</title>
+<meta name="theme-color" content="#7c6af7">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="英文單字">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0f0f14;--surface:#1a1a24;--card:#22222f;--border:#2e2e3f;--accent:#7c6af7;--accent2:#e06c8a;--text:#e8e8f0;--muted:#8888a0;--tag-bg:#2a2a3d;}
@@ -544,6 +551,12 @@ function clearAllMarks(){
 
 syncMarkCount();
 update();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/5000word-list/sw.js');
+  });
+}
 </script>
 </body>
 </html>
