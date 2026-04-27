@@ -157,6 +157,18 @@ header{top:48px!important;}
 .modal-footer{display:flex;gap:10px;margin-top:22px;}
 .modal-mark-btn{flex:1;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--muted);padding:13px;font-size:0.88rem;cursor:pointer;transition:all .2s;}
 .modal-mark-btn.marked{border-color:var(--accent);color:var(--accent);background:rgba(124,106,247,.1);}
+.modal-tabs{display:flex;gap:6px;margin-bottom:14px;}
+.modal-tab{background:var(--tag-bg);border:1px solid var(--border);border-radius:8px;color:var(--muted);padding:6px 14px;font-size:0.78rem;font-weight:600;cursor:pointer;transition:all .15s;}
+.modal-tab.active{background:rgba(124,106,247,.15);border-color:var(--accent);color:var(--accent);}
+.etym-parts{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+.etym-part{display:grid;grid-template-columns:90px 1fr auto;align-items:baseline;gap:8px;}
+.etym-morph{font-family:'Playfair Display',serif;font-size:1rem;color:var(--accent);font-weight:700;}
+.etym-meaning{color:var(--text);font-size:0.88rem;}
+.etym-origin{color:var(--muted);font-size:0.74rem;font-style:italic;text-align:right;}
+.etym-desc{color:var(--muted);font-size:0.85rem;line-height:1.7;padding:12px;background:var(--card);border-radius:10px;margin-bottom:14px;}
+.etym-cognates-label{color:var(--accent2);font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;}
+.etym-cognates{display:flex;flex-wrap:wrap;gap:6px;}
+.etym-cognate{background:var(--tag-bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.82rem;padding:4px 10px;}
 .card{cursor:pointer;transition:border-color .15s,transform .1s;}
 .card:hover{border-color:rgba(124,106,247,.4);}
 .card:active{transform:scale(.98);}
@@ -215,8 +227,12 @@ header{top:48px!important;}
     <span class="modal-pos-badge" id="modalPos"></span>
     <div class="modal-zh" id="modalZh"></div>
     <hr class="modal-divider">
-    <div class="modal-ex-label">📝 例句</div>
+    <div class="modal-tabs">
+      <button class="modal-tab active" id="tabBtnEx" onclick="switchModalTab('ex')">📝 例句</button>
+      <button class="modal-tab" id="tabBtnEtym" onclick="switchModalTab('etym')">🌱 字根</button>
+    </div>
     <div id="modalEx"></div>
+    <div id="modalEtym" style="display:none"></div>
     <div class="modal-footer">
       <button class="modal-mark-btn" id="modalMarkBtn" onclick="toggleModalMark()"></button>
     </div>
@@ -603,8 +619,29 @@ function clearAllMarks(){
 }
 
 // ─── Word Detail Modal ───
-const EXAMPLE_FN_URL = 'https://us-central1-news-english-ef2e4.cloudfunctions.net/generateWordExample';
+const EXAMPLE_FN_URL  = 'https://us-central1-news-english-ef2e4.cloudfunctions.net/generateWordExample';
+const ETYMOLOGY_FN_URL = 'https://generatewordetymology-gtlccx6nka-uc.a.run.app';
 let currentModalWord = null;
+
+function switchModalTab(tab) {
+  document.getElementById('tabBtnEx').classList.toggle('active', tab === 'ex');
+  document.getElementById('tabBtnEtym').classList.toggle('active', tab === 'etym');
+  document.getElementById('modalEx').style.display   = tab === 'ex'   ? '' : 'none';
+  document.getElementById('modalEtym').style.display = tab === 'etym' ? '' : 'none';
+  if (tab === 'etym' && currentModalWord) {
+    const el = document.getElementById('modalEtym');
+    if (!el.hasChildNodes()) {
+      const w = WORDS.find(x => x.word === currentModalWord);
+      if (!w) return;
+      const cached = localStorage.getItem('vocab_etym_' + currentModalWord);
+      if (cached) { renderEtymology(JSON.parse(cached)); }
+      else {
+        el.innerHTML = '<div class="modal-ex-loading"><div class="modal-ex-spin"></div>Claude AI 分析字根中…</div>';
+        fetchEtymology(w, el);
+      }
+    }
+  }
+}
 
 function openWordModal(word) {
   const w = WORDS.find(x => x.word === word);
@@ -615,6 +652,13 @@ function openWordModal(word) {
   document.getElementById('modalPos').textContent  = w.pos || '';
   document.getElementById('modalZh').textContent   = w.zh  || '';
   updateModalMarkBtn();
+
+  // reset tabs to 例句
+  document.getElementById('tabBtnEx').classList.add('active');
+  document.getElementById('tabBtnEtym').classList.remove('active');
+  document.getElementById('modalEx').style.display   = '';
+  document.getElementById('modalEtym').style.display = 'none';
+  document.getElementById('modalEtym').innerHTML = '';
 
   const exEl = document.getElementById('modalEx');
   const cached = localStorage.getItem('vocab_ex_' + word);
@@ -664,6 +708,45 @@ function retryModalEx() {
   const exEl = document.getElementById('modalEx');
   exEl.innerHTML = '<div class="modal-ex-loading"><div class="modal-ex-spin"></div>重試中…</div>';
   fetchExample(w, exEl);
+}
+
+function fetchEtymology(w, el) {
+  fetch(ETYMOLOGY_FN_URL, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({word: w.word, pos: w.pos || '', zh: w.zh || ''})
+  })
+  .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then(data => {
+    localStorage.setItem('vocab_etym_' + w.word, JSON.stringify(data));
+    renderEtymology(data);
+  })
+  .catch(() => {
+    el.innerHTML = '<span style="color:var(--muted);font-size:0.85rem">字根分析失敗</span>'
+      + `<button class="modal-retry" onclick="retryEtymology()">🔄 重試</button>`;
+  });
+}
+
+function renderEtymology(data) {
+  const el = document.getElementById('modalEtym');
+  if (!el) return;
+  const parts = (data.parts || []).map(p =>
+    `<div class="etym-part"><span class="etym-morph">${p.part}</span><span class="etym-meaning">${p.meaning}</span><span class="etym-origin">${p.origin}</span></div>`
+  ).join('');
+  const cognates = (data.cognates || []).map(c => `<span class="etym-cognate">${c}</span>`).join('');
+  el.innerHTML =
+    `<div class="etym-parts">${parts}</div>`
+    + (data.etymology ? `<div class="etym-desc">${data.etymology}</div>` : '')
+    + (cognates ? `<div class="etym-cognates-label">同源詞彙</div><div class="etym-cognates">${cognates}</div>` : '');
+}
+
+function retryEtymology() {
+  if (!currentModalWord) return;
+  const w = WORDS.find(x => x.word === currentModalWord);
+  if (!w) return;
+  const el = document.getElementById('modalEtym');
+  el.innerHTML = '<div class="modal-ex-loading"><div class="modal-ex-spin"></div>重試中…</div>';
+  fetchEtymology(w, el);
 }
 
 function closeWordModal() {
