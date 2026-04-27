@@ -133,6 +133,33 @@ header{top:48px!important;}
   .quiz-panel,.quiz-setup,.mw-wrap{padding-left:14px;padding-right:14px;}
   .quiz-card-wrap{padding:18px 14px;}
 }
+/* ── Word Detail Modal ── */
+#wordModal{position:fixed;inset:0;z-index:500;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);}
+@media(min-width:600px){#wordModal{align-items:center;}}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:16px 24px 40px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;position:relative;animation:slideUp .22s ease;}
+@media(min-width:600px){.modal-box{border-radius:24px;max-height:82vh;}}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-drag{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px;}
+.modal-close{position:absolute;top:20px;right:18px;background:var(--tag-bg);border:none;color:var(--muted);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{color:var(--text);}
+.modal-header{display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+.modal-word-text{font-family:'Playfair Display',serif;font-size:2rem;color:var(--text);flex:1;line-height:1.2;}
+.modal-pos-badge{display:inline-block;background:var(--tag-bg);color:var(--accent2);font-size:0.72rem;font-weight:600;padding:3px 9px;border-radius:4px;margin-bottom:10px;}
+.modal-zh{color:var(--muted);font-size:0.9rem;line-height:1.65;margin-bottom:18px;}
+.modal-divider{border:none;border-top:1px solid var(--border);margin:0 0 16px;}
+.modal-ex-label{color:var(--accent2);font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;}
+.modal-ex-sentence{color:var(--text);font-size:1rem;line-height:1.8;margin-bottom:8px;}
+.modal-ex-sentence strong{color:var(--accent);}
+.modal-ex-trans{color:var(--muted);font-size:0.85rem;line-height:1.6;}
+.modal-ex-loading{color:var(--muted);font-size:0.85rem;display:flex;align-items:center;gap:10px;}
+.modal-ex-spin{width:15px;height:15px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;}
+.modal-retry{background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);padding:7px 14px;font-size:0.8rem;cursor:pointer;margin-top:10px;display:block;}
+.modal-footer{display:flex;gap:10px;margin-top:22px;}
+.modal-mark-btn{flex:1;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--muted);padding:13px;font-size:0.88rem;cursor:pointer;transition:all .2s;}
+.modal-mark-btn.marked{border-color:var(--accent);color:var(--accent);background:rgba(124,106,247,.1);}
+.card{cursor:pointer;transition:border-color .15s,transform .1s;}
+.card:hover{border-color:rgba(124,106,247,.4);}
+.card:active{transform:scale(.98);}
 </style>
 </head>
 <body>
@@ -169,6 +196,32 @@ header{top:48px!important;}
 
 <div id="quizSection" style="display:none"></div>
 <div id="myWordsSection" style="display:none"></div>
+
+<!-- Word Detail Modal -->
+<div id="wordModal" style="display:none" onclick="if(event.target===this)closeWordModal()">
+  <div class="modal-box">
+    <div class="modal-drag"></div>
+    <button class="modal-close" onclick="closeWordModal()">✕</button>
+    <div class="modal-header">
+      <div class="modal-word-text" id="modalWord"></div>
+      <button class="speak-btn" id="modalSpeakBtn" onclick="speak(document.getElementById('modalWord').textContent,this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+        </svg>
+      </button>
+    </div>
+    <span class="modal-pos-badge" id="modalPos"></span>
+    <div class="modal-zh" id="modalZh"></div>
+    <hr class="modal-divider">
+    <div class="modal-ex-label">📝 例句</div>
+    <div id="modalEx"></div>
+    <div class="modal-footer">
+      <button class="modal-mark-btn" id="modalMarkBtn" onclick="toggleModalMark()"></button>
+    </div>
+  </div>
+</div>
 
 <!-- 全域音訊元素，iOS 必須用同一個 audio 元素才能正常播放 -->
 <audio id="player" preload="none" playsinline webkit-playsinline></audio>
@@ -313,10 +366,10 @@ function update(){
     grid.innerHTML='<div class="empty"><h3>找不到符合的單字</h3></div>';
   }else{
     grid.innerHTML=page.map(w=>`
-      <div class="card">
+      <div class="card" onclick="openWordModal('${w.word}')">
         <div class="card-top">
           <div class="word">${w.word}</div>
-          <button class="speak-btn" data-word="${w.word}" onclick="speak(this.dataset.word,this)">
+          <button class="speak-btn" data-word="${w.word}" onclick="event.stopPropagation();speak(this.dataset.word,this)">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
               <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
@@ -548,6 +601,93 @@ function clearAllMarks(){
   if(!confirm('確定要清空所有複習清單？')) return;
   markedWords.clear(); saveMark(); syncMarkCount(); renderMyWords();
 }
+
+// ─── Word Detail Modal ───
+const EXAMPLE_FN_URL = 'https://us-central1-news-english-ef2e4.cloudfunctions.net/generateWordExample';
+let currentModalWord = null;
+
+function openWordModal(word) {
+  const w = WORDS.find(x => x.word === word);
+  if (!w) return;
+  currentModalWord = word;
+
+  document.getElementById('modalWord').textContent = w.word;
+  document.getElementById('modalPos').textContent  = w.pos || '';
+  document.getElementById('modalZh').textContent   = w.zh  || '';
+  updateModalMarkBtn();
+
+  const exEl = document.getElementById('modalEx');
+  const cached = localStorage.getItem('vocab_ex_' + word);
+  if (cached) {
+    renderModalEx(JSON.parse(cached));
+  } else {
+    exEl.innerHTML = '<div class="modal-ex-loading"><div class="modal-ex-spin"></div>Claude AI 生成例句中…</div>';
+    fetchExample(w, exEl);
+  }
+
+  document.getElementById('wordModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function fetchExample(w, exEl) {
+  fetch(EXAMPLE_FN_URL, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({word: w.word, pos: w.pos || '', zh: w.zh || ''})
+  })
+  .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then(data => {
+    localStorage.setItem('vocab_ex_' + w.word, JSON.stringify(data));
+    renderModalEx(data);
+  })
+  .catch(() => {
+    exEl.innerHTML = '<span style="color:var(--muted);font-size:0.85rem">例句生成失敗</span>'
+      + `<button class="modal-retry" onclick="retryModalEx()">🔄 重試</button>`;
+  });
+}
+
+function renderModalEx(data) {
+  const word = currentModalWord || '';
+  const sentence = (data.sentence || '').replace(
+    new RegExp('\\b(' + word + '\\w*)\\b', 'gi'),
+    '<strong>$1</strong>'
+  );
+  document.getElementById('modalEx').innerHTML =
+    `<div class="modal-ex-sentence">${sentence}</div>`
+    + `<div class="modal-ex-trans">${data.translation || ''}</div>`;
+}
+
+function retryModalEx() {
+  if (!currentModalWord) return;
+  const w = WORDS.find(x => x.word === currentModalWord);
+  if (!w) return;
+  const exEl = document.getElementById('modalEx');
+  exEl.innerHTML = '<div class="modal-ex-loading"><div class="modal-ex-spin"></div>重試中…</div>';
+  fetchExample(w, exEl);
+}
+
+function closeWordModal() {
+  document.getElementById('wordModal').style.display = 'none';
+  document.body.style.overflow = '';
+  currentModalWord = null;
+}
+
+function updateModalMarkBtn() {
+  const btn = document.getElementById('modalMarkBtn');
+  if (!currentModalWord || !btn) return;
+  const marked = markedWords.has(currentModalWord);
+  btn.textContent = marked ? '⭐ 已在複習清單' : '☆ 加入複習清單';
+  btn.classList.toggle('marked', marked);
+}
+
+function toggleModalMark() {
+  if (!currentModalWord) return;
+  if (markedWords.has(currentModalWord)) removeMark(currentModalWord);
+  else addMark(currentModalWord);
+  updateModalMarkBtn();
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeWordModal(); });
 
 syncMarkCount();
 update();
