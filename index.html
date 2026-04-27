@@ -46,9 +46,95 @@ input[type=search]::placeholder{color:var(--muted);}
   header{padding:16px 16px 12px;}.grid{padding:12px 16px;gap:8px;}
   .stats-bar{padding:8px 16px;}.pagination{padding:14px 16px;}header h1{font-size:1.3rem;}
 }
+/* ── Tab Nav ── */
+#tabNav{display:flex;background:#12121c;border-bottom:2px solid var(--border);position:sticky;top:0;z-index:200;}
+.tab-btn{flex:1;background:none;border:none;border-bottom:3px solid transparent;color:var(--muted);padding:13px 6px;font-size:0.82rem;font-weight:500;cursor:pointer;transition:all .2s;letter-spacing:.02em;}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);background:rgba(124,106,247,.06);}
+.tab-btn:hover:not(.active){color:var(--text);background:rgba(255,255,255,.03);}
+header{top:48px!important;}
+/* ── Star Button on Word Card ── */
+.mark-btn{position:absolute;bottom:9px;right:10px;background:none;border:none;cursor:pointer;font-size:0.95rem;opacity:0.22;transition:opacity .2s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+.mark-btn:hover,.mark-btn.marked{opacity:1;}
+/* ── Quiz / My Words ── */
+#quizSection,#myWordsSection{min-height:90vh;}
+.quiz-setup{max-width:580px;margin:0 auto;padding:40px 20px;}
+.quiz-setup-title{font-family:'Playfair Display',serif;font-size:1.8rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;}
+.quiz-setup p{color:var(--muted);font-size:0.88rem;margin-bottom:24px;line-height:1.6;}
+.quiz-opt-label{color:var(--muted);font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;}
+.quiz-opt-group{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:28px;}
+.quiz-opt{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px 18px;cursor:pointer;color:var(--muted);font-size:0.85rem;transition:all .2s;}
+.quiz-opt.selected{border-color:var(--accent);color:var(--accent);background:rgba(124,106,247,.1);}
+.quiz-start-btn{width:100%;background:linear-gradient(135deg,var(--accent),#9b8bf0);border:none;color:#fff;padding:16px;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;transition:opacity .2s;}
+.quiz-start-btn:hover{opacity:0.88;}.quiz-start-btn:disabled{opacity:0.35;cursor:not-allowed;}
+.quiz-note{margin-top:14px;color:var(--muted);font-size:0.75rem;text-align:center;}
+.quiz-loading{text-align:center;padding:80px 20px;}
+.quiz-spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.9s linear infinite;margin:0 auto 20px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.quiz-loading h3{color:var(--text);font-size:1.05rem;margin-bottom:8px;}.quiz-loading p{color:var(--muted);font-size:0.85rem;}
+.quiz-panel{max-width:680px;margin:0 auto;padding:20px;}
+.quiz-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.quiz-pbar-wrap{height:4px;background:var(--border);border-radius:2px;margin-bottom:18px;overflow:hidden;}
+.quiz-pbar{height:100%;background:var(--accent);border-radius:2px;transition:width .5s ease;}
+.quiz-card-wrap{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:26px 24px;}
+.quiz-sentence{font-size:1.1rem;line-height:1.85;color:var(--text);margin-bottom:22px;}
+.quiz-blank{display:inline-block;min-width:110px;border-bottom:2px solid var(--accent);color:var(--accent);font-style:italic;padding:0 6px;text-align:center;}
+.quiz-opts{display:grid;gap:9px;}
+.quiz-opt-btn{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px 16px;cursor:pointer;color:var(--text);font-size:0.92rem;text-align:left;display:flex;align-items:center;gap:10px;transition:all .15s;width:100%;}
+.quiz-opt-btn:not([disabled]):hover{border-color:var(--accent);background:rgba(124,106,247,.06);}
+.quiz-opt-btn.correct{border-color:#5cb85c;background:rgba(92,184,92,.1);color:#7eda7e;}
+.quiz-opt-btn.wrong{border-color:var(--accent2);background:rgba(224,108,138,.1);color:var(--accent2);}
+.quiz-opt-btn.faded{opacity:0.28;}
+.quiz-opt-letter{width:26px;height:26px;border-radius:50%;background:var(--tag-bg);display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;color:var(--accent);flex-shrink:0;}
+.quiz-explain{margin-top:18px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;}
+.quiz-explain-lbl{color:var(--accent2);font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;}
+.quiz-explain-zh{color:var(--text);font-size:0.9rem;margin-bottom:7px;}
+.quiz-explain-note{color:var(--muted);font-size:0.82rem;line-height:1.65;}
+.quiz-next{margin-top:14px;width:100%;background:var(--accent);border:none;color:#fff;padding:14px;border-radius:10px;font-size:0.92rem;font-weight:600;cursor:pointer;transition:opacity .2s;}
+.quiz-next:hover{opacity:0.85;}
+.quiz-result{max-width:480px;margin:0 auto;text-align:center;padding:50px 20px;}
+.quiz-result-icon{font-size:3.8rem;margin-bottom:14px;}
+.quiz-result h2{font-family:'Playfair Display',serif;font-size:1.9rem;color:var(--text);margin-bottom:6px;}
+.quiz-score-num{font-size:4.5rem;font-weight:800;color:var(--accent);line-height:1;}
+.quiz-result-msg{color:var(--muted);font-size:0.88rem;margin-top:8px;margin-bottom:6px;}
+.quiz-result-hint{color:var(--muted);font-size:0.78rem;margin-bottom:24px;}
+.quiz-action-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.quiz-action-btn{background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:11px 22px;cursor:pointer;font-size:0.87rem;transition:all .2s;}
+.quiz-action-btn.pri{background:var(--accent);border-color:var(--accent);color:#fff;}
+.quiz-action-btn:hover{opacity:0.85;}
+.quiz-error{max-width:480px;margin:80px auto;text-align:center;padding:20px;}
+.quiz-error h3{color:var(--accent2);margin-bottom:10px;font-size:1.2rem;}
+.quiz-error p{color:var(--muted);font-size:0.85rem;margin-bottom:20px;}
+.mw-wrap{max-width:780px;margin:0 auto;padding:28px 20px;}
+.mw-hdr{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:18px;}
+.mw-title{font-family:'Playfair Display',serif;font-size:1.4rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.mw-actions{display:flex;gap:8px;align-items:center;}
+.mw-clear-btn{background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);padding:8px 14px;font-size:0.8rem;cursor:pointer;}
+.mw-clear-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+.mw-quiz-btn{background:var(--accent);border:none;border-radius:8px;color:#fff;padding:9px 18px;font-size:0.82rem;font-weight:600;cursor:pointer;}
+.mw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;}
+.mw-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.mw-word{font-family:'Playfair Display',serif;font-size:1rem;color:var(--text);}
+.mw-pos{color:var(--accent2);font-size:0.7rem;margin-top:2px;}
+.mw-zh{color:var(--muted);font-size:0.75rem;margin-top:2px;line-height:1.4;}
+.mw-actions-col{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;}
+.mw-mastered{background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.72rem;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
+.mw-mastered:hover{color:#5cb85c;}
+.mw-empty{text-align:center;padding:70px 20px;color:var(--muted);}
+.mw-empty-icon{font-size:2.8rem;margin-bottom:14px;}
+@media(max-width:480px){
+  .tab-btn{font-size:0.74rem;padding:12px 3px;}
+  .quiz-panel,.quiz-setup,.mw-wrap{padding-left:14px;padding-right:14px;}
+  .quiz-card-wrap{padding:18px 14px;}
+}
 </style>
 </head>
 <body>
+<div id="tabNav">
+  <button class="tab-btn active" id="tabDict" onclick="switchTab('dict')">📚 字典</button>
+  <button class="tab-btn" id="tabQuiz" onclick="switchTab('quiz')">✏️ 測驗</button>
+  <button class="tab-btn" id="tabMywords" onclick="switchTab('mywords')">⭐ 我的單字 (<span id="myWordsCount"></span>)</button>
+</div>
+<div id="dictSection">
 <header>
   <div class="header-top">
     <h1>📚 5000英文單字</h1>
@@ -72,6 +158,10 @@ input[type=search]::placeholder{color:var(--muted);}
 </div>
 <div class="grid" id="grid"></div>
 <div class="pagination" id="pagination"></div>
+</div><!-- /dictSection -->
+
+<div id="quizSection" style="display:none"></div>
+<div id="myWordsSection" style="display:none"></div>
 
 <!-- 全域音訊元素，iOS 必須用同一個 audio 元素才能正常播放 -->
 <audio id="player" preload="none" playsinline webkit-playsinline></audio>
@@ -229,6 +319,7 @@ function update(){
         </div>
         ${w.pos?`<span class="pos-tag">${w.pos}</span>`:''}
         ${w.zh?`<div class="zh-def">${w.zh}</div>`:''}
+        <button class="mark-btn ${markedWords&&markedWords.has(w.word)?'marked':''}" onclick="event.stopPropagation();toggleMark('${w.word}',this)" title="加入複習清單">⭐</button>
       </div>`).join('');
   }
   renderPagination(pages);
@@ -249,6 +340,209 @@ function renderPagination(pages){
   p.innerHTML=html;
 }
 function goPage(n){currentPage=n;window.scrollTo({top:0,behavior:'smooth'});update();}
+
+// ─── 複習清單 & AI 測驗 ───
+const QUIZ_FN_URL = 'https://us-central1-news-english-ef2e4.cloudfunctions.net/generateVocabQuiz';
+let markedWords = new Set(JSON.parse(localStorage.getItem('vocab_marked') || '[]'));
+let qSource = 'unfamiliar';
+let qQuestions = [], qIndex = 0, qScore = 0, qSelected = null;
+
+function saveMark(){ localStorage.setItem('vocab_marked', JSON.stringify([...markedWords])); }
+function syncMarkCount(){
+  const el = document.getElementById('myWordsCount');
+  if(el) el.textContent = markedWords.size || '';
+}
+
+function toggleMark(word, btn){
+  if(markedWords.has(word)){ markedWords.delete(word); btn.classList.remove('marked'); }
+  else { markedWords.add(word); btn.classList.add('marked'); }
+  saveMark(); syncMarkCount();
+}
+function addMark(word){ if(!markedWords.has(word)){ markedWords.add(word); saveMark(); syncMarkCount(); update(); } }
+function removeMark(word){ if(markedWords.has(word)){ markedWords.delete(word); saveMark(); syncMarkCount(); update(); } }
+
+function switchTab(tab){
+  document.getElementById('dictSection').style.display   = tab==='dict'    ? '' : 'none';
+  document.getElementById('quizSection').style.display   = tab==='quiz'    ? '' : 'none';
+  document.getElementById('myWordsSection').style.display= tab==='mywords' ? '' : 'none';
+  ['dict','quiz','mywords'].forEach(t=>{
+    const btn = document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1));
+    if(btn) btn.classList.toggle('active', t===tab);
+  });
+  if(tab==='quiz')    renderQuizSetup();
+  if(tab==='mywords') renderMyWords();
+}
+
+function renderQuizSetup(){
+  const unfCount = WORDS.filter(w=>markedWords.has(w.word)).length;
+  const filtCount = filtered.length;
+  if(qSource==='unfamiliar' && unfCount===0) qSource = filtCount>0?'filtered':'all';
+  document.getElementById('quizSection').innerHTML = `
+    <div class="quiz-setup">
+      <div class="quiz-setup-title">✏️ 單字測驗</div>
+      <p>Claude AI 老師根據您選擇的範圍生成 10 題四選一填空題。<br>答錯自動加入複習清單，答對從清單移除。</p>
+      <div class="quiz-opt-label">出題範圍</div>
+      <div class="quiz-opt-group">
+        ${unfCount>0?`<button class="quiz-opt ${qSource==='unfamiliar'?'selected':''}" onclick="setQSource('unfamiliar',this)">⭐ 複習清單 (${unfCount})</button>`:''}
+        <button class="quiz-opt ${qSource==='filtered'?'selected':''}" onclick="setQSource('filtered',this)">🔍 目前篩選 (${filtCount})</button>
+        <button class="quiz-opt ${qSource==='all'?'selected':''}" onclick="setQSource('all',this)">📚 全部單字 (${WORDS.length})</button>
+      </div>
+      <button class="quiz-start-btn" onclick="startQuiz()">開始 AI 出題 →</button>
+      <div class="quiz-note">由 Claude Haiku AI 生成 · 需要網路連線</div>
+    </div>`;
+}
+
+function setQSource(src, btn){
+  qSource=src;
+  document.querySelectorAll('.quiz-opt').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+async function startQuiz(){
+  let pool=[];
+  if(qSource==='unfamiliar') pool=WORDS.filter(w=>markedWords.has(w.word));
+  else if(qSource==='filtered') pool=[...filtered];
+  else pool=[...WORDS];
+  if(!pool.length){ alert('此範圍沒有單字，請選擇其他範圍'); return; }
+
+  const unfPart=pool.filter(w=>markedWords.has(w.word)).sort(()=>Math.random()-.5);
+  const othPart=pool.filter(w=>!markedWords.has(w.word)).sort(()=>Math.random()-.5);
+  const selected=[...unfPart,...othPart].slice(0,10);
+
+  document.getElementById('quizSection').innerHTML=`
+    <div class="quiz-loading">
+      <div class="quiz-spinner"></div>
+      <h3>Claude AI 正在生成題目…</h3>
+      <p>正在為 ${selected.length} 個單字量身設計考題</p>
+    </div>`;
+
+  try{
+    const resp=await fetch(QUIZ_FN_URL,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({words:selected.map(w=>({word:w.word,pos:w.pos||'',zh:w.zh||''}))})
+    });
+    if(!resp.ok) throw new Error(`伺服器錯誤 (HTTP ${resp.status})`);
+    const data=await resp.json();
+    qQuestions=Array.isArray(data)?data:(data.questions||[]);
+    if(!qQuestions.length) throw new Error('題目為空，請重試');
+    qIndex=0; qScore=0; qSelected=null;
+    renderQuestion();
+  }catch(e){
+    document.getElementById('quizSection').innerHTML=`
+      <div class="quiz-error">
+        <h3>⚠️ 出題失敗</h3>
+        <p>${e.message}</p>
+        <button class="quiz-start-btn" style="width:auto;padding:12px 28px" onclick="renderQuizSetup()">返回重試</button>
+      </div>`;
+  }
+}
+
+function renderQuestion(){
+  const q=qQuestions[qIndex];
+  const pct=((qIndex+1)/qQuestions.length)*100;
+  const answered=qSelected!==null;
+  const sentHTML=q.sentence.replace('______',`<span class="quiz-blank">${answered?q.options[q.answer]:'______'}</span>`);
+  document.getElementById('quizSection').innerHTML=`
+    <div class="quiz-panel">
+      <div class="quiz-hdr">
+        <span style="color:var(--muted);font-size:0.83rem">題目 ${qIndex+1} / ${qQuestions.length}</span>
+        <span style="color:var(--accent);font-size:0.83rem;font-weight:700">得分: ${qScore}</span>
+      </div>
+      <div class="quiz-pbar-wrap"><div class="quiz-pbar" style="width:${pct}%"></div></div>
+      <div class="quiz-card-wrap">
+        <div class="quiz-sentence">${sentHTML}</div>
+        <div class="quiz-opts">
+          ${q.options.map((opt,idx)=>{
+            let cls='quiz-opt-btn';
+            if(answered){ if(idx===q.answer)cls+=' correct'; else if(idx===qSelected)cls+=' wrong'; else cls+=' faded'; }
+            return `<button class="${cls}" onclick="answerQ(${idx})" ${answered?'disabled':''}><span class="quiz-opt-letter">${String.fromCharCode(65+idx)}</span>${opt}</button>`;
+          }).join('')}
+        </div>
+        ${answered?`
+        <div class="quiz-explain">
+          <div class="quiz-explain-lbl">📖 中譯與解析</div>
+          <div class="quiz-explain-zh">「${q.translation}」</div>
+          <div class="quiz-explain-note">${q.explanation}</div>
+        </div>
+        <button class="quiz-next" onclick="nextQ()">${qIndex<qQuestions.length-1?'下一題 →':'完成測驗並結算'}</button>`:''}
+      </div>
+    </div>`;
+}
+
+function answerQ(idx){
+  if(qSelected!==null)return;
+  qSelected=idx;
+  const q=qQuestions[qIndex];
+  if(idx===q.answer){ qScore++; removeMark(q.word); }
+  else { addMark(q.word); }
+  renderQuestion();
+}
+
+function nextQ(){
+  if(qIndex<qQuestions.length-1){ qIndex++; qSelected=null; renderQuestion(); }
+  else renderQuizResult();
+}
+
+function renderQuizResult(){
+  const pct=Math.round(qScore/qQuestions.length*100);
+  const icon=pct>=80?'🏆':pct>=60?'👍':'📚';
+  const msg=pct>=80?'太棒了！成績優秀！':pct>=60?'不錯！繼續加油！':'加油！多複習標記的單字。';
+  document.getElementById('quizSection').innerHTML=`
+    <div class="quiz-result">
+      <div class="quiz-result-icon">${icon}</div>
+      <h2>測驗完成！</h2>
+      <div class="quiz-score-num">${qScore}<span style="font-size:1.4rem;color:var(--muted)"> / ${qQuestions.length}</span></div>
+      <p class="quiz-result-msg">${msg}</p>
+      <p class="quiz-result-hint">答錯已加入複習清單 · 答對已從清單移除 · 目前 ${markedWords.size} 個待複習</p>
+      <div class="quiz-action-row">
+        <button class="quiz-action-btn" onclick="renderQuizSetup()">再來一次</button>
+        ${markedWords.size?`<button class="quiz-action-btn" onclick="switchTab('mywords')">複習清單 (${markedWords.size})</button>`:''}
+        <button class="quiz-action-btn pri" onclick="switchTab('dict')">回字典</button>
+      </div>
+    </div>`;
+}
+
+function renderMyWords(){
+  const sec=document.getElementById('myWordsSection');
+  const list=WORDS.filter(w=>markedWords.has(w.word));
+  if(!list.length){
+    sec.innerHTML=`<div class="mw-empty"><div class="mw-empty-icon">⭐</div><h3 style="color:var(--text);margin-bottom:8px">複習清單是空的</h3><p>在字典中點擊 ⭐ 加入，或透過測驗自動加入。</p></div>`;
+    return;
+  }
+  sec.innerHTML=`
+    <div class="mw-wrap">
+      <div class="mw-hdr">
+        <span class="mw-title">⭐ 複習清單 (${list.length})</span>
+        <div class="mw-actions">
+          <button class="mw-quiz-btn" onclick="qSource='unfamiliar';switchTab('quiz')">開始複習測驗</button>
+          <button class="mw-clear-btn" onclick="clearAllMarks()">清空清單</button>
+        </div>
+      </div>
+      <div class="mw-grid">
+        ${list.map(w=>`
+          <div class="mw-item">
+            <div style="flex:1;min-width:0">
+              <div class="mw-word">${w.word}</div>
+              ${w.pos?`<div class="mw-pos">${w.pos}</div>`:''}
+              ${w.zh?`<div class="mw-zh">${w.zh.substring(0,36)}${w.zh.length>36?'…':''}</div>`:''}
+            </div>
+            <div class="mw-actions-col">
+              <button class="speak-btn" style="width:30px;height:30px" data-word="${w.word}" onclick="speak('${w.word}',this)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+              </button>
+              <button class="mw-mastered" onclick="removeMark('${w.word}');renderMyWords()">✓ 已熟</button>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function clearAllMarks(){
+  if(!confirm('確定要清空所有複習清單？')) return;
+  markedWords.clear(); saveMark(); syncMarkCount(); renderMyWords();
+}
+
+syncMarkCount();
 update();
 </script>
 </body>
