@@ -1,0 +1,57 @@
+name: Weekly Firebase Backup
+
+on:
+  schedule:
+    # 每週日 02:00 UTC（台灣時間週日 10:00）
+    - cron: "0 2 * * 0"
+  workflow_dispatch:
+    # 允許手動觸發
+
+jobs:
+  backup-firebase-db:
+    name: Backup Firebase Realtime Database
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Export Realtime Database
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          mkdir -p line-bot-firebase/backups
+          firebase database:get / \
+            --project news-english-ef2e4 \
+            --token "$FIREBASE_TOKEN" \
+            > "line-bot-firebase/backups/firebasedb_backup_${DATE}.json"
+          echo "Backup size: $(wc -c < line-bot-firebase/backups/firebasedb_backup_${DATE}.json) bytes"
+
+      - name: Keep only last 4 backups
+        run: |
+          cd line-bot-firebase/backups
+          ls -t firebasedb_backup_*.json | tail -n +5 | xargs -r rm --
+          echo "Remaining backups:"
+          ls -lh firebasedb_backup_*.json
+
+      - name: Commit and push backup
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add line-bot-firebase/backups/
+          git diff --cached --quiet || git commit -m "chore: weekly Firebase DB backup ${DATE}"
+          git push
