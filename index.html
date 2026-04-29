@@ -469,7 +469,7 @@ function renderPagination(pages){
 function goPage(n){currentPage=n;window.scrollTo({top:0,behavior:'smooth'});update();}
 
 // ─── 複習清單 & AI 測驗 ───
-const QUIZ_FN_URL = 'https://us-central1-news-english-ef2e4.cloudfunctions.net/generateVocabQuiz';
+const QUIZ_FN_URL = 'https://generatevocabquiz-gtlccx6nka-uc.a.run.app';
 let markedWords = new Set(JSON.parse(localStorage.getItem('vocab_marked') || '[]'));
 let qSource = 'unfamiliar';
 let qQuestions = [], qIndex = 0, qScore = 0, qSelected = null;
@@ -670,7 +670,7 @@ function clearAllMarks(){
 }
 
 // ─── Word Detail Modal ───
-const EXAMPLE_FN_URL  = 'https://us-central1-news-english-ef2e4.cloudfunctions.net/generateWordExample';
+const EXAMPLE_FN_URL  = 'https://generatewordexample-gtlccx6nka-uc.a.run.app';
 const ETYMOLOGY_FN_URL = 'https://generatewordetymology-gtlccx6nka-uc.a.run.app';
 let currentModalWord = null;
 
