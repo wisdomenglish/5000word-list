@@ -511,6 +511,15 @@ document.getElementById('searchInput').addEventListener('input',e=>{
   update();
 });
 
+function getZhDef(zh) {
+  if (!zh) return '';
+  const si = zh.indexOf('；');
+  const di = zh.indexOf('。');
+  if (si >= 0 && (di < 0 || si < di)) return zh.substring(0, si);
+  if (di >= 0) { const s = zh.substring(0, di); return s.length <= 8 ? s : s.substring(0, 6); }
+  return zh.length <= 10 ? zh : zh.substring(0, 8);
+}
+
 function update(){
   buildAlphaBar();
   let list=getAllWords();
@@ -542,7 +551,7 @@ function update(){
           </button>
         </div>
         ${w.pos?`<span class="pos-tag">${w.pos}</span>`:''}
-        ${w.zh?`<div class="zh-def">${w.zh}</div>`:''}
+        ${w.zh?`<div class="zh-def">${getZhDef(w.zh)}</div>`:''}
         <button class="mark-btn ${markedWords&&markedWords.has(w.word)?'marked':''}" onclick="event.stopPropagation();toggleMark('${w.word}',this)" title="加入複習清單">⭐</button>
       </div>`).join('');
   }
@@ -771,7 +780,7 @@ function renderMyWords(){
           <div style="flex:1;min-width:0;cursor:pointer" onclick="openWordModal('${w.word}')">
             <div class="mw-word">${w.word}<span class="custom-badge">自訂</span></div>
             ${w.pos?`<div class="mw-pos">${w.pos}</div>`:''}
-            ${w.zh?`<div class="mw-zh">${w.zh.substring(0,36)}${w.zh.length>36?'…':''}</div>`:''}
+            ${w.zh?`<div class="mw-zh">${getZhDef(w.zh)}</div>`:''}
           </div>
           <div class="mw-actions-col">
             <button class="speak-btn" style="width:30px;height:30px" onclick="speak('${w.word}',this)">${_speakBtnSvg()}</button>
@@ -796,7 +805,7 @@ function renderMyWords(){
           <div style="flex:1;min-width:0;cursor:pointer" onclick="openWordModal('${w.word}')">
             <div class="mw-word">${w.word}${w.custom?`<span class="custom-badge">自訂</span>`:''}</div>
             ${w.pos?`<div class="mw-pos">${w.pos}</div>`:''}
-            ${w.zh?`<div class="mw-zh">${w.zh.substring(0,36)}${w.zh.length>36?'…':''}</div>`:''}
+            ${w.zh?`<div class="mw-zh">${getZhDef(w.zh)}</div>`:''}
           </div>
           <div class="mw-actions-col">
             <button class="speak-btn" style="width:30px;height:30px" onclick="speak('${w.word}',this)">${_speakBtnSvg()}</button>
@@ -913,7 +922,7 @@ function openWordModal(word) {
 
   document.getElementById('modalWord').textContent = w.word;
   document.getElementById('modalPos').textContent  = w.pos || '';
-  document.getElementById('modalZh').textContent   = w.zh  || '';
+  document.getElementById('modalZh').textContent   = w.zh ? w.zh.split('。')[0].replace(/[；，]$/, '') : '';
   updateModalMarkBtn();
 
   // reset tabs to 例句
