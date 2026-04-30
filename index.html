@@ -129,7 +129,7 @@ header{top:48px!important;}
 .mw-empty{text-align:center;padding:70px 20px;color:var(--muted);}
 .mw-empty-icon{font-size:2.8rem;margin-bottom:14px;}
 @media(max-width:480px){
-  .tab-btn{font-size:0.74rem;padding:12px 3px;}
+  .tab-btn{font-size:0.68rem;padding:12px 2px;}
   .quiz-panel,.quiz-setup,.mw-wrap{padding-left:14px;padding-right:14px;}
   .quiz-card-wrap{padding:18px 14px;}
 }
@@ -172,6 +172,23 @@ header{top:48px!important;}
 .card{cursor:pointer;transition:border-color .15s,transform .1s;}
 .card:hover{border-color:rgba(124,106,247,.4);}
 .card:active{transform:scale(.98);}
+/* ── News / Announcements ── */
+#newsSection{min-height:90vh;padding:20px 16px 40px;}
+.news-wrap{max-width:680px;margin:0 auto;}
+.news-page-title{font-family:'Playfair Display',serif;font-size:1.5rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px;}
+.news-page-sub{color:var(--muted);font-size:0.82rem;margin-bottom:24px;}
+.news-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px 22px;margin-bottom:14px;}
+.news-card-top{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.news-date{color:var(--muted);font-size:0.76rem;}
+.news-type{display:inline-block;border-radius:6px;font-size:0.7rem;font-weight:700;padding:2px 9px;letter-spacing:.04em;}
+.news-type.feature{background:rgba(124,106,247,.18);color:var(--accent);border:1px solid rgba(124,106,247,.3);}
+.news-type.fix{background:rgba(92,184,92,.15);color:#7eda7e;border:1px solid rgba(92,184,92,.25);}
+.news-type.improve{background:rgba(224,108,138,.15);color:var(--accent2);border:1px solid rgba(224,108,138,.25);}
+.news-title{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--text);margin-bottom:12px;}
+.news-list{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.news-list li{color:var(--muted);font-size:0.875rem;line-height:1.65;padding-left:18px;position:relative;}
+.news-list li::before{content:'›';position:absolute;left:0;color:var(--accent);font-weight:700;}
+.news-list li strong{color:var(--text);font-weight:600;}
 /* ── Custom Words ── */
 .custom-badge{display:inline-block;background:rgba(224,108,138,.15);border:1px solid rgba(224,108,138,.3);color:var(--accent2);font-size:0.63rem;padding:1px 5px;border-radius:4px;margin-left:4px;vertical-align:middle;font-weight:600;}
 .mw-section-hdr{display:flex;justify-content:space-between;align-items:center;margin:20px 0 12px;padding-top:16px;border-top:1px solid var(--border);}
@@ -225,6 +242,7 @@ header{top:48px!important;}
   <button class="tab-btn active" id="tabDict" onclick="switchTab('dict')">📚 字典</button>
   <button class="tab-btn" id="tabQuiz" onclick="switchTab('quiz')">✏️ 測驗</button>
   <button class="tab-btn" id="tabMywords" onclick="switchTab('mywords')">⭐ 我的單字 (<span id="myWordsCount"></span>)</button>
+  <button class="tab-btn" id="tabNews" onclick="switchTab('news')">📢 公告</button>
 </div>
 <div id="dictSection">
 <header>
@@ -255,6 +273,31 @@ header{top:48px!important;}
 
 <div id="quizSection" style="display:none"></div>
 <div id="myWordsSection" style="display:none"></div>
+<div id="newsSection" style="display:none">
+  <div class="news-wrap">
+    <div class="news-page-title">📢 更新公告</div>
+    <div class="news-page-sub">記錄每次功能新增與優化內容</div>
+
+    <!-- ══ 2025-04-30 ══ -->
+    <div class="news-card">
+      <div class="news-card-top">
+        <span class="news-date">2025-04-30</span>
+        <span class="news-type feature">新功能</span>
+      </div>
+      <div class="news-title">自訂單字庫</div>
+      <ul class="news-list">
+        <li>在 <strong>字典</strong> 頁面點右上角 <strong>＋ 新增</strong> 按鈕，輸入英文單字、詞性（選填）與中文解釋即可加入</li>
+        <li>系統會檢查是否與現有 5000 字或已自訂單字重複，避免重複新增</li>
+        <li>自訂單字會同步出現在<strong>字典主頁</strong>，帶有粉色「自訂」徽章，可正常搜尋與發音</li>
+        <li>支援點擊開啟詳細頁面，可讓 AI 生成<strong>例句</strong>與<strong>字根分析</strong></li>
+        <li>可加 ⭐ 放入複習清單，並納入 <strong>AI 測驗</strong>出題範圍</li>
+        <li>在 <strong>⭐ 我的單字</strong> tab 可統一管理自訂單字，點「✕ 刪除」移除</li>
+        <li>所有自訂單字儲存於裝置本地，不會消失</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
 
 <!-- Add Word Modal -->
 <div id="addWordModal" style="display:none" onclick="if(event.target===this)closeAddWordModal()">
@@ -548,7 +591,8 @@ function switchTab(tab){
   document.getElementById('dictSection').style.display   = tab==='dict'    ? '' : 'none';
   document.getElementById('quizSection').style.display   = tab==='quiz'    ? '' : 'none';
   document.getElementById('myWordsSection').style.display= tab==='mywords' ? '' : 'none';
-  ['dict','quiz','mywords'].forEach(t=>{
+  document.getElementById('newsSection').style.display   = tab==='news'    ? '' : 'none';
+  ['dict','quiz','mywords','news'].forEach(t=>{
     const btn = document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1));
     if(btn) btn.classList.toggle('active', t===tab);
   });
