@@ -172,6 +172,27 @@ header{top:48px!important;}
 .card{cursor:pointer;transition:border-color .15s,transform .1s;}
 .card:hover{border-color:rgba(124,106,247,.4);}
 .card:active{transform:scale(.98);}
+/* ── Custom Words ── */
+.custom-badge{display:inline-block;background:rgba(224,108,138,.15);border:1px solid rgba(224,108,138,.3);color:var(--accent2);font-size:0.63rem;padding:1px 5px;border-radius:4px;margin-left:4px;vertical-align:middle;font-weight:600;}
+.mw-section-hdr{display:flex;justify-content:space-between;align-items:center;margin:20px 0 12px;padding-top:16px;border-top:1px solid var(--border);}
+.mw-section-hdr.first{border-top:none;padding-top:0;margin-top:0;}
+.mw-section-title{color:var(--muted);font-size:0.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;}
+.add-word-btn{background:var(--accent);border:none;border-radius:8px;color:#fff;padding:7px 14px;font-size:0.8rem;font-weight:600;cursor:pointer;transition:opacity .2s;}
+.add-word-btn:hover{opacity:.85;}
+.add-word-form{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;animation:slideUp .18s ease;}
+.form-row{display:flex;gap:8px;margin-bottom:10px;}
+.add-word-input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:9px 12px;font-size:0.88rem;outline:none;-webkit-appearance:none;}
+.add-word-input:focus{border-color:var(--accent);}
+.add-word-input::placeholder{color:var(--muted);}
+.add-word-pos{width:90px;flex:none;}
+.form-actions{display:flex;gap:8px;justify-content:flex-end;}
+.form-cancel-btn{background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);padding:8px 16px;font-size:0.82rem;cursor:pointer;}
+.form-save-btn{background:var(--accent);border:none;border-radius:8px;color:#fff;padding:8px 18px;font-size:0.82rem;font-weight:600;cursor:pointer;}
+.mw-delete-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.72rem;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
+.mw-delete-btn:hover{color:var(--accent2);}
+/* ── Add Word Modal (reuses wordModal layout) ── */
+#addWordModal{position:fixed;inset:0;z-index:500;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);}
+@media(min-width:600px){#addWordModal{align-items:center;}}
 /* ── Auth Overlay ── */
 #authOverlay{position:fixed;inset:0;background:#0d0d1a;z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;}
 #authCard{background:#1a1a2e;border:1px solid rgba(124,106,247,.3);border-radius:20px;padding:40px 32px;width:100%;max-width:360px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.6);}
@@ -218,6 +239,7 @@ header{top:48px!important;}
     </div>
     <button class="sort-btn active" id="sortAZ" onclick="setSort('az')">A → Z</button>
     <button class="sort-btn" id="sortZA" onclick="setSort('za')">Z → A</button>
+    <button class="sort-btn" style="border-color:var(--accent);color:var(--accent)" onclick="openAddWordModal()">＋ 新增</button>
   </div>
   <div class="alpha-bar" id="alphaBar"></div>
 </header>
@@ -233,6 +255,25 @@ header{top:48px!important;}
 
 <div id="quizSection" style="display:none"></div>
 <div id="myWordsSection" style="display:none"></div>
+
+<!-- Add Word Modal -->
+<div id="addWordModal" style="display:none" onclick="if(event.target===this)closeAddWordModal()">
+  <div class="modal-box" style="max-height:60vh">
+    <div class="modal-drag"></div>
+    <button class="modal-close" onclick="closeAddWordModal()">✕</button>
+    <div style="font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--text);margin-bottom:4px">＋ 新增單字</div>
+    <div style="color:var(--muted);font-size:0.82rem;margin-bottom:18px">將單字加入自訂單字庫，可搜尋、發音、AI 例句、加入測驗</div>
+    <div class="form-row" style="margin-bottom:12px">
+      <input class="add-word-input" id="awmWordEn" placeholder="英文單字 *" autocomplete="off">
+      <input class="add-word-input add-word-pos" id="awmWordPos" placeholder="詞性（選填）" autocomplete="off">
+    </div>
+    <div class="form-row" style="margin-bottom:16px">
+      <input class="add-word-input" id="awmWordZh" placeholder="中文解釋 *" autocomplete="off">
+    </div>
+    <div id="awmErr" style="color:var(--accent2);font-size:0.8rem;min-height:18px;margin-bottom:10px"></div>
+    <button class="quiz-start-btn" onclick="saveWordFromModal()">儲存單字</button>
+  </div>
+</div>
 
 <!-- Word Detail Modal -->
 <div id="wordModal" style="display:none" onclick="if(event.target===this)closeWordModal()">
@@ -274,6 +315,9 @@ const AUTH_KEY='vocab_auth_v1';
 async function _sha256(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
 (function checkAuth(){try{const d=JSON.parse(localStorage.getItem(AUTH_KEY)||'null');if(d&&d.h===AUTH_HASH){document.getElementById('authOverlay').style.display='none';}}catch(e){}}());
 document.getElementById('authPw').addEventListener('keydown',e=>{if(e.key==='Enter')submitAuth();});
+['awmWordEn','awmWordPos','awmWordZh'].forEach(id=>{
+  document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')saveWordFromModal();});
+});
 async function submitAuth(){
   const pw=document.getElementById('authPw').value;
   if(!pw)return;
@@ -380,17 +424,22 @@ function testSpeak(){
 }
 
 /* ── Alpha bar ── */
-const letters=[...new Set(WORDS.map(w=>w.word[0].toUpperCase()))].sort();
-const alphaBar=document.getElementById('alphaBar');
-const allBtn=document.createElement('button');
-allBtn.className='alpha-btn all active';allBtn.textContent='全部';
-allBtn.onclick=()=>setLetter('');
-alphaBar.appendChild(allBtn);
-letters.forEach(l=>{
-  const b=document.createElement('button');b.className='alpha-btn';b.textContent=l;
-  b.onclick=()=>setLetter(l);alphaBar.appendChild(b);
-});
-document.getElementById('totalCount').textContent=`共 ${WORDS.length.toLocaleString()} 個單字`;
+function buildAlphaBar(){
+  const alphaBar=document.getElementById('alphaBar');
+  alphaBar.innerHTML='';
+  const letters=[...new Set(getAllWords().map(w=>w.word[0].toUpperCase()))].sort();
+  const allBtn=document.createElement('button');
+  allBtn.className='alpha-btn all'+(selectedLetters.size===0?' active':'');allBtn.textContent='全部';
+  allBtn.onclick=()=>setLetter('');
+  alphaBar.appendChild(allBtn);
+  letters.forEach(l=>{
+    const b=document.createElement('button');b.className='alpha-btn'+(selectedLetters.has(l)?' active':'');b.textContent=l;
+    b.onclick=()=>setLetter(l);alphaBar.appendChild(b);
+  });
+  const total = getAllWords().length;
+  document.getElementById('totalCount').textContent=`共 ${total.toLocaleString()} 個單字`;
+}
+buildAlphaBar();
 
 function setLetter(l){
   if(l===''){selectedLetters.clear();}else{if(selectedLetters.has(l))selectedLetters.delete(l);else selectedLetters.add(l);}
@@ -416,7 +465,8 @@ document.getElementById('searchInput').addEventListener('input',e=>{
 });
 
 function update(){
-  let list=[...WORDS];
+  buildAlphaBar();
+  let list=getAllWords();
   if(selectedLetters.size>0)list=list.filter(w=>selectedLetters.has(w.word[0].toUpperCase()));
   if(searchQ)list=list.filter(w=>w.word.toLowerCase().includes(searchQ)||(w.zh&&w.zh.includes(searchQ)));
   list.sort((a,b)=>currentSort==='az'?a.word.localeCompare(b.word):b.word.localeCompare(a.word));
@@ -435,7 +485,7 @@ function update(){
     grid.innerHTML=page.map(w=>`
       <div class="card" onclick="openWordModal('${w.word}')">
         <div class="card-top">
-          <div class="word">${w.word}</div>
+          <div class="word">${w.word}${w.custom?'<span class="custom-badge">自訂</span>':''}</div>
           <button class="speak-btn" data-word="${w.word}" onclick="event.stopPropagation();speak(this.dataset.word,this)">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
@@ -471,13 +521,19 @@ function goPage(n){currentPage=n;window.scrollTo({top:0,behavior:'smooth'});upda
 // ─── 複習清單 & AI 測驗 ───
 const QUIZ_FN_URL = 'https://generatevocabquiz-gtlccx6nka-uc.a.run.app';
 let markedWords = new Set(JSON.parse(localStorage.getItem('vocab_marked') || '[]'));
+const CUSTOM_WORDS_KEY = 'vocab_custom_words';
+let customWords = JSON.parse(localStorage.getItem(CUSTOM_WORDS_KEY) || '[]');
+function saveCustomWords(){ localStorage.setItem(CUSTOM_WORDS_KEY, JSON.stringify(customWords)); }
+function getAllWords(){ return [...WORDS, ...customWords]; }
 let qSource = 'unfamiliar';
 let qQuestions = [], qIndex = 0, qScore = 0, qSelected = null;
 
 function saveMark(){ localStorage.setItem('vocab_marked', JSON.stringify([...markedWords])); }
 function syncMarkCount(){
   const el = document.getElementById('myWordsCount');
-  if(el) el.textContent = markedWords.size || '';
+  if(!el) return;
+  const total = markedWords.size + customWords.length;
+  el.textContent = total || '';
 }
 
 function toggleMark(word, btn){
@@ -501,7 +557,7 @@ function switchTab(tab){
 }
 
 function renderQuizSetup(){
-  const unfCount = WORDS.filter(w=>markedWords.has(w.word)).length;
+  const unfCount = getAllWords().filter(w=>markedWords.has(w.word)).length;
   const filtCount = filtered.length;
   if(qSource==='unfamiliar' && unfCount===0) qSource = filtCount>0?'filtered':'all';
   document.getElementById('quizSection').innerHTML = `
@@ -512,7 +568,7 @@ function renderQuizSetup(){
       <div class="quiz-opt-group">
         ${unfCount>0?`<button class="quiz-opt ${qSource==='unfamiliar'?'selected':''}" onclick="setQSource('unfamiliar',this)">⭐ 複習清單 (${unfCount})</button>`:''}
         <button class="quiz-opt ${qSource==='filtered'?'selected':''}" onclick="setQSource('filtered',this)">🔍 目前篩選 (${filtCount})</button>
-        <button class="quiz-opt ${qSource==='all'?'selected':''}" onclick="setQSource('all',this)">📚 全部單字 (${WORDS.length})</button>
+        <button class="quiz-opt ${qSource==='all'?'selected':''}" onclick="setQSource('all',this)">📚 全部單字 (${getAllWords().length})</button>
       </div>
       <button class="quiz-start-btn" onclick="startQuiz()">開始 AI 出題 →</button>
       <div class="quiz-note">由 Claude Haiku AI 生成 · 需要網路連線</div>
@@ -527,9 +583,9 @@ function setQSource(src, btn){
 
 async function startQuiz(){
   let pool=[];
-  if(qSource==='unfamiliar') pool=WORDS.filter(w=>markedWords.has(w.word));
+  if(qSource==='unfamiliar') pool=getAllWords().filter(w=>markedWords.has(w.word));
   else if(qSource==='filtered') pool=[...filtered];
-  else pool=[...WORDS];
+  else pool=getAllWords();
   if(!pool.length){ alert('此範圍沒有單字，請選擇其他範圍'); return; }
 
   const unfPart=pool.filter(w=>markedWords.has(w.word)).sort(()=>Math.random()-.5);
@@ -629,44 +685,156 @@ function renderQuizResult(){
     </div>`;
 }
 
+function _speakBtnSvg(){ return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>`; }
+
+function _addWordFormHtml(){
+  return `<div id="addWordForm" class="add-word-form" style="display:none">
+    <div class="form-row">
+      <input class="add-word-input" id="newWordEn" placeholder="英文單字 *" autocomplete="off">
+      <input class="add-word-input add-word-pos" id="newWordPos" placeholder="詞性（選填）" autocomplete="off">
+    </div>
+    <div class="form-row">
+      <input class="add-word-input" id="newWordZh" placeholder="中文解釋 *" autocomplete="off">
+    </div>
+    <div class="form-actions">
+      <button class="form-cancel-btn" onclick="toggleAddWordForm()">取消</button>
+      <button class="form-save-btn" onclick="saveNewWord()">儲存</button>
+    </div>
+    <div id="addWordErr" style="color:var(--accent2);font-size:0.78rem;margin-top:8px;min-height:16px;"></div>
+  </div>`;
+}
+
 function renderMyWords(){
-  const sec=document.getElementById('myWordsSection');
-  const list=WORDS.filter(w=>markedWords.has(w.word));
-  if(!list.length){
-    sec.innerHTML=`<div class="mw-empty"><div class="mw-empty-icon">⭐</div><h3 style="color:var(--text);margin-bottom:8px">複習清單是空的</h3><p>在字典中點擊 ⭐ 加入，或透過測驗自動加入。</p></div>`;
-    return;
-  }
-  sec.innerHTML=`
-    <div class="mw-wrap">
-      <div class="mw-hdr">
-        <span class="mw-title">⭐ 複習清單 (${list.length})</span>
-        <div class="mw-actions">
-          <button class="mw-quiz-btn" onclick="qSource='unfamiliar';switchTab('quiz')">開始複習測驗</button>
-          <button class="mw-clear-btn" onclick="clearAllMarks()">清空清單</button>
-        </div>
+  const sec = document.getElementById('myWordsSection');
+  const markedList = getAllWords().filter(w => markedWords.has(w.word));
+
+  let html = `<div class="mw-wrap">
+    <div class="mw-hdr">
+      <span class="mw-title">⭐ 我的單字</span>
+      <div class="mw-actions">
+        <button class="add-word-btn" onclick="toggleAddWordForm()">＋ 新增單字</button>
       </div>
-      <div class="mw-grid">
-        ${list.map(w=>`
-          <div class="mw-item">
-            <div style="flex:1;min-width:0">
-              <div class="mw-word">${w.word}</div>
-              ${w.pos?`<div class="mw-pos">${w.pos}</div>`:''}
-              ${w.zh?`<div class="mw-zh">${w.zh.substring(0,36)}${w.zh.length>36?'…':''}</div>`:''}
-            </div>
-            <div class="mw-actions-col">
-              <button class="speak-btn" style="width:30px;height:30px" data-word="${w.word}" onclick="speak('${w.word}',this)">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
-              </button>
-              <button class="mw-mastered" onclick="removeMark('${w.word}');renderMyWords()">✓ 已熟</button>
-            </div>
-          </div>`).join('')}
+    </div>
+    ${_addWordFormHtml()}`;
+
+  if(customWords.length > 0){
+    html += `<div class="mw-section-hdr first">
+      <span class="mw-section-title">📝 自訂單字庫 (${customWords.length})</span>
+    </div>
+    <div class="mw-grid">
+      ${customWords.map(w=>`
+        <div class="mw-item">
+          <div style="flex:1;min-width:0;cursor:pointer" onclick="openWordModal('${w.word}')">
+            <div class="mw-word">${w.word}<span class="custom-badge">自訂</span></div>
+            ${w.pos?`<div class="mw-pos">${w.pos}</div>`:''}
+            ${w.zh?`<div class="mw-zh">${w.zh.substring(0,36)}${w.zh.length>36?'…':''}</div>`:''}
+          </div>
+          <div class="mw-actions-col">
+            <button class="speak-btn" style="width:30px;height:30px" onclick="speak('${w.word}',this)">${_speakBtnSvg()}</button>
+            <button class="mw-delete-btn" onclick="deleteCustomWord('${w.word}')">✕ 刪除</button>
+          </div>
+        </div>`).join('')}
+    </div>`;
+  }
+
+  const reviewHeaderClass = customWords.length > 0 ? 'mw-section-hdr' : 'mw-section-hdr first';
+  if(markedList.length > 0){
+    html += `<div class="${reviewHeaderClass}">
+      <span class="mw-section-title">⭐ 複習清單 (${markedList.length})</span>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="mw-quiz-btn" onclick="qSource='unfamiliar';switchTab('quiz')">開始複習測驗</button>
+        <button class="mw-clear-btn" onclick="clearAllMarks()">清空</button>
+      </div>
+    </div>
+    <div class="mw-grid">
+      ${markedList.map(w=>`
+        <div class="mw-item">
+          <div style="flex:1;min-width:0;cursor:pointer" onclick="openWordModal('${w.word}')">
+            <div class="mw-word">${w.word}${w.custom?`<span class="custom-badge">自訂</span>`:''}</div>
+            ${w.pos?`<div class="mw-pos">${w.pos}</div>`:''}
+            ${w.zh?`<div class="mw-zh">${w.zh.substring(0,36)}${w.zh.length>36?'…':''}</div>`:''}
+          </div>
+          <div class="mw-actions-col">
+            <button class="speak-btn" style="width:30px;height:30px" onclick="speak('${w.word}',this)">${_speakBtnSvg()}</button>
+            <button class="mw-mastered" onclick="removeMark('${w.word}');renderMyWords()">✓ 已熟</button>
+          </div>
+        </div>`).join('')}
+    </div>`;
+  } else {
+    html += `<div class="${reviewHeaderClass}"><span class="mw-section-title">⭐ 複習清單</span></div>
+    <div class="mw-empty" style="padding:24px 0 8px"><p>在字典中點擊 ⭐ 加入，或透過測驗自動加入。</p></div>`;
+  }
+
+  if(!customWords.length && !markedList.length){
+    sec.innerHTML = `<div class="mw-wrap">
+      <div class="mw-hdr">
+        <span class="mw-title">⭐ 我的單字</span>
+        <div class="mw-actions"><button class="add-word-btn" onclick="toggleAddWordForm()">＋ 新增單字</button></div>
+      </div>
+      ${_addWordFormHtml()}
+      <div class="mw-empty">
+        <div class="mw-empty-icon">📝</div>
+        <h3 style="color:var(--text);margin-bottom:8px">還沒有任何單字</h3>
+        <p>點「＋ 新增單字」自訂單字，或在字典中點 ⭐ 加入複習清單。</p>
       </div>
     </div>`;
+  } else {
+    sec.innerHTML = html + '</div>';
+  }
+  ['newWordEn','newWordPos','newWordZh'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.addEventListener('keydown',e=>{if(e.key==='Enter')saveNewWord();});
+  });
 }
 
 function clearAllMarks(){
   if(!confirm('確定要清空所有複習清單？')) return;
   markedWords.clear(); saveMark(); syncMarkCount(); renderMyWords();
+}
+
+function toggleAddWordForm(){
+  const form = document.getElementById('addWordForm');
+  if(!form) return;
+  const visible = form.style.display !== 'none';
+  form.style.display = visible ? 'none' : '';
+  if(!visible){
+    const inp = document.getElementById('newWordEn');
+    if(inp) inp.focus();
+  }
+}
+
+function saveNewWord(){
+  const wordVal = (document.getElementById('newWordEn')?.value || '').trim();
+  const posVal  = (document.getElementById('newWordPos')?.value || '').trim();
+  const zhVal   = (document.getElementById('newWordZh')?.value || '').trim();
+  const errEl   = document.getElementById('addWordErr');
+  if(!wordVal || !zhVal){
+    if(errEl) errEl.textContent = '請填寫英文單字和中文解釋';
+    return;
+  }
+  if(getAllWords().some(w => w.word.toLowerCase() === wordVal.toLowerCase())){
+    if(errEl) errEl.textContent = `「${wordVal}」已存在於單字庫中`;
+    return;
+  }
+  const newWord = { word: wordVal, pos: posVal || '', zh: zhVal, custom: true };
+  customWords.push(newWord);
+  saveCustomWords();
+  syncMarkCount();
+  update();
+  renderMyWords();
+  const form = document.getElementById('addWordForm');
+  if(form) form.style.display = 'none';
+}
+
+function deleteCustomWord(word){
+  if(!confirm(`確定要刪除「${word}」？`)) return;
+  customWords = customWords.filter(w => w.word !== word);
+  saveCustomWords();
+  markedWords.delete(word);
+  saveMark();
+  syncMarkCount();
+  update();
+  renderMyWords();
 }
 
 // ─── Word Detail Modal ───
@@ -682,7 +850,7 @@ function switchModalTab(tab) {
   if (tab === 'etym' && currentModalWord) {
     const el = document.getElementById('modalEtym');
     if (!el.hasChildNodes()) {
-      const w = WORDS.find(x => x.word === currentModalWord);
+      const w = getAllWords().find(x => x.word === currentModalWord);
       if (!w) return;
       const cached = localStorage.getItem('vocab_etym_' + currentModalWord);
       if (cached) { renderEtymology(JSON.parse(cached)); }
@@ -695,7 +863,7 @@ function switchModalTab(tab) {
 }
 
 function openWordModal(word) {
-  const w = WORDS.find(x => x.word === word);
+  const w = getAllWords().find(x => x.word === word);
   if (!w) return;
   currentModalWord = word;
 
@@ -754,7 +922,7 @@ function renderModalEx(data) {
 
 function retryModalEx() {
   if (!currentModalWord) return;
-  const w = WORDS.find(x => x.word === currentModalWord);
+  const w = getAllWords().find(x => x.word === currentModalWord);
   if (!w) return;
   const exEl = document.getElementById('modalEx');
   exEl.innerHTML = '<div class="modal-ex-loading"><div class="modal-ex-spin"></div>重試中…</div>';
@@ -793,7 +961,7 @@ function renderEtymology(data) {
 
 function retryEtymology() {
   if (!currentModalWord) return;
-  const w = WORDS.find(x => x.word === currentModalWord);
+  const w = getAllWords().find(x => x.word === currentModalWord);
   if (!w) return;
   const el = document.getElementById('modalEtym');
   el.innerHTML = '<div class="modal-ex-loading"><div class="modal-ex-spin"></div>重試中…</div>';
@@ -804,6 +972,39 @@ function closeWordModal() {
   document.getElementById('wordModal').style.display = 'none';
   document.body.style.overflow = '';
   currentModalWord = null;
+}
+
+function openAddWordModal(prefill){
+  ['awmWordEn','awmWordPos','awmWordZh'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value='';
+  });
+  document.getElementById('awmErr').textContent='';
+  if(prefill){ document.getElementById('awmWordEn').value=prefill; }
+  document.getElementById('addWordModal').style.display='flex';
+  document.body.style.overflow='hidden';
+  setTimeout(()=>document.getElementById('awmWordEn').focus(),80);
+}
+
+function closeAddWordModal(){
+  document.getElementById('addWordModal').style.display='none';
+  document.body.style.overflow='';
+}
+
+function saveWordFromModal(){
+  const wordVal=(document.getElementById('awmWordEn')?.value||'').trim();
+  const posVal =(document.getElementById('awmWordPos')?.value||'').trim();
+  const zhVal  =(document.getElementById('awmWordZh')?.value||'').trim();
+  const errEl  =document.getElementById('awmErr');
+  if(!wordVal||!zhVal){ errEl.textContent='請填寫英文單字和中文解釋'; return; }
+  if(getAllWords().some(w=>w.word.toLowerCase()===wordVal.toLowerCase())){
+    errEl.textContent=`「${wordVal}」已存在於單字庫中`; return;
+  }
+  customWords.push({word:wordVal,pos:posVal,zh:zhVal,custom:true});
+  saveCustomWords();
+  syncMarkCount();
+  update();
+  closeAddWordModal();
 }
 
 function updateModalMarkBtn() {
