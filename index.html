@@ -922,7 +922,7 @@ function openWordModal(word) {
 
   document.getElementById('modalWord').textContent = w.word;
   document.getElementById('modalPos').textContent  = w.pos || '';
-  document.getElementById('modalZh').textContent   = w.zh ? w.zh.split('。')[0].replace(/[；，]$/, '') : '';
+  document.getElementById('modalZh').textContent   = getZhDef(w.zh);
   updateModalMarkBtn();
 
   // reset tabs to 例句
