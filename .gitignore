@@ -1,0 +1,28 @@
+# Node.js
+**/node_modules/
+npm-debug.log*
+
+# Firebase
+*.log
+line-bot-firebase/.firebaserc
+line-bot-firebase/firebase.json
+
+# Environment variables (contain API keys)
+**/.env
+**/.env.local
+**/.env.local.test
+**/.env.*.local
+
+# Claude Code (local tool config & memory)
+.claude/
+.agents/
+.mcp.json
+skills-lock.json
+
+# LINE Bot utility & debug scripts
+line-bot-firebase/debug-ical.js
+line-bot-firebase/apr_events.json
+
+# OS
+.DS_Store
+Thumbs.db
