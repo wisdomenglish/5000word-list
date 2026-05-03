@@ -1,6 +1,8 @@
 # Node.js
 **/node_modules/
 npm-debug.log*
+package-lock.json
+yarn.lock
 
 # Firebase
 *.log
@@ -26,3 +28,11 @@ line-bot-firebase/apr_events.json
 # OS
 .DS_Store
 Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Temporary files
+.tmp/
+temp/
