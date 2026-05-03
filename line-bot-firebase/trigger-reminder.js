@@ -20,7 +20,7 @@ function fbSet(dbPath, data) {
   fs.writeFileSync(tmp, JSON.stringify(data));
   try {
     // Firebase CLI: database:set <path> [infile] — infile is positional, not a flag
-    execSync(`firebase database:set ${dbPath} "${tmp}" --project ${PROJECT} --confirm`, { encoding: "utf8" });
+    execSync(`firebase database:set ${dbPath} "${tmp}" --project ${PROJECT} --force`, { encoding: "utf8" });
   } finally {
     if (fs.existsSync(tmp)) fs.unlinkSync(tmp);
   }
@@ -108,6 +108,9 @@ async function main() {
   console.log("=== Manual calendarReminder trigger ===");
   console.log("Time (UTC):", new Date().toISOString());
 
+  const cacheOnly = process.argv.includes("--cache-only");
+  if (cacheOnly) console.log("📦 Mode: CACHE-ONLY (no notifications will be sent)\n");
+
   const now = new Date();
   const taiwanNow = new Date(now.getTime() + 8 * 3600000);
   const tY = taiwanNow.getUTCFullYear(), tM = taiwanNow.getUTCMonth(), tD = taiwanNow.getUTCDate();
@@ -138,18 +141,50 @@ async function main() {
     const dateStr = getDateStr(e.start);
     if (!dateStr) continue;
     const safeId = (e.uid || e.summary || "").replace(/[.#$\[\]/@]/g, "_");
+    // Compute startObj: use time if available, else midnight UTC
+    const dtmatch = e.start && e.start.match(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/);
+    let startObj, isAllDay;
+    if (dtmatch) {
+      const [, y, m, d, h, min, s] = dtmatch;
+      const isUTC = e.start.includes("Z");
+      startObj = isUTC
+        ? new Date(Date.UTC(+y, +m-1, +d, +h, +min, +s)).getTime() + 8 * 3600000
+        : new Date(Date.UTC(+y, +m-1, +d, +h, +min, +s)).getTime();
+      isAllDay = false;
+    } else {
+      startObj = new Date(dateStr + "T00:00:00Z").getTime();
+      isAllDay = true;
+    }
     allEvents.push({
       id: safeId,
       title: e.summary || "無標題",
       start: dateStr,
+      startObj,
+      end: e.end || "",
       location: e.location || "",
-      description: e.description || ""
+      description: e.description || "",
+      isAllDay
     });
+  }
+
+  // Update Firebase calendar cache so Cloud Function can read fresh events
+  console.log(`\n[UPDATE-CACHE] Saving ${allEvents.length} events to Firebase calendar cache...`);
+  try {
+    allEvents.sort((a, b) => a.startObj - b.startObj);
+    fbSet("/calendar-cache", { timestamp: Date.now(), events: allEvents });
+    console.log("    ✅ Firebase calendar cache updated");
+  } catch (e) {
+    console.log(`    ⚠️  Cache update failed: ${e.message.split("\n")[0]}`);
   }
 
   const tomorrowEvents = allEvents.filter(e => e.start === tomorrowStr);
   console.log(`\n[2] Events on ${tomorrowStr}: ${tomorrowEvents.length}`);
   tomorrowEvents.forEach(e => console.log(`    - "${e.title}"`));
+
+  if (cacheOnly) {
+    console.log("\n✅ Cache updated successfully (notification skipped)");
+    process.exit(0);
+  }
 
   if (tomorrowEvents.length === 0) {
     console.log("    No events, nothing to send.");
