@@ -26,6 +26,13 @@ const BOT_CONFIG = {
     secretEnvVar: "LINE_CHANNEL_SECRET_BOT2",
     tokenEnvVar: "LINE_CHANNEL_ACCESS_TOKEN_BOT2",
     joinMessage: `大家好！我是 Ivy's English 行事曆提醒機器人 📅\n\n功能：\n🔔 每天早上自動提醒隔日行程\n📋 查詢今日/明日/本週行程\n\n查詢方式（直接輸入關鍵字）：\n今日行程 / 今天 → 今天的所有活動\n明日行程 / 明天 → 明天的所有活動\n本週行程 / 這週 → 本週的所有活動\n下一個活動 → 最近即將開始的活動\n\n期待為大家提供貼心的行程提醒！😊`
+  },
+  "U47f8478ef76c01abaf8a136b1ab80bbf": {
+    name: "Wisdom AI Teacher",
+    supportsImage: true,
+    secretEnvVar: "LINE_CHANNEL_SECRET_BOT3",
+    tokenEnvVar: "LINE_CHANNEL_ACCESS_TOKEN_BOT3",
+    joinMessage: `大家好！我是 Wisdom AI Teacher 👋\n\n我可以幫你：\n\n📚 文法問答、單字查詢、句子糾錯\n📝 作文批改、寫作範例、句子翻譯\n🖼️ 傳照片作文或看圖 → 我幫你改寫！\n\n傳圖片後，在 30 秒內回覆：\n✏️「初階改寫」→ 簡單易懂版\n🎯「進階改寫」→ 高分進階版\n\n期待為大家解答英文問題！😊`
   }
 };
 
@@ -324,26 +331,47 @@ function getHelpMessage() {
 }
 
 // ========== 行事曆 Functions ==========
+function fetchWithRedirect(url, maxRedirects = 5) {
+  return new Promise((resolve, reject) => {
+    const options = {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; CalendarFetch/1.0)",
+        "Accept": "text/calendar, text/plain, */*"
+      }
+    };
+    function doGet(currentUrl, redirectsLeft) {
+      const lib = currentUrl.startsWith("https") ? require("https") : require("http");
+      lib.get(currentUrl, options, (res) => {
+        console.log(`[ICAL-HTTP] Status: ${res.statusCode} for ${currentUrl.substring(0, 80)}`);
+        if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location && redirectsLeft > 0) {
+          const redirectUrl = res.headers.location;
+          console.log(`[ICAL-REDIRECT] → ${redirectUrl.substring(0, 80)}`);
+          res.resume();
+          doGet(redirectUrl, redirectsLeft - 1);
+          return;
+        }
+        let data = "";
+        res.on("data", (chunk) => (data += chunk));
+        res.on("end", () => resolve(data));
+      }).on("error", reject);
+    }
+    doGet(url, maxRedirects);
+  });
+}
+
 async function fetchCalendarWithRetry(icalUrl, maxRetries = 3) {
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
-      const icalText = await new Promise((resolve, reject) => {
-        const options = {
-          headers: {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-          }
-        };
-        https.get(icalUrl, options, (res) => {
-          let data = "";
-          res.on("data", (chunk) => (data += chunk));
-          res.on("end", () => resolve(data));
-        }).on("error", reject);
-      });
-      console.log(`[ICAL] Successfully fetched calendar on attempt ${attempt + 1}`);
-      console.log(`[ICAL-SIZE] Content length: ${icalText.length} bytes`);
+      const icalText = await fetchWithRedirect(icalUrl);
+      console.log(`[ICAL] Fetched on attempt ${attempt + 1}, length: ${icalText.length}`);
       console.log(`[ICAL-FIRST-200] ${icalText.substring(0, 200)}`);
-      const allLines = icalText.split("\n");
-      const allLinesRN = icalText.split("\r\n");
+      if (!icalText.includes("BEGIN:VCALENDAR")) {
+        throw new Error(`Invalid iCal content (length:${icalText.length}, preview:${icalText.substring(0, 120).replace(/\n/g, " ")})`);
+      }
+      // Unfold iCal lines (RFC 5545: lines longer than 75 chars are folded with CRLF/LF + space/tab)
+      const unfolded = icalText.replace(/\r\n[ \t]/g, "").replace(/\n[ \t]/g, "");
+      const allLines = unfolded.split("\n");
+      const allLinesRN = unfolded.split("\r\n");
       console.log(`[ICAL-LINES] \\n split: ${allLines.length}, \\r\\n split: ${allLinesRN.length}`);
       const useLines = allLinesRN.length > allLines.length ? allLinesRN : allLines;
       const dtStartLines = useLines.filter(l => l.trim().startsWith("DTSTART") || l.trim().startsWith("SUMMARY"));
@@ -352,7 +380,7 @@ async function fetchCalendarWithRetry(icalUrl, maxRetries = 3) {
         console.log(`[ICAL-EVENT-${i}] ${dtStartLines[i]}`);
       }
       const events = [];
-      const lines = icalText.split("\n");
+      const lines = unfolded.split("\n");
       let currentEvent = null;
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
@@ -364,7 +392,8 @@ async function fetchCalendarWithRetry(icalUrl, maxRetries = 3) {
         } else if (currentEvent) {
           if (line.startsWith("DTSTART")) currentEvent.start = line.substring(line.indexOf(":") + 1);
           if (line.startsWith("DTEND")) currentEvent.end = line.substring(line.indexOf(":") + 1);
-          if (line.startsWith("SUMMARY:")) currentEvent.summary = line.substring(8);
+          if (line.startsWith("SUMMARY:")) currentEvent.summary = line.substring(8).trim()
+            .replace(/\\,/g, ",").replace(/\\n/g, "\n").replace(/\\\\/g, "\\");
           if (line.startsWith("UID:")) currentEvent.uid = line.substring(4);
           if (line.startsWith("LOCATION:")) {
             currentEvent.location = line.substring(9)
@@ -406,7 +435,7 @@ async function getOrFetchCalendarEvents() {
       const cached = cachSnap.val();
       if (now - cached.timestamp < CACHE_TTL) {
         console.log(`[CACHE] Cache hit, returning cached events`);
-        return (cached.events || []).map(e => ({ ...e, startObj: new Date(e.startObj) }));
+        return (cached.events || []);
       }
       console.log(`[CACHE] Cache expired, fetching fresh data`);
     }
@@ -445,10 +474,9 @@ async function getOrFetchCalendarEvents() {
           const utcDate = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day), parseInt(hour), parseInt(min), parseInt(sec)));
           dateObj = new Date(utcDate.getTime() + 8 * 60 * 60 * 1000);
         } else {
-          const localDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), parseInt(hour), parseInt(min), parseInt(sec));
-          const browserOffset = localDate.getTimezoneOffset() * 60 * 1000;
-          const taiwanOffset = -8 * 60 * 60 * 1000;
-          dateObj = new Date(localDate.getTime() - browserOffset + taiwanOffset);
+          // TZID=Asia/Taipei: input values are already Taiwan local time.
+          // Store as Date.UTC with same values so getUTC* methods return Taiwan time directly.
+          dateObj = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day), parseInt(hour), parseInt(min), parseInt(sec)));
         }
         const twYear = dateObj.getFullYear();
         const twMonth = String(dateObj.getMonth() + 1).padStart(2, "0");
@@ -482,7 +510,7 @@ async function getOrFetchCalendarEvents() {
         id: event.uid || event.summary,
         title: event.summary || "無標題",
         start: parsed.dateStr,
-        startObj: parsed.dateObj,
+        startObj: parsed.dateObj.getTime(),
         end: event.end,
         location: event.location || "",
         description: event.description || "",
@@ -517,6 +545,7 @@ function detectCalendarIntent(text) {
   if (/關閉提醒|取消提醒|退出提醒|停止提醒/.test(text)) return "unsubscribe";
   if (/^印刷單$/.test(text.trim())) return "print_form";
   if (/^公告$/.test(text.trim())) return "announcement";
+  if (/重新整理|重整|refresh|清除快取|更新行事曆/.test(text)) return "refresh";
   if (/今日|今天/.test(text)) return "today";
   if (/明日|明天/.test(text)) return "tomorrow";
   if (/下週|下周|下禮拜|下星期/.test(text)) return "nextweek";
@@ -563,7 +592,7 @@ async function getSubscribers() {
 }
 
 function buildCalendarHelpMessage() {
-  return `🎯 Ivy's English 行事曆助手\n\n訂閱功能：\n🔔 傳「開啟提醒」→ 訂閱每日行程提醒\n🔕 傳「關閉提醒」→ 取消訂閱\n❓ 傳「提醒狀態」→ 查詢目前訂閱狀態\n\n查詢功能：\n📅 傳「今日行程」或「今天」→ 查詢今日行程\n📅 傳「明日行程」或「明天」→ 查詢明日行程\n📅 傳「本週行程」或「這週」→ 查詢本週行程（週一～週日）\n📅 傳「下週行程」→ 查詢下週行程\n📅 傳「本月行程」→ 查詢本月所有行程\n📅 傳「下一個活動」→ 查詢最近即將開始的活動\n\n其他功能：\n🖨️ 傳「印刷單」→ 選擇印刷單表單\n📢 傳「公告」→ 查看最新公告\n\n每天早上 8:00 自動推送隔日提醒給已訂閱的老師 😊`;
+  return `🎯 唯思英文行事曆助手\n\n訂閱功能：\n🔔 傳「開啟提醒」→ 訂閱每日行程提醒\n🔕 傳「關閉提醒」→ 取消訂閱\n❓ 傳「提醒狀態」→ 查詢目前訂閱狀態\n\n查詢功能：\n📅 傳「今日行程」或「今天」→ 查詢今日行程\n📅 傳「明日行程」或「明天」→ 查詢明日行程\n📅 傳「本週行程」或「這週」→ 查詢本週行程（週一～週日）\n📅 傳「下週行程」→ 查詢下週行程\n📅 傳「本月行程」→ 查詢本月所有行程\n📅 傳「下一個活動」→ 查詢最近即將開始的活動\n\n其他功能：\n🖨️ 傳「印刷單」→ 選擇印刷單表單\n📢 傳「公告」→ 查看最新公告\n🔄 傳「重新整理」→ 強制重新抓取最新行事曆資料\n\n每天早上 8:00 自動推送隔日提醒給已訂閱的老師 😊`;
 }
 
 async function handlePrintFormSelection(replyToken, token) {
@@ -657,29 +686,37 @@ function formatCalendarEvents(events, label) {
   if (!events || events.length === 0) {
     return `📅 ${label}\n\n${label}沒有行程 😊`;
   }
+  const WEEKDAYS = ["日", "一", "二", "三", "四", "五", "六"];
   let message = `📅 ${label}行程\n`;
   for (const evt of events) {
-    const startDate = evt.startObj instanceof Date ? evt.startObj : new Date(evt.startObj || Date.now());
-    const startStr = startDate.toLocaleDateString("zh-TW", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      weekday: "short"
-    });
+    // Build date string from evt.start (YYYY-MM-DD) — always reliable, no locale dependency
+    let dateStr = evt.start || "日期不詳";
+    let weekdayStr = "";
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      const [y, m, d] = dateStr.split("-").map(Number);
+      const wd = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
+      weekdayStr = `(週${WEEKDAYS[wd]})`;
+      dateStr = `${y}年${String(m).padStart(2, "0")}月${String(d).padStart(2, "0")}日`;
+    }
     let startTime, endTime;
     if (evt.isAllDay) {
       startTime = "全天";
       endTime = "全天";
     } else {
-      startTime = startDate.toLocaleTimeString("zh-TW", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false
-      });
-      endTime = startTime;
+      // startObj is stored as ms timestamp; getUTC* returns Taiwan time (we stored with +8h or Date.UTC of TW values)
+      const ts = evt.startObj instanceof Date ? evt.startObj.getTime() : Number(evt.startObj);
+      if (!isNaN(ts) && ts > 0) {
+        const td = new Date(ts);
+        startTime = `${String(td.getUTCHours()).padStart(2, "0")}:${String(td.getUTCMinutes()).padStart(2, "0")}`;
+        endTime = startTime;
+      } else {
+        startTime = "";
+        endTime = "";
+      }
     }
     message += `\n📌 ${evt.title}`;
-    message += `\n🕐 ${startStr} ${startTime} - ${endTime}`;
+    const timeLabel = startTime ? `${startTime} - ${endTime}` : "全天";
+    message += `\n🕐 ${dateStr} ${weekdayStr} ${timeLabel}`;
     if (evt.location) message += `\n📍 ${evt.location}`;
     if (evt.description) message += `\n📝 ${evt.description}`;
     message += `\n──────────`;
@@ -758,6 +795,23 @@ async function handleCalendarMessage(userMessage, replyToken, token, userId) {
       await replyLineMessage(replyToken, { type: "text", text: replyText }, token);
       return;
     }
+    if (intent === "refresh") {
+      try {
+        initializeFirebase();
+        // Expire cache without deleting, so old events remain as fallback if re-fetch fails
+        await dbRef.ref("/calendar-cache/timestamp").set(0);
+        const events = await getOrFetchCalendarEvents();
+        const tsSnap = await dbRef.ref("/calendar-cache/timestamp").get();
+        const isRefreshed = tsSnap.val() && (Date.now() - tsSnap.val() < 30000);
+        const msg = isRefreshed
+          ? `✅ 行事曆已更新！共取得 ${events.length} 筆行程 😊`
+          : `⚠️ 無法連到 Google 日曆，使用舊快取（共 ${events.length} 筆）\n\n請在本機執行 node trigger-reminder.js 來更新快取`;
+        await replyLineMessage(replyToken, { type: "text", text: msg }, token);
+      } catch (err) {
+        await replyLineMessage(replyToken, { type: "text", text: `❌ 重新整理失敗：${err.message}` }, token);
+      }
+      return;
+    }
     if (intent === "print_form") {
       await handlePrintFormSelection(replyToken, token);
       return;
@@ -784,7 +838,7 @@ async function handleCalendarMessage(userMessage, replyToken, token, userId) {
       await replyLineMessage(replyToken, { type: "text", text: statusText }, token);
       return;
     }
-    if (intent === "help") {
+    if (intent === "help" || intent === "unknown") {
       await replyLineMessage(replyToken, { type: "text", text: buildCalendarHelpMessage() }, token);
       return;
     }
@@ -824,12 +878,12 @@ async function handleCalendarMessage(userMessage, replyToken, token, userId) {
       const tDate = taiwanShifted.getUTCDate();
       const tDay = taiwanShifted.getUTCDay();
       const daysBackToMonday = tDay === 0 ? 6 : tDay - 1;
-      const weekStart = new Date(Date.UTC(tYear, tMonth, tDate - daysBackToMonday));
-      const weekEnd = new Date(Date.UTC(tYear, tMonth, tDate - daysBackToMonday + 7));
-      relevantEvents = events.filter(e => {
-        const d = e.startObj instanceof Date ? e.startObj : new Date(e.startObj);
-        return d >= weekStart && d < weekEnd;
-      });
+      const weekStartD = new Date(Date.UTC(tYear, tMonth, tDate - daysBackToMonday));
+      const weekEndD = new Date(Date.UTC(tYear, tMonth, tDate - daysBackToMonday + 7));
+      const toStr = d => `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
+      const weekStartStr = toStr(weekStartD);
+      const weekEndStr = toStr(weekEndD);
+      relevantEvents = events.filter(e => e.start >= weekStartStr && e.start < weekEndStr);
       label = "本週";
     } else if (intent === "nextweek") {
       const now = new Date();
@@ -839,31 +893,24 @@ async function handleCalendarMessage(userMessage, replyToken, token, userId) {
       const tDate = taiwanShifted.getUTCDate();
       const tDay = taiwanShifted.getUTCDay();
       const daysBackToMonday = tDay === 0 ? 6 : tDay - 1;
-      const weekStart = new Date(Date.UTC(tYear, tMonth, tDate - daysBackToMonday + 7));
-      const weekEnd = new Date(Date.UTC(tYear, tMonth, tDate - daysBackToMonday + 14));
-      relevantEvents = events.filter(e => {
-        const d = e.startObj instanceof Date ? e.startObj : new Date(e.startObj);
-        return d >= weekStart && d < weekEnd;
-      });
+      const weekStartD = new Date(Date.UTC(tYear, tMonth, tDate - daysBackToMonday + 7));
+      const weekEndD = new Date(Date.UTC(tYear, tMonth, tDate - daysBackToMonday + 14));
+      const toStr = d => `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
+      const weekStartStr = toStr(weekStartD);
+      const weekEndStr = toStr(weekEndD);
+      relevantEvents = events.filter(e => e.start >= weekStartStr && e.start < weekEndStr);
       label = "下週";
     } else if (intent === "month") {
       const now = new Date();
       const taiwanShifted = new Date(now.getTime() + 8 * 60 * 60 * 1000);
       const tYear = taiwanShifted.getUTCFullYear();
       const tMonth = taiwanShifted.getUTCMonth();
-      const monthStart = new Date(Date.UTC(tYear, tMonth, 1));
-      const monthEnd = new Date(Date.UTC(tYear, tMonth + 1, 1));
-      relevantEvents = events.filter(e => {
-        const d = e.startObj instanceof Date ? e.startObj : new Date(e.startObj);
-        return d >= monthStart && d < monthEnd;
-      });
+      const monthPrefix = `${tYear}-${String(tMonth + 1).padStart(2, "0")}`;
+      relevantEvents = events.filter(e => e.start && e.start.startsWith(monthPrefix));
       label = "本月";
     } else if (intent === "next") {
-      const now = new Date();
-      relevantEvents = events.filter(e => {
-        const d = e.startObj instanceof Date ? e.startObj : new Date(e.startObj);
-        return d > now;
-      });
+      const todayKey = getTaiwanDateString(0);
+      relevantEvents = events.filter(e => e.start >= todayKey);
       if (relevantEvents.length > 0) relevantEvents = [relevantEvents[0]];
       label = "下一個活動";
     } else {
@@ -912,6 +959,205 @@ async function handleTextMessage(userMessage, replyToken, token) {
     console.error("[ERROR] Error handling message:", error);
     try {
       await replyLineMessage(replyToken, { type: "text", text: sanitizeTextForLine(`❌ 發生錯誤，請稍後再試\n\nError: ${error.message}`) }, token);
+    } catch (replyError) {
+      console.error("[ERROR] Failed to send error reply:", replyError.message);
+    }
+  }
+}
+
+// ========== 圖片處理（Wisdom AI Teacher）==========
+const WISDOM_FEATURE_LIST = `📝 文字功能：\n📚 文法問答\n📖 單字查詢\n✏️ 句子糾錯\n📝 作文批改\n🌐 句子翻譯\n\n📷 圖片功能：\n• 直接傳圖 → 作文批改 Feedback\n• 先說「初階改寫」再傳圖 → 保留原意修正文法\n• 先說「進階改寫」再傳圖 → 全面提升至母語水準\n來問我英文問題吧！💪`;
+
+async function fetchLineImageAsBase64(messageId, token) {
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: "api-data.line.me",
+      port: 443,
+      path: `/v2/bot/message/${messageId}/content`,
+      method: "GET",
+      headers: { "Authorization": `Bearer ${token}` }
+    };
+    const req = https.request(options, (res) => {
+      const chunks = [];
+      const contentType = res.headers["content-type"] || "image/jpeg";
+      res.on("data", chunk => chunks.push(chunk));
+      res.on("end", () => {
+        const buffer = Buffer.concat(chunks);
+        resolve({ base64: buffer.toString("base64"), mediaType: contentType.split(";")[0].trim() });
+      });
+    });
+    req.on("error", reject);
+    req.end();
+  });
+}
+
+// 使用者先說「初階改寫」或「進階改寫」→ 存等待圖片指令，提示傳圖
+async function handleRewriteRequest(level, replyToken, token, userId) {
+  try {
+    initializeFirebase();
+    await dbRef.ref(`/pending-rewrite/${userId}`).set({
+      level,
+      expiresAt: Date.now() + 5 * 60 * 1000
+    });
+    const emoji = level === "進階" ? "🎯" : "✏️";
+    await replyLineMessage(replyToken, {
+      type: "text",
+      text: `好的！請傳照片給我 📸\n\n我將為你進行${level}改寫 ${emoji}`
+    }, token);
+  } catch (error) {
+    console.error("[ERROR] handleRewriteRequest:", error.message);
+    await replyLineMessage(replyToken, { type: "text", text: "抱歉，發生錯誤。請稍後再試。" }, token);
+  }
+}
+
+// 收到圖片：若有等待改寫指令則改寫，否則給 Feedback
+async function handleImageMessage(messageId, replyToken, token, userId) {
+  try {
+    initializeFirebase();
+    const snap = await dbRef.ref(`/pending-rewrite/${userId}`).get();
+    const hasPendingRewrite = snap.exists() && Date.now() < snap.val().expiresAt;
+    const level = hasPendingRewrite ? snap.val().level : null;
+
+    if (hasPendingRewrite) {
+      await dbRef.ref(`/pending-rewrite/${userId}`).remove();
+    }
+
+    const { base64, mediaType } = await fetchLineImageAsBase64(messageId, token);
+
+    let systemPrompt;
+    if (level === "進階") {
+      systemPrompt = `你是專業英文寫作老師。學生傳來圖片（可能是作文、看圖作文的題目圖、或手寫英文段落）。
+
+請依下列格式回應：
+
+📸 圖片說明
+━━━━━━━━━━━━━━━━
+[用繁體中文簡短描述圖片內容或辨識到的文字]
+
+✨ 進階改寫版本
+━━━━━━━━━━━━━━━━
+[提供進階英文範文：語彙豐富、句型多樣、語法精確、邏輯連貫，適合 B2-C1 程度]
+
+📝 進階用詞解析
+━━━━━━━━━━━━━━━━
+1️⃣ [詞彙1] - [繁體中文解釋與用法]
+2️⃣ [詞彙2] - [繁體中文解釋與用法]
+3️⃣ [詞彙3] - [繁體中文解釋與用法]
+
+💪 繼續練習，你的英文一定會越來越好！
+
+格式規定：使用分隔線 ━━━━━━━━━━━━━━━━ 和 emoji，絕對不使用 ** 粗體標記。`;
+    } else if (level === "初階") {
+      systemPrompt = `你是專業英文寫作老師。學生傳來圖片（可能是作文、看圖作文的題目圖、或手寫英文段落）。
+
+請依下列格式回應：
+
+📸 圖片說明
+━━━━━━━━━━━━━━━━
+[用繁體中文簡短描述圖片內容或辨識到的文字]
+
+✏️ 初階改寫版本
+━━━━━━━━━━━━━━━━
+[提供初階英文範文：用字簡單、句型清楚、文法正確，適合 A2-B1 程度]
+
+📝 關鍵用詞說明
+━━━━━━━━━━━━━━━━
+1️⃣ [詞彙1] - [繁體中文解釋]
+2️⃣ [詞彙2] - [繁體中文解釋]
+3️⃣ [詞彙3] - [繁體中文解釋]
+
+💪 寫得很好！繼續加油！
+
+格式規定：使用分隔線 ━━━━━━━━━━━━━━━━ 和 emoji，絕對不使用 ** 粗體標記。`;
+    } else {
+      systemPrompt = `你是專業英文寫作老師。學生傳來圖片（可能是作文、看圖作文的題目圖、或手寫英文段落）。
+
+請依下列格式給予作文批改 Feedback：
+
+📸 圖片說明
+━━━━━━━━━━━━━━━━
+[用繁體中文簡短描述圖片內容或辨識到的文字]
+
+✅ 優點
+━━━━━━━━━━━━━━━━
+[列出 1-2 個優點]
+
+✏️ 需要改進
+━━━━━━━━━━━━━━━━
+1️⃣ [錯誤或建議1] → [正確或改善方式]
+2️⃣ [錯誤或建議2] → [正確或改善方式]
+3️⃣ [錯誤或建議3]（若有）→ [正確或改善方式]
+
+💡 小提示
+━━━━━━━━━━━━━━━━
+[一句鼓勵 + 建議下一步（可選擇初階改寫或進階改寫）]
+
+格式規定：使用分隔線 ━━━━━━━━━━━━━━━━ 和 emoji，絕對不使用 ** 粗體標記。`;
+    }
+
+    initializeAnthropic();
+    const userText = level ? `請提供${level}改寫` : "請給予作文批改 Feedback";
+    const message = await anthropic.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 2048,
+      system: systemPrompt,
+      messages: [{
+        role: "user",
+        content: [
+          { type: "image", source: { type: "base64", media_type: mediaType, data: base64 } },
+          { type: "text", text: userText }
+        ]
+      }]
+    });
+    await replyLineMessage(replyToken, { type: "text", text: message.content[0].text }, token);
+  } catch (error) {
+    console.error("[ERROR] handleImageMessage:", error.message);
+    await replyLineMessage(replyToken, { type: "text", text: "抱歉，處理圖片時發生錯誤。請稍後再試。" }, token);
+  }
+}
+
+// Wisdom AI Teacher 專屬文字訊息處理（智能回覆使用 Wisdom 風格訊息）
+async function handleWisdomTextMessage(userMessage, replyToken, token) {
+  try {
+    const intentData = await detectIntentWithClaude(userMessage);
+    const intent = intentData.intent;
+    const subIntent = intentData.subIntent;
+    const content = intentData.content;
+    if (intent === "unknown") {
+      const featurePattern = /功能|能做什麼|你會什麼|怎麼用|說明|help|usage|指令/i;
+      const greetingPattern = /^(hi|hello|你好|嗨|早安|晚安|早|晚|哈|hi there)/i;
+      if (greetingPattern.test(userMessage.trim())) {
+        await replyLineMessage(replyToken, { type: "text", text: `嗨！我是 Wisdom AI Teacher 😊\n\n${WISDOM_FEATURE_LIST}` }, token);
+      } else if (featurePattern.test(userMessage)) {
+        await replyLineMessage(replyToken, { type: "text", text: WISDOM_FEATURE_LIST }, token);
+      } else {
+        await replyLineMessage(replyToken, {
+          type: "text",
+          text: `抱歉，我是專門的英文學習助手。😅\n這個問題不在我的專業範圍內。\n不過，如果你有英文學習的問題，我很樂意幫忙！✨\n\n${WISDOM_FEATURE_LIST}`
+        }, token);
+      }
+      return;
+    }
+    if (!content || content.trim().length === 0) {
+      await replyLineMessage(replyToken, { type: "text", text: WISDOM_FEATURE_LIST }, token);
+      return;
+    }
+    const cacheKeyInput = subIntent ? `${intent}:${subIntent}:${content}` : `${intent}:${content}`;
+    const cacheKey = crypto.createHash("md5").update(cacheKeyInput).digest("hex");
+    let response = await getCachedResponse(cacheKey);
+    if (response) {
+      await replyLineMessage(replyToken, { type: "text", text: response }, token);
+      return;
+    }
+    const systemPrompt = buildPrompt(intent, subIntent);
+    const maxTokens = intent === "essay_review" ? 2048 : 1024;
+    response = await callClaude(systemPrompt, content, maxTokens);
+    await setCachedResponse(cacheKey, response);
+    await replyLineMessage(replyToken, { type: "text", text: sanitizeTextForLine(response) }, token);
+  } catch (error) {
+    console.error("[ERROR] handleWisdomTextMessage:", error);
+    try {
+      await replyLineMessage(replyToken, { type: "text", text: `❌ 發生錯誤，請稍後再試\n\nError: ${error.message}` }, token);
     } catch (replyError) {
       console.error("[ERROR] Failed to send error reply:", replyError.message);
     }
@@ -988,7 +1234,7 @@ app.post("/", async (req, res) => {
         const userMessage = event.message.text;
         const isGroupChat = sourceType === "group" || sourceType === "room";
         if (isGroupChat) {
-          const isBotMentioned = userMessage.includes("@") || (event.message.mention && event.message.mention.mentionees && event.message.mention.mentionees.some(m => m.type === "user"));
+          const isBotMentioned = userMessage.includes("@Bot");
           if (!isBotMentioned) {
             console.log("[INFO] Group message without mention, skipping");
             continue;
@@ -997,9 +1243,16 @@ app.post("/", async (req, res) => {
         }
         if (botConfig.role === "calendar") {
           await handleCalendarMessage(userMessage, event.replyToken, botCredentials.token, event.source.userId);
+        } else if (botConfig.supportsImage && /^(初階改寫|進階改寫)$/.test(userMessage.trim())) {
+          const level = userMessage.trim().startsWith("進階") ? "進階" : "初階";
+          await handleRewriteRequest(level, event.replyToken, botCredentials.token, event.source.userId);
+        } else if (botConfig.supportsImage) {
+          await handleWisdomTextMessage(userMessage, event.replyToken, botCredentials.token);
         } else {
           await handleTextMessage(userMessage, event.replyToken, botCredentials.token);
         }
+      } else if (event.type === "message" && event.message.type === "image" && botConfig.supportsImage) {
+        await handleImageMessage(event.message.id, event.replyToken, botCredentials.token, event.source.userId);
       } else if (event.type === "join") {
         try {
           const joinMessage = botConfig.joinMessage;
@@ -1043,7 +1296,7 @@ exports.calendarReminder = onSchedule({
     const tomorrowStart = new Date(Date.UTC(tYear, tMonth, tDate + 1));
     const dayAfterStart = new Date(Date.UTC(tYear, tMonth, tDate + 2));
     const tomorrowEvents = events.filter(e => {
-      const d = e.startObj instanceof Date ? e.startObj : new Date(e.startObj);
+      const d = new Date(Number(e.startObj));
       return d >= tomorrowStart && d < dayAfterStart;
     });
     console.log(`[INFO] Found ${tomorrowEvents.length} events for tomorrow`);
@@ -1097,7 +1350,7 @@ exports.calendarReminder = onSchedule({
 
 // ========== Evening Follow-Up (23:00 台北時間) ==========
 exports.eveningFollowUp = onSchedule({
-  schedule: "0 15 * * *",
+  schedule: "0 23 * * *",
   timeZone: "Asia/Taipei"
 }, async (event) => {
   try {
