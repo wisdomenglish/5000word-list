@@ -392,7 +392,7 @@ async function submitAuth(){
   }
 }
 function toggleAuthPw(){const i=document.getElementById('authPw');i.type=i.type==='password'?'text':'password';}
-WORDS.forEach(o=>{o.word=o.w;o.zh=o.z;});
+WORDS.forEach(o=>{o.word=o.w;o.zh=o.z;o.pos=o.p||'';});
 const PER_PAGE=60;
 let filtered=[...WORDS],currentPage=1,selectedLetters=new Set(),currentSort='az',searchQ='';
 const CUSTOM_WORDS_KEY = 'vocab_custom_words';
