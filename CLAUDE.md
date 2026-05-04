@@ -23,13 +23,14 @@
 ### 關鍵檔案
 
 - [index.html](index.html) — 單一檔案 PWA，包含所有 CSS/JS
+- [vocabulary-data.js](vocabulary-data.js) — 外部單字庫（4,506 字，格式：`{w, z, p}`）
 - [manifest.json](manifest.json) — PWA 設定（name: 5000英文單字學習）
-- [sw.js](sw.js) — Service Worker，支援離線使用（目前版本：`vocab-app-v8`）
+- [sw.js](sw.js) — Service Worker，支援離線使用（目前版本：`vocab-app-v16`）
 - [icon-192.png](icon-192.png) / [icon-512.png](icon-512.png) — Wisdom logo 圖示
 
 ### 功能
 
-- 5000 英文單字瀏覽、搜尋、字母篩選
+- 4,506 英文單字瀏覽、搜尋、字母篩選（移除重複變化形後）
 - Claude AI 生成例句（單字詳細 Modal，📝 例句 Tab）
 - Claude AI 字根拆解（單字詳細 Modal，🌱 字根 Tab）
 - AI 測驗 Tab + 複習清單
@@ -51,11 +52,20 @@
 - 所有 Cloud Run 服務已設定 `allUsers` `roles/run.invoker`（允許未登入呼叫）
 - **密碼保護**：首次開啟需輸入授權密碼，通過後以 SHA-256 hash 存入 localStorage（key：`vocab_auth_v1`）；更換密碼只需在 `index.html` 更新 `AUTH_HASH` 常數即可強制所有用戶重新驗證（詳見 memory）
 
+### vocabulary-data.js 架構
+
+- 格式：`const WORDS = [{w, z, p}, ...]`（w=英文, z=中文, p=詞性）
+- `index.html` 在 `<head>` 載入後，緊接一行 adapter：`WORDS.forEach(o=>{o.word=o.w;o.zh=o.z;o.pos=o.p||'';});`
+  → 其餘程式碼繼續用 `w.word / w.zh / w.pos`，不需改動
+- **重複字清除規則**：刪除 -s/-ed/-ing 衍生形，條件為 zh 相同且 pos 相同（跨詞性保留）
+- **getZhDef() 邏輯**：若第一段（`；` 前）≤ 2 字，自動合併第二段，避免擷取到語境詞（如「飛機」）而非完整解釋
+- 每次修改 vocabulary-data.js 後必須升版 `sw.js` 的 `CACHE` 常數，否則舊使用者拿到快取版
+
 ### 自訂單字庫架構
 
 - 字典 header 右側有「＋ 新增」按鈕，點擊後彈出底部 sheet 填寫
 - 自訂單字儲存於 `localStorage['vocab_custom_words']`，格式：`[{word, pos, zh, custom:true}, ...]`
-- `getAllWords()` 函式統一合併 `WORDS`（5000字）＋ `customWords`，所有功能（搜尋、測驗、modal）皆透過此函式取得單字清單
+- `getAllWords()` 函式統一合併 `WORDS`（vocabulary-data.js）＋ `customWords`，所有功能（搜尋、測驗、modal）皆透過此函式取得單字清單
 - 自訂單字在字典卡片與 Modal 顯示粉色「自訂」徽章
 - 支援 AI 例句、字根、發音、加星號、測驗，與一般單字完全相同
 - 新增時會檢查是否與現有單字重複（大小寫不敏感）
@@ -391,7 +401,7 @@ python3 -m notebooklm login
 - **Cloud Function 語言**：prompt 中明確指定「ALL Chinese text must be in Traditional Chinese (繁體中文), NOT Simplified Chinese (簡體中文)」
 - **Cloud Function 架構**：每個 export 函式自帶 `require('@anthropic-ai/sdk')` 和 client 實例，不依賴模組頂層共用物件（避免 Cloud Run 作用域問題）
 - **generateVocabQuiz max_tokens**：必須設為 `4096`（非 1024），10 道題目的 JSON 約需 2500–3000 tokens，1024 會截斷 → `Unexpected end of JSON input` → 500 錯誤
-- **Service Worker 快取版本**：更動 `index.html` 需同步升版 `sw.js` 的 `CACHE` 常數（目前 `vocab-app-v8`），否則舊使用者看不到更新
+- **Service Worker 快取版本**：更動 `index.html` 或 `vocabulary-data.js` 需同步升版 `sw.js` 的 `CACHE` 常數（目前 `vocab-app-v16`），否則舊使用者看不到更新
 - **檔案編碼**：`functions/index.js` 和 `package.json` 必須存為 UTF-8（無 BOM），Windows PowerShell redirect 可能產生 UTF-16 BOM 導致部署失敗
 - **行事曆 iCal 日期格式化**：`formatCalendarEvents` 使用 `evt.start`（YYYY-MM-DD 字串）手動格式化日期，不使用 `toLocaleDateString`（Cloud Run 環境下對 Invalid Date 輸出字串 "Invalid Date"）；`startObj` 存為毫秒 timestamp（`getTime()`），用 `getUTC*` 方法讀取時間
 - **iCal 折疊（folding）**：iCal 超過 75 字元的行會折疊（`CRLF + 空格`），解析前必須先 unfolding（`icalText.replace(/\r\n[ \t]/g, "")...`），否則長標題（如 `[Sammy, Frank, Ivy] 考猜試教@ 府中`）會被截斷、名字解析失敗
