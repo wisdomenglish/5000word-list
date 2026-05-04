@@ -207,6 +207,8 @@ header{top:48px!important;}
 .form-save-btn{background:var(--accent);border:none;border-radius:8px;color:#fff;padding:8px 18px;font-size:0.82rem;font-weight:600;cursor:pointer;}
 .mw-delete-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.72rem;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
 .mw-delete-btn:hover{color:var(--accent2);}
+.mw-edit-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.72rem;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
+.mw-edit-btn:hover{color:var(--accent);}
 /* ── Add Word Modal (reuses wordModal layout) ── */
 #addWordModal{position:fixed;inset:0;z-index:500;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);}
 @media(min-width:600px){#addWordModal{align-items:center;}}
@@ -414,6 +416,7 @@ const CUSTOM_WORDS_KEY = 'vocab_custom_words';
 let customWords = JSON.parse(localStorage.getItem(CUSTOM_WORDS_KEY) || '[]');
 function saveCustomWords(){ localStorage.setItem(CUSTOM_WORDS_KEY, JSON.stringify(customWords)); }
 function getAllWords(){ return [...WORDS, ...customWords]; }
+let editingWordKey = null;
 let currentBtn=null;
 const player=document.getElementById('player');
 
@@ -781,7 +784,7 @@ function _addWordFormHtml(){
     </div>
     <div class="form-actions">
       <button class="form-cancel-btn" onclick="toggleAddWordForm()">取消</button>
-      <button class="form-save-btn" onclick="saveNewWord()">儲存</button>
+      <button id="saveWordBtn" class="form-save-btn" onclick="saveNewWord()">儲存</button>
     </div>
     <div id="addWordErr" style="color:var(--accent2);font-size:0.78rem;margin-top:8px;min-height:16px;"></div>
   </div>`;
@@ -814,6 +817,7 @@ function renderMyWords(){
           </div>
           <div class="mw-actions-col">
             <button class="speak-btn" style="width:30px;height:30px" onclick="speak('${w.word}',this)">${_speakBtnSvg()}</button>
+            <button class="mw-edit-btn" onclick="editCustomWord('${w.word}')">✏️ 編輯</button>
             <button class="mw-delete-btn" onclick="deleteCustomWord('${w.word}')">✕ 刪除</button>
           </div>
         </div>`).join('')}
@@ -879,11 +883,40 @@ function toggleAddWordForm(){
   const form = document.getElementById('addWordForm');
   if(!form) return;
   const visible = form.style.display !== 'none';
+  if(visible){
+    editingWordKey = null;
+    ['newWordEn','newWordPos','newWordZh'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+    const btn = document.getElementById('saveWordBtn');
+    if(btn) btn.textContent = '儲存';
+    const errEl = document.getElementById('addWordErr');
+    if(errEl) errEl.textContent = '';
+  }
   form.style.display = visible ? 'none' : '';
   if(!visible){
     const inp = document.getElementById('newWordEn');
     if(inp) inp.focus();
   }
+}
+
+function editCustomWord(word){
+  const entry = customWords.find(w => w.word === word);
+  if(!entry) return;
+  editingWordKey = word;
+  const form = document.getElementById('addWordForm');
+  if(!form) return;
+  const enEl = document.getElementById('newWordEn');
+  const posEl = document.getElementById('newWordPos');
+  const zhEl = document.getElementById('newWordZh');
+  if(enEl) enEl.value = entry.word;
+  if(posEl) posEl.value = entry.pos || '';
+  if(zhEl) zhEl.value = entry.zh || '';
+  const btn = document.getElementById('saveWordBtn');
+  if(btn) btn.textContent = '儲存修改';
+  const errEl = document.getElementById('addWordErr');
+  if(errEl) errEl.textContent = '';
+  form.style.display = '';
+  if(enEl) enEl.focus();
+  form.scrollIntoView({behavior:'smooth', block:'nearest'});
 }
 
 function saveNewWord(){
@@ -895,12 +928,26 @@ function saveNewWord(){
     if(errEl) errEl.textContent = '請填寫英文單字和中文解釋';
     return;
   }
-  if(getAllWords().some(w => w.word.toLowerCase() === wordVal.toLowerCase())){
-    if(errEl) errEl.textContent = `「${wordVal}」已存在於單字庫中`;
-    return;
+  if(editingWordKey){
+    // Edit mode: check duplicate excluding current entry
+    const isDup = getAllWords().some(w => w.word.toLowerCase() === wordVal.toLowerCase() && w.word !== editingWordKey);
+    if(isDup){ if(errEl) errEl.textContent = `「${wordVal}」已存在於單字庫中`; return; }
+    const idx = customWords.findIndex(w => w.word === editingWordKey);
+    if(idx !== -1){
+      const oldWord = customWords[idx].word;
+      customWords[idx] = { word: wordVal, pos: posVal || '', zh: zhVal, custom: true };
+      if(oldWord !== wordVal){ markedWords.delete(oldWord); }
+    }
+    editingWordKey = null;
+    const btn = document.getElementById('saveWordBtn');
+    if(btn) btn.textContent = '儲存';
+  } else {
+    if(getAllWords().some(w => w.word.toLowerCase() === wordVal.toLowerCase())){
+      if(errEl) errEl.textContent = `「${wordVal}」已存在於單字庫中`;
+      return;
+    }
+    customWords.push({ word: wordVal, pos: posVal || '', zh: zhVal, custom: true });
   }
-  const newWord = { word: wordVal, pos: posVal || '', zh: zhVal, custom: true };
-  customWords.push(newWord);
   saveCustomWords();
   syncMarkCount();
   update();
