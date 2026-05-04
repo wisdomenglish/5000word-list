@@ -528,11 +528,11 @@ document.getElementById('searchInput').addEventListener('input',e=>{
 
 function getZhDef(zh) {
   if (!zh) return '';
-  const si = zh.indexOf('；');
-  const di = zh.indexOf('。');
-  if (si >= 0 && (di < 0 || si < di)) return zh.substring(0, si);
-  if (di >= 0) { const s = zh.substring(0, di); return s.length <= 8 ? s : s.substring(0, 6); }
-  return zh.length <= 10 ? zh : zh.substring(0, 8);
+  const parts = zh.split('；');
+  let def = parts[0];
+  // first segment ≤2 chars means it's likely a context label (e.g."飛機"), not a full definition
+  if (def.length <= 2 && parts.length > 1) def = def + parts[1];
+  return def.length <= 10 ? def : def.substring(0, 10);
 }
 
 function update(){
