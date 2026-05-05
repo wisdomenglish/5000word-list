@@ -652,6 +652,7 @@ const PARAGRAPH_FN_URL = 'https://us-central1-news-english-ef2e4.cloudfunctions.
 let markedWords = new Set(JSON.parse(localStorage.getItem('vocab_marked') || '[]'));
 let paraMode = 'story';
 let qSource = 'unfamiliar';
+let qMode = 'sentence';
 let qQuestions = [], qIndex = 0, qScore = 0, qSelected = null;
 
 function saveMark(){ localStorage.setItem('vocab_marked', JSON.stringify([...markedWords])); }
@@ -692,7 +693,12 @@ function renderQuizSetup(){
   document.getElementById('quizSection').innerHTML = `
     <div class="quiz-setup">
       <div class="quiz-setup-title">✏️ 單字測驗</div>
-      <p>Claude AI 老師根據您選擇的範圍生成 10 題四選一填空題。<br>答錯自動加入複習清單，答對從清單移除。</p>
+      <p>選擇適合的題型測驗你的單字程度。答錯自動加入複習清單，答對從清單移除。</p>
+      <div class="quiz-opt-label">題目類型</div>
+      <div class="quiz-opt-group">
+        <button class="quiz-type-opt quiz-opt ${qMode==='meaning'?'selected':''}" onclick="setQMode('meaning',this)">🔤 單字選義（基礎）</button>
+        <button class="quiz-type-opt quiz-opt ${qMode==='sentence'?'selected':''}" onclick="setQMode('sentence',this)">📝 句子填空（進階）</button>
+      </div>
       <div class="quiz-opt-label">出題範圍</div>
       <div class="quiz-opt-group">
         ${unfCount>0?`<button class="quiz-opt ${qSource==='unfamiliar'?'selected':''}" onclick="setQSource('unfamiliar',this)">⭐ 複習清單 (${unfCount})</button>`:''}
@@ -710,6 +716,12 @@ function setQSource(src, btn){
   btn.classList.add('selected');
 }
 
+function setQMode(mode, btn){
+  qMode=mode;
+  document.querySelectorAll('.quiz-type-opt').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
 async function startQuiz(){
   let pool=[];
   if(qSource==='unfamiliar') pool=getAllWords().filter(w=>markedWords.has(w.word));
@@ -720,6 +732,13 @@ async function startQuiz(){
   const unfPart=pool.filter(w=>markedWords.has(w.word)).sort(()=>Math.random()-.5);
   const othPart=pool.filter(w=>!markedWords.has(w.word)).sort(()=>Math.random()-.5);
   const selected=[...unfPart,...othPart].slice(0,10);
+
+  if(qMode==='meaning'){
+    qQuestions=generateMeaningQuestions(selected);
+    qIndex=0; qScore=0; qSelected=null;
+    renderQuestion();
+    return;
+  }
 
   document.getElementById('quizSection').innerHTML=`
     <div class="quiz-loading">
@@ -749,7 +768,27 @@ async function startQuiz(){
   }
 }
 
+function generateMeaningQuestions(selected){
+  const allW=getAllWords();
+  return selected.map(w=>{
+    const correctSeg=(w.zh||'').split('；')[0];
+    const distractors=allW
+      .filter(a=>a.word!==w.word && (a.zh||'').split('；')[0]!==correctSeg && a.zh)
+      .sort(()=>Math.random()-.5)
+      .slice(0,3)
+      .map(a=>a.zh);
+    const opts=[w.zh,...distractors].sort(()=>Math.random()-.5);
+    return {type:'meaning',word:w.word,pos:w.pos||'',zh:w.zh,options:opts,answer:opts.indexOf(w.zh)};
+  });
+}
+
 function renderQuestion(){
+  const q=qQuestions[qIndex];
+  if(q.type==='meaning') renderMeaningQuestion();
+  else renderSentenceQuestion();
+}
+
+function renderSentenceQuestion(){
   const q=qQuestions[qIndex];
   const pct=((qIndex+1)/qQuestions.length)*100;
   const answered=qSelected!==null;
@@ -775,6 +814,39 @@ function renderQuestion(){
           <div class="quiz-explain-lbl">📖 中譯與解析</div>
           <div class="quiz-explain-zh">「${q.translation}」</div>
           <div class="quiz-explain-note">${q.explanation}</div>
+        </div>
+        <button class="quiz-next" onclick="nextQ()">${qIndex<qQuestions.length-1?'下一題 →':'完成測驗並結算'}</button>`:''}
+      </div>
+    </div>`;
+}
+
+function renderMeaningQuestion(){
+  const q=qQuestions[qIndex];
+  const pct=((qIndex+1)/qQuestions.length)*100;
+  const answered=qSelected!==null;
+  document.getElementById('quizSection').innerHTML=`
+    <div class="quiz-panel">
+      <div class="quiz-hdr">
+        <span style="color:var(--muted);font-size:0.83rem">題目 ${qIndex+1} / ${qQuestions.length}</span>
+        <span style="color:var(--accent);font-size:0.83rem;font-weight:700">得分: ${qScore}</span>
+      </div>
+      <div class="quiz-pbar-wrap"><div class="quiz-pbar" style="width:${pct}%"></div></div>
+      <div class="quiz-card-wrap" style="text-align:center;padding:30px 24px">
+        <div style="font-size:2rem;font-weight:700;letter-spacing:.02em;margin-bottom:10px">${q.word}</div>
+        ${q.pos?`<div style="color:var(--muted);font-size:0.85rem;margin-bottom:8px">${q.pos}</div>`:''}
+        <div style="color:var(--muted);font-size:0.82rem;margin-bottom:18px">選出正確的中文意思</div>
+        <div class="quiz-opts">
+          ${q.options.map((opt,idx)=>{
+            let cls='quiz-opt-btn';
+            const optDisplay=opt.split('；').slice(0,2).join('；');
+            if(answered){ if(idx===q.answer)cls+=' correct'; else if(idx===qSelected)cls+=' wrong'; else cls+=' faded'; }
+            return `<button class="${cls}" onclick="answerQ(${idx})" ${answered?'disabled':''}><span class="quiz-opt-letter">${String.fromCharCode(65+idx)}</span>${optDisplay}</button>`;
+          }).join('')}
+        </div>
+        ${answered?`
+        <div class="quiz-explain">
+          <div class="quiz-explain-lbl">📖 完整解釋</div>
+          <div class="quiz-explain-zh">「${q.zh}」</div>
         </div>
         <button class="quiz-next" onclick="nextQ()">${qIndex<qQuestions.length-1?'下一題 →':'完成測驗並結算'}</button>`:''}
       </div>
