@@ -114,9 +114,10 @@ async function main() {
   const now = new Date();
   const taiwanNow = new Date(now.getTime() + 8 * 3600000);
   const tY = taiwanNow.getUTCFullYear(), tM = taiwanNow.getUTCMonth(), tD = taiwanNow.getUTCDate();
+  const todayStr = `${tY}-${String(tM + 1).padStart(2, "0")}-${String(tD).padStart(2, "0")}`;
   const tomorrowStr = `${tY}-${String(tM + 1).padStart(2, "0")}-${String(tD + 1).padStart(2, "0")}`;
-  console.log(`Taiwan today: ${tY}-${String(tM + 1).padStart(2, "0")}-${String(tD).padStart(2, "0")}`);
-  console.log(`Looking for events on: ${tomorrowStr}\n`);
+  console.log(`Taiwan today: ${todayStr}`);
+  console.log(`Looking for events on: ${todayStr} (today) and ${tomorrowStr} (tomorrow)\n`);
 
   // 1. Fetch iCal
   console.log("[1] Fetching iCal...");
@@ -177,8 +178,11 @@ async function main() {
     console.log(`    ⚠️  Cache update failed: ${e.message.split("\n")[0]}`);
   }
 
+  const todayEvents = allEvents.filter(e => e.start === todayStr);
   const tomorrowEvents = allEvents.filter(e => e.start === tomorrowStr);
-  console.log(`\n[2] Events on ${tomorrowStr}: ${tomorrowEvents.length}`);
+  console.log(`\n[2] Events on ${todayStr} (today): ${todayEvents.length}`);
+  todayEvents.forEach(e => console.log(`    - "${e.title}"`));
+  console.log(`\n[2b] Events on ${tomorrowStr} (tomorrow): ${tomorrowEvents.length}`);
   tomorrowEvents.forEach(e => console.log(`    - "${e.title}"`));
 
   if (cacheOnly) {
@@ -186,7 +190,7 @@ async function main() {
     process.exit(0);
   }
 
-  if (tomorrowEvents.length === 0) {
+  if (todayEvents.length === 0 && tomorrowEvents.length === 0) {
     console.log("    No events, nothing to send.");
     process.exit(0);
   }
@@ -216,18 +220,25 @@ async function main() {
   console.log("\n[6] Sending notifications...");
   const newSentRecords = {};
 
-  for (const evt of tomorrowEvents) {
+  // Combine today and tomorrow events
+  const allEventsToSend = [
+    ...todayEvents.map(e => ({ ...e, isToday: true })),
+    ...tomorrowEvents.map(e => ({ ...e, isToday: false }))
+  ];
+
+  for (const evt of allEventsToSend) {
     const { names, cleanTitle } = parseEventTarget(evt.title);
+    const dayLabel = evt.isToday ? "today" : "tomorrow";
 
     let targetIds;
     if (names === null) {
       targetIds = [...subscriberSet];
-      console.log(`\n  Event: "${evt.title}" → ALL (${targetIds.length} 人)`);
+      console.log(`\n  Event: "${evt.title}" (${dayLabel}) → ALL (${targetIds.length} 人)`);
     } else {
       targetIds = names.map(n => nameToUserId[n]).filter(id => id && subscriberSet.has(id));
       const unknowns = names.filter(n => !nameToUserId[n]);
       if (unknowns.length > 0) console.log(`    ⚠️  Unknown names: ${unknowns.join(", ")}`);
-      console.log(`\n  Event: "${evt.title}" → [${names.join(",")}] (${targetIds.length} 人)`);
+      console.log(`\n  Event: "${evt.title}" (${dayLabel}) → [${names.join(",")}] (${targetIds.length} 人)`);
     }
 
     for (const userId of targetIds) {
@@ -236,10 +247,14 @@ async function main() {
         console.log(`    SKIP ${userId} (already sent)`);
         continue;
       }
-      let msg = `嗨！提醒老師，記得明天是【${cleanTitle}】喔！`;
+      let msg = evt.isToday
+        ? `嗨！提醒老師，今天是【${cleanTitle}】喔！`
+        : `嗨！提醒老師，記得明天是【${cleanTitle}】喔！`;
       if (evt.location) msg += `\n📍 地點：${evt.location}`;
       if (evt.description) msg += `\n📝 備註：${evt.description}`;
-      msg += `\n\n請做好準備，加油！💪`;
+      msg += evt.isToday
+        ? `\n\n今天加油！💪`
+        : `\n\n請做好準備，加油！💪`;
 
       await sendPush(userId, msg);
       newSentRecords[key] = { sentAt: Date.now(), eventTitle: evt.title, eventStart: evt.start };
