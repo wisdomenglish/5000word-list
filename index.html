@@ -172,6 +172,28 @@ header{top:48px!important;}
 .card{cursor:pointer;transition:border-color .15s,transform .1s;}
 .card:hover{border-color:rgba(124,106,247,.4);}
 .card:active{transform:scale(.98);}
+/* ── Paragraph Understanding ── */
+#paragraphSection{min-height:90vh;padding:20px 16px 40px;}
+.para-wrap{max-width:680px;margin:0 auto;}
+.para-title{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--text);margin-bottom:4px;}
+.para-subtitle{color:var(--muted);font-size:0.82rem;margin-bottom:18px;}
+.para-textarea{width:100%;min-height:90px;border:1px solid var(--border);border-radius:12px;padding:12px;font-family:inherit;font-size:0.95rem;color:var(--text);background:var(--card);resize:vertical;}
+.para-textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(124,106,247,.1);}
+.para-mode-row{display:flex;gap:10px;margin:18px 0;flex-wrap:wrap;}
+.para-mode-btn{border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:20px;padding:7px 18px;font-size:0.82rem;cursor:pointer;transition:border-color .15s,background .15s;}
+.para-mode-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;}
+.para-topic-input{width:100%;border:1px solid var(--border);border-radius:12px;padding:10px;font-family:inherit;font-size:0.95rem;color:var(--text);background:var(--card);margin-bottom:12px;}
+.para-topic-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(124,106,247,.1);}
+.para-generate-btn{width:100%;background:linear-gradient(135deg,var(--accent),#9b8bf0);border:none;color:#fff;padding:14px;border-radius:12px;font-size:0.95rem;font-weight:600;cursor:pointer;transition:opacity .2s;}
+.para-generate-btn:hover{opacity:0.88;}
+.para-loading{text-align:center;padding:60px 20px;}
+.para-loading-spin{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.9s linear infinite;margin:0 auto 16px;}
+.para-result-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-top:18px;}
+.para-en{line-height:1.85;font-size:0.98rem;color:var(--text);margin-bottom:16px;}
+.para-en strong{font-weight:600;color:var(--accent);}
+.para-zh{color:var(--muted);font-size:0.87rem;line-height:1.7;border-top:1px solid var(--border);padding-top:14px;}
+.para-refresh-btn{width:100%;background:none;border:1px solid var(--border);color:var(--text);border-radius:12px;padding:10px;font-size:0.85rem;cursor:pointer;margin-top:16px;transition:border-color .15s;}
+.para-refresh-btn:hover{border-color:var(--accent);color:var(--accent);}
 /* ── News / Announcements ── */
 #newsSection{min-height:90vh;padding:20px 16px 40px;}
 .news-wrap{max-width:680px;margin:0 auto;}
@@ -245,6 +267,7 @@ header{top:48px!important;}
   <button class="tab-btn active" id="tabDict" onclick="switchTab('dict')">📚 字典</button>
   <button class="tab-btn" id="tabQuiz" onclick="switchTab('quiz')">✏️ 測驗</button>
   <button class="tab-btn" id="tabMywords" onclick="switchTab('mywords')">⭐ 我的單字 (<span id="myWordsCount"></span>)</button>
+  <button class="tab-btn" id="tabParagraph" onclick="switchTab('paragraph')">📖 段落理解</button>
   <button class="tab-btn" id="tabNews" onclick="switchTab('news')">📢 公告</button>
 </div>
 <div id="dictSection">
@@ -276,6 +299,7 @@ header{top:48px!important;}
 
 <div id="quizSection" style="display:none"></div>
 <div id="myWordsSection" style="display:none"></div>
+<div id="paragraphSection" style="display:none"></div>
 <div id="newsSection" style="display:none">
   <div class="news-wrap">
     <div class="news-page-title">📢 更新公告</div>
@@ -623,7 +647,9 @@ function goPage(n){currentPage=n;window.scrollTo({top:0,behavior:'smooth'});upda
 
 // ─── 複習清單 & AI 測驗 ───
 const QUIZ_FN_URL = 'https://generatevocabquiz-gtlccx6nka-uc.a.run.app';
+const PARAGRAPH_FN_URL = 'https://us-central1-news-english-ef2e4.cloudfunctions.net/generateParagraph';
 let markedWords = new Set(JSON.parse(localStorage.getItem('vocab_marked') || '[]'));
+let paraMode = 'story';
 let qSource = 'unfamiliar';
 let qQuestions = [], qIndex = 0, qScore = 0, qSelected = null;
 
@@ -645,15 +671,17 @@ function removeMark(word){ if(markedWords.has(word)){ markedWords.delete(word); 
 
 function switchTab(tab){
   document.getElementById('dictSection').style.display   = tab==='dict'    ? '' : 'none';
-  document.getElementById('quizSection').style.display   = tab==='quiz'    ? '' : 'none';
-  document.getElementById('myWordsSection').style.display= tab==='mywords' ? '' : 'none';
-  document.getElementById('newsSection').style.display   = tab==='news'    ? '' : 'none';
-  ['dict','quiz','mywords','news'].forEach(t=>{
+  document.getElementById('quizSection').style.display     = tab==='quiz'      ? '' : 'none';
+  document.getElementById('myWordsSection').style.display  = tab==='mywords'   ? '' : 'none';
+  document.getElementById('paragraphSection').style.display= tab==='paragraph' ? '' : 'none';
+  document.getElementById('newsSection').style.display     = tab==='news'      ? '' : 'none';
+  ['dict','quiz','mywords','paragraph','news'].forEach(t=>{
     const btn = document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1));
     if(btn) btn.classList.toggle('active', t===tab);
   });
-  if(tab==='quiz')    renderQuizSetup();
-  if(tab==='mywords') renderMyWords();
+  if(tab==='quiz')      renderQuizSetup();
+  if(tab==='mywords')   renderMyWords();
+  if(tab==='paragraph') renderParagraphTab();
 }
 
 function renderQuizSetup(){
@@ -782,6 +810,128 @@ function renderQuizResult(){
         ${markedWords.size?`<button class="quiz-action-btn" onclick="switchTab('mywords')">複習清單 (${markedWords.size})</button>`:''}
         <button class="quiz-action-btn pri" onclick="switchTab('dict')">回字典</button>
       </div>
+    </div>`;
+}
+
+// ─── Paragraph Understanding ───
+function renderParagraphTab(){
+  const section = document.getElementById('paragraphSection');
+  section.innerHTML = `
+    <div class="para-wrap">
+      <div class="para-title">📖 段落理解</div>
+      <div class="para-subtitle">輸入單字，AI 自動生成包含這些單字的英文段落，協助你在情境中理解單字用法</div>
+
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;">
+        <div style="margin-bottom:16px;">
+          <label style="display:block;color:var(--muted);font-size:0.82rem;margin-bottom:8px;font-weight:600;">輸入單字（逗號或換行分隔）</label>
+          <textarea id="paraInput" class="para-textarea" placeholder="例如：
+abandon, adventure, ancient
+或用逗號分隔：curiosity, journey, discover"></textarea>
+        </div>
+
+        <div style="margin-bottom:14px;">
+          <label style="display:block;color:var(--muted);font-size:0.82rem;margin-bottom:8px;font-weight:600;">選擇模式</label>
+          <div class="para-mode-row">
+            <button class="para-mode-btn active" onclick="setParagraphMode('story')">故事情境</button>
+            <button class="para-mode-btn" onclick="setParagraphMode('custom')">自訂主題</button>
+          </div>
+        </div>
+
+        <div id="paraTopicWrap" style="display:none;margin-bottom:14px;">
+          <input id="paraTopicInput" class="para-topic-input" placeholder="輸入主題...（例：冒險旅程、科技未來）">
+        </div>
+
+        <button class="para-generate-btn" onclick="generateParagraphContent()">🌟 生成段落</button>
+      </div>
+
+      <div id="paraResultWrap"></div>
+    </div>`;
+}
+
+function setParagraphMode(mode){
+  paraMode = mode;
+  ['story','custom'].forEach(m => {
+    const btn = document.querySelector(`.para-mode-btn[onclick="setParagraphMode('${m}')"]`);
+    if(btn) btn.classList.toggle('active', m === mode);
+  });
+  const topicWrap = document.getElementById('paraTopicWrap');
+  if(topicWrap) topicWrap.style.display = mode === 'custom' ? '' : 'none';
+}
+
+function generateParagraphContent(){
+  const input = document.getElementById('paraInput')?.value || '';
+  const words = input.split(/[,\n]+/)
+    .map(w => w.trim().toLowerCase())
+    .filter(w => w.length > 0);
+
+  if(!words.length){
+    alert('請輸入至少一個單字');
+    return;
+  }
+
+  const wordObjs = words.map(w => {
+    const found = getAllWords().find(gw => gw.word.toLowerCase() === w);
+    return found ? found : { word: w, pos: '', zh: '' };
+  });
+
+  const topic = paraMode === 'custom' ? (document.getElementById('paraTopicInput')?.value || '') : '';
+  const sortedWords = [...words].sort().join(',');
+  const cacheKey = ('vocab_para_' + paraMode + '_' + topic + '_' + sortedWords).slice(0, 220);
+
+  let cached = localStorage.getItem(cacheKey);
+  if(cached){
+    try{
+      const data = JSON.parse(cached);
+      _renderParaResult(data, wordObjs);
+      return;
+    } catch(e){
+      console.warn('Cache parse error:', e);
+    }
+  }
+
+  const resultWrap = document.getElementById('paraResultWrap');
+  resultWrap.innerHTML = `
+    <div class="para-loading">
+      <div class="para-loading-spin"></div>
+      <h3>Claude AI 正在生成段落…</h3>
+      <p>為 ${wordObjs.length} 個單字量身設計段落</p>
+    </div>`;
+
+  fetch(PARAGRAPH_FN_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ words: wordObjs, mode: paraMode, topic: topic })
+  })
+  .then(r => { if(!r.ok) throw new Error('伺服器錯誤'); return r.json(); })
+  .then(data => {
+    localStorage.setItem(cacheKey, JSON.stringify(data));
+    _renderParaResult(data, wordObjs);
+  })
+  .catch(e => {
+    resultWrap.innerHTML = `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:18px;">
+        <div style="color:var(--accent2);font-weight:600;">⚠️ 生成失敗</div>
+        <div style="color:var(--muted);font-size:0.85rem;margin:8px 0;">${e.message}</div>
+        <button class="para-refresh-btn" onclick="generateParagraphContent()">🔄 重新生成</button>
+      </div>`;
+  });
+}
+
+function _renderParaResult(data, wordObjs){
+  let paragraph = data.paragraph || '';
+
+  wordObjs.forEach(w => {
+    const wordLower = w.word.toLowerCase();
+    const regex = new RegExp(`\\b${wordLower}\\b`, 'gi');
+    paragraph = paragraph.replace(regex, `<strong>${w.word}</strong>`);
+  });
+
+  const resultWrap = document.getElementById('paraResultWrap');
+  resultWrap.innerHTML = `
+    <div class="para-result-box">
+      <div class="para-en">${paragraph}</div>
+      <div class="para-zh">${data.translation || ''}</div>
+      <button class="para-refresh-btn" onclick="generateParagraphContent()">🔄 重新生成</button>
     </div>`;
 }
 
