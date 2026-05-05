@@ -1578,3 +1578,58 @@ Rules:
     res.status(500).json({ error: e.message });
   }
 });
+
+// ========== Paragraph Generation API ==========
+const { Anthropic: AnthropicPara } = require("@anthropic-ai/sdk");
+
+exports.generateParagraph = onRequest({ cors: true }, async (req, res) => {
+  if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
+  const { words, mode, topic } = req.body || {};
+  if (!words || !words.length) return res.status(400).json({ error: "Missing words" });
+
+  const count = words.length;
+  const lengthHint = count <= 2 ? "3 to 5 sentences"
+                   : count <= 5 ? "4 to 6 sentences"
+                   : "5 to 8 sentences";
+
+  const wordList = words.map(w => `"${w.word}" (${w.pos||'?'}, ${w.zh||'?'})`).join(", ");
+  const modeInstr = mode === 'custom' && topic
+    ? `The paragraph should be about the topic: "${topic}".`
+    : "The paragraph should be a creative narrative story.";
+
+  const prompt = `Create an English paragraph (${lengthHint}) that naturally includes ALL of these words: ${wordList}.
+
+${modeInstr}
+
+Rules:
+- Use every given word at least once, as naturally as possible
+- Paragraph length: ${lengthHint}
+- ALL Chinese text must be in Traditional Chinese (繁體中文), NOT Simplified Chinese (簡體中文)
+- Output ONLY valid JSON, no markdown:
+{
+  "paragraph": "The English paragraph...",
+  "translation": "整段的繁體中文翻譯"
+}`;
+
+  try {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY");
+    const client = new AnthropicPara({ apiKey });
+
+    const message = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 1024,
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    let raw = message.content[0].text.trim();
+    if (raw.startsWith("```"))
+      raw = raw.replace(/^```json?\s*/, "").replace(/\s*```$/, "").trim();
+
+    const data = JSON.parse(raw);
+    res.json(data);
+  } catch (e) {
+    console.error("[ERROR] generateParagraph:", e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
