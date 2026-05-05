@@ -116,9 +116,9 @@ line-bot-firebase/
 
 | Function | 類型 | 用途 |
 |----------|------|------|
-| `lineWebhook` | HTTP | LINE Bot Webhook（兩支 Bot 共用） |
-| `calendarReminder` | Scheduled（每天 08:00 台北）| 推送隔日行程提醒 |
-| `eveningFollowUp` | Scheduled（每天 23:00 台北）| 催促尚未回報的老師 |
+| `lineWebhook` | HTTP | LINE Bot Webhook（三支 Bot 共用） |
+| `calendarReminder` | Scheduled（每天 08:00 台北）| 推送當日 + 隔日行程提醒 |
+| `eveningFollowUp` | Scheduled（每天 23:00 台北）| 催促當日尚未回報的老師 |
 | `generateWordEtymology` | HTTP（CORS 開放）| 字根拆解（PWA 用） |
 | `generateWordExample` | HTTP | 生成例句（PWA 用） |
 | `generateVocabQuiz` | HTTP | AI 測驗（PWA 用） |
@@ -180,9 +180,14 @@ node line-bot-firebase/setup-rich-menu.js
 
 **Bot 2（行事曆）：**
 - 查詢今日 / 明日 / 本週 / 下週 / 本月行程
-- 訂閱每日早上 08:00 隔日行程提醒（`calendarReminder` Function）
+- **行程提醒**：
+  - 每日早上 08:00 發送「當日 + 隔日」行程提醒給訂閱老師
+  - 當日行程文字：「嗨！提醒老師，今天是【xxx】喔！\n\n今天加油！💪」
+  - 隔日行程文字：「嗨！提醒老師，記得明天是【xxx】喔！\n\n請做好準備，加油！💪」
+  - 由 `calendarReminder` Cloud Function 執行，讀取 Firebase `/calendar-cache`
+- **工作回報**：老師在 08:00 收到今日行程提醒後，可在 23:00 前回傳「完成 xxx」或「未完成 xxx」記錄進度
+- **催促機制**：每日 23:00 執行 `eveningFollowUp` 函式，自動催促今日收到行程提醒但尚未回報的老師
 - 資料來源：Google Calendar iCal → 解析後快取於 Firebase `/calendar-cache`
-- **工作回報**：老師可回傳「完成 xxx」或「未完成 xxx」記錄工作進度
 - **未識別輸入**：立即回傳使用說明（不進入行事曆 fetch，避免 replyToken 過期）
 - **⚠️ Cloud Run 限制**：Cloud Run IP 被 Google 封鎖，無法直接抓 Google Calendar iCal（返回「Sorry...」頁面）。解決方案：由本機 `trigger-reminder.js` 抓取並寫入 Firebase 快取；Cloud Function 只讀快取，不直接抓 iCal
 - **「重新整理」指令**：改為軟清除（只過期 timestamp，不刪資料），若 Cloud Run 抓取失敗自動 fallback 舊快取並顯示 ⚠️ 提示，此時需本機執行 `node trigger-reminder.js`

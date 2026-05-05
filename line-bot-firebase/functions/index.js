@@ -767,12 +767,16 @@ async function saveTaskReport(userId, taskTitle, status) {
   console.log(`[INFO] Task report saved: ${userId} "${taskTitle}" → ${status}`);
 }
 
-function buildReminderMessage(evt, cleanTitle) {
+function buildReminderMessage(evt, cleanTitle, isToday = false) {
   const displayTitle = cleanTitle || evt.title;
-  let msg = `嗨！提醒老師，記得明天是【${displayTitle}】喔！`;
+  let msg = isToday
+    ? `嗨！提醒老師，今天是【${displayTitle}】喔！`
+    : `嗨！提醒老師，記得明天是【${displayTitle}】喔！`;
   if (evt.location) msg += `\n📍 地點：${evt.location}`;
   if (evt.description) msg += `\n📝 備註：${evt.description}`;
-  msg += `\n\n請做好準備，加油！💪`;
+  msg += isToday
+    ? `\n\n今天加油！💪`
+    : `\n\n請做好準備，加油！💪`;
   return msg;
 }
 
@@ -1287,61 +1291,75 @@ exports.calendarReminder = onSchedule({
     console.log(`[INFO] Found ${subscribers.length} subscribers`);
     const events = await getOrFetchCalendarEvents();
     console.log(`[INFO] Fetched ${events.length} calendar events`);
-    // 篩選「明天」台灣時間的事件
+    // 篩選「今天」和「明天」台灣時間的事件
     const now = new Date();
     const taiwanNow = new Date(now.getTime() + 8 * 60 * 60 * 1000);
     const tYear = taiwanNow.getUTCFullYear();
     const tMonth = taiwanNow.getUTCMonth();
     const tDate = taiwanNow.getUTCDate();
+    const todayStart = new Date(Date.UTC(tYear, tMonth, tDate));
     const tomorrowStart = new Date(Date.UTC(tYear, tMonth, tDate + 1));
     const dayAfterStart = new Date(Date.UTC(tYear, tMonth, tDate + 2));
+    const todayEvents = events.filter(e => {
+      const d = new Date(Number(e.startObj));
+      return d >= todayStart && d < tomorrowStart;
+    });
     const tomorrowEvents = events.filter(e => {
       const d = new Date(Number(e.startObj));
       return d >= tomorrowStart && d < dayAfterStart;
     });
+    console.log(`[INFO] Found ${todayEvents.length} events for today`);
     console.log(`[INFO] Found ${tomorrowEvents.length} events for tomorrow`);
-    if (tomorrowEvents.length === 0) {
-      console.log("[INFO] No events tomorrow, skipping notification");
+    if (todayEvents.length === 0 && tomorrowEvents.length === 0) {
+      console.log("[INFO] No events today or tomorrow, skipping notification");
       return;
     }
     initializeFirebase();
     const teacherMapping = await getTeacherMapping();
     const subscriberSet = new Set(subscribers);
-    for (const evt of tomorrowEvents) {
-      const { names, cleanTitle } = parseEventTarget(evt.title);
-      let targetIds;
-      if (names === null) {
-        targetIds = subscribers;
-        console.log(`[INFO] Event "${evt.title}" → all ${subscribers.length} subscribers`);
-      } else {
-        targetIds = names.map(n => teacherMapping[n]).filter(id => id && subscriberSet.has(id));
-        const unknowns = names.filter(n => !teacherMapping[n]);
-        if (unknowns.length > 0) console.log(`[WARN] Unknown names in "${evt.title}": ${unknowns.join(", ")}`);
-        console.log(`[INFO] Event "${evt.title}" → [${names.join(",")}] (${targetIds.length} users)`);
-      }
-      for (const userId of targetIds) {
-        const safeEventId = String(evt.id).replace(/[.#$\[\]/@]/g, "_");
-        const key = `${safeEventId}_${userId}`;
-        const sentRef = dbRef.ref(`/calendar-sent/${key}`);
-        const snap = await sentRef.get();
-        if (snap.exists()) {
-          console.log(`[INFO] Event "${evt.title}" already sent to ${userId}, skipping`);
-          continue;
+
+    // Helper function to send events for a specific day
+    async function sendEventsForDay(evts, isToday) {
+      for (const evt of evts) {
+        const { names, cleanTitle } = parseEventTarget(evt.title);
+        let targetIds;
+        if (names === null) {
+          targetIds = subscribers;
+          console.log(`[INFO] Event "${evt.title}" → all ${subscribers.length} subscribers`);
+        } else {
+          targetIds = names.map(n => teacherMapping[n]).filter(id => id && subscriberSet.has(id));
+          const unknowns = names.filter(n => !teacherMapping[n]);
+          if (unknowns.length > 0) console.log(`[WARN] Unknown names in "${evt.title}": ${unknowns.join(", ")}`);
+          console.log(`[INFO] Event "${evt.title}" → [${names.join(",")}] (${targetIds.length} users)`);
         }
-        const message = buildReminderMessage(evt, cleanTitle);
-        try {
-          await pushLineMessage(userId, { type: "text", text: message }, token);
-          console.log(`[INFO] Sent "${evt.title}" to ${userId}`);
-        } catch (pushError) {
-          console.error(`[ERROR] Failed to push to ${userId}:`, pushError.message);
+        for (const userId of targetIds) {
+          const safeEventId = String(evt.id).replace(/[.#$\[\]/@]/g, "_");
+          const key = `${safeEventId}_${userId}`;
+          const sentRef = dbRef.ref(`/calendar-sent/${key}`);
+          const snap = await sentRef.get();
+          if (snap.exists()) {
+            console.log(`[INFO] Event "${evt.title}" already sent to ${userId}, skipping`);
+            continue;
+          }
+          const message = buildReminderMessage(evt, cleanTitle, isToday);
+          try {
+            await pushLineMessage(userId, { type: "text", text: message }, token);
+            console.log(`[INFO] Sent "${evt.title}" to ${userId}`);
+          } catch (pushError) {
+            console.error(`[ERROR] Failed to push to ${userId}:`, pushError.message);
+          }
+          await sentRef.set({
+            sentAt: Date.now(),
+            eventTitle: evt.title,
+            eventStart: evt.start
+          });
         }
-        await sentRef.set({
-          sentAt: Date.now(),
-          eventTitle: evt.title,
-          eventStart: evt.start
-        });
       }
     }
+
+    // Send today's events first, then tomorrow's
+    await sendEventsForDay(todayEvents, true);
+    await sendEventsForDay(tomorrowEvents, false);
     console.log("[INFO] Calendar reminder job completed successfully");
   } catch (error) {
     console.error("[ERROR] Calendar reminder job failed:", error.message);
