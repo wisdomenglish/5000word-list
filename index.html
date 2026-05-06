@@ -691,7 +691,19 @@ function setDictMode(mode, btn){
   btn.classList.add('active');
   document.getElementById('wordView').style.display = mode === 'word' ? '' : 'none';
   document.getElementById('phraseView').style.display = mode === 'phrase' ? '' : 'none';
-  if(mode === 'phrase') phraseUpdate();
+  if(mode === 'phrase'){
+    phraseUpdate();
+    // 綁定搜尋事件（延遲到模式切換時）
+    const phraseSearchInput = document.getElementById('phraseSearchInput');
+    if(phraseSearchInput && !phraseSearchInput.dataset.listenerAdded){
+      phraseSearchInput.addEventListener('input', e => {
+        phraseSearch = e.target.value.trim();
+        phrasePage = 1;
+        phraseUpdate();
+      });
+      phraseSearchInput.dataset.listenerAdded = 'true';
+    }
+  }
 }
 
 function buildPhraseAlphaBar(){
@@ -758,15 +770,6 @@ function renderPhrasePagination(pages){
 }
 
 function goPhrasePage(n){ phrasePage = n; window.scrollTo({top: 0, behavior: 'smooth'}); phraseUpdate(); }
-
-// 片語搜尋事件監聽（頁面載入時執行）
-if(document.getElementById('phraseSearchInput')){
-  document.getElementById('phraseSearchInput').addEventListener('input', e => {
-    phraseSearch = e.target.value.trim();
-    phrasePage = 1;
-    phraseUpdate();
-  });
-}
 
 // ─── 複習清單 & AI 測驗 ───
 const QUIZ_FN_URL = 'https://generatevocabquiz-gtlccx6nka-uc.a.run.app';
