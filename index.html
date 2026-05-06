@@ -28,12 +28,13 @@ input[type=search]:focus{border-color:var(--accent);}
 input[type=search]::placeholder{color:var(--muted);}
 .sort-btn{background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--muted);padding:9px 14px;font-size:0.82rem;cursor:pointer;white-space:nowrap;}
 .sort-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(124,106,247,.1);}
-.alpha-bar{display:flex;gap:4px;flex-wrap:wrap;margin-top:12px;}
+.alpha-bar{display:flex;gap:4px;flex-wrap:nowrap;overflow-x:auto;margin-top:12px;padding-bottom:3px;scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;}
+.alpha-bar::-webkit-scrollbar{display:none;}
 .alpha-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);width:28px;height:28px;font-size:0.75rem;font-weight:500;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 .alpha-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
 .alpha-btn.all{width:auto;padding:0 9px;font-size:0.72rem;}
 .stats-bar{padding:10px 24px;color:var(--muted);font-size:0.8rem;border-bottom:1px solid var(--border);background:var(--bg);}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;padding:16px 24px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:13px;padding:16px 24px;}
 .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;position:relative;overflow:hidden;}
 .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;}
 .word{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--text);line-height:1.2;}
@@ -42,7 +43,12 @@ input[type=search]::placeholder{color:var(--muted);}
 .speak-btn.loading{opacity:0.5;}
 @keyframes pulse{from{box-shadow:0 0 0 0 rgba(124,106,247,.5);}to{box-shadow:0 0 0 6px rgba(124,106,247,0);}}
 .pos-tag{display:inline-block;background:var(--tag-bg);color:var(--accent2);font-size:0.7rem;font-weight:500;padding:2px 7px;border-radius:4px;margin-bottom:5px;}
-.zh-def{color:var(--muted);font-size:0.86rem;line-height:1.5;}
+.pos-tag.pos-n{color:#6ecf88;background:rgba(110,207,136,.12);border:1px solid rgba(110,207,136,.2);}
+.pos-tag.pos-v{color:#5bc0de;background:rgba(91,192,222,.12);border:1px solid rgba(91,192,222,.2);}
+.pos-tag.pos-adj{color:#f0ad4e;background:rgba(240,173,78,.12);border:1px solid rgba(240,173,78,.2);}
+.pos-tag.pos-adv{color:#b09ef8;background:rgba(176,158,248,.12);border:1px solid rgba(176,158,248,.2);}
+.pos-tag.pos-other{color:var(--accent2);background:rgba(224,108,138,.12);border:1px solid rgba(224,108,138,.2);}
+.zh-def{color:#a8a8c0;font-size:0.86rem;line-height:1.5;}
 .pagination{display:flex;justify-content:center;align-items:center;gap:6px;padding:20px 24px;flex-wrap:wrap;}
 .page-btn{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted);padding:8px 13px;font-size:0.82rem;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 .page-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;}
@@ -70,7 +76,7 @@ header{top:48px!important;}
 #googleLogoutBtn:hover{color:var(--text);}
 .sync-badge{font-size:0.65rem;color:var(--accent);margin-left:2px;}
 /* ── Star Button on Word Card ── */
-.mark-btn{position:absolute;bottom:9px;right:10px;background:none;border:none;cursor:pointer;font-size:0.95rem;opacity:0.22;transition:opacity .2s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+.mark-btn{position:absolute;bottom:4px;right:4px;background:none;border:none;cursor:pointer;font-size:0.95rem;opacity:0.22;transition:opacity .2s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;padding:10px;}
 .mark-btn:hover,.mark-btn.marked{opacity:1;}
 /* ── Quiz / My Words ── */
 #quizSection,#myWordsSection{min-height:90vh;}
@@ -260,6 +266,11 @@ header{top:48px!important;}
 .dict-mode-bar{display:flex;background:#12121c;border-bottom:1px solid var(--border);}
 .dict-mode-btn{flex:1;background:none;border:none;border-bottom:3px solid transparent;color:var(--muted);padding:10px 6px;font-size:0.85rem;font-weight:500;cursor:pointer;transition:all .2s;}
 .dict-mode-btn.active{color:var(--accent);border-bottom-color:var(--accent);background:rgba(124,106,247,.06);}
+/* ── Floating Action Button (新增單字) ── */
+#fabAddWord{position:fixed;bottom:24px;right:20px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#9b8bf0);border:none;color:#fff;font-size:1.5rem;cursor:pointer;box-shadow:0 4px 20px rgba(124,106,247,.45);z-index:150;display:none;align-items:center;justify-content:center;transition:transform .15s,box-shadow .15s,opacity .2s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+#fabAddWord:hover{transform:scale(1.08);box-shadow:0 6px 28px rgba(124,106,247,.6);}
+#fabAddWord:active{transform:scale(.93);}
+#fabAddWord.fab-visible{display:flex;}
 /* ── Phrase Card ── */
 .phrase-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;cursor:pointer;transition:all .2s;}
 .phrase-card:hover{border-color:var(--accent);background:rgba(124,106,247,.06);}
@@ -319,19 +330,19 @@ header{top:48px!important;}
     </div>
     <button class="sort-btn active" id="sortAZ" onclick="setSort('az')">A → Z</button>
     <button class="sort-btn" id="sortZA" onclick="setSort('za')">Z → A</button>
-    <button class="sort-btn" style="border-color:var(--accent);color:var(--accent)" onclick="openAddWordModal()">＋ 新增</button>
   </div>
   <div class="alpha-bar" id="alphaBar"></div>
 </header>
 <div class="stats-bar" id="statsBar">共 2,778 個單字</div>
-<div id="audioTest" style="text-align:center;padding:6px;background:#2a1f5e;font-size:13px;color:#aaa;">
-  點這裡測試語音 →
-  <button onclick="testSpeak()" style="background:#7c6af7;color:#fff;border:none;border-radius:6px;padding:4px 12px;cursor:pointer;font-size:13px;">🔊 測試發音</button>
+<div id="audioTest" style="text-align:center;padding:5px 10px;background:var(--surface);border-bottom:1px solid var(--border);font-size:12px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:8px;">
+  <span style="opacity:.7">🔊 語音測試</span>
+  <button onclick="testSpeak()" style="background:none;color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:3px 10px;cursor:pointer;font-size:12px;">測試發音</button>
   <span id="audioTestMsg"></span>
 </div>
 <div class="grid" id="grid"></div>
 <div class="pagination" id="pagination"></div>
 </div><!-- /wordView -->
+<button id="fabAddWord" onclick="openAddWordModal()" title="新增自訂單字">＋</button>
 
 <div id="phraseView" style="display:none">
   <header>
@@ -563,6 +574,7 @@ function toggleAuthPw(){const i=document.getElementById('authPw');i.type=i.type=
 WORDS.forEach(o=>{o.word=o.w;o.zh=o.z;o.pos=o.p||'';});
 const PER_PAGE=60;
 let filtered=[...WORDS],currentPage=1,selectedLetters=new Set(),currentSort='az',searchQ='';
+let dictMode = 'word';
 const CUSTOM_WORDS_KEY = 'vocab_custom_words';
 let customWords = JSON.parse(localStorage.getItem(CUSTOM_WORDS_KEY) || '[]');
 function saveCustomWords(){
@@ -734,6 +746,7 @@ function buildAlphaBar(){
   document.getElementById('totalCount').textContent=`共 ${total.toLocaleString()} 個單字`;
 }
 buildAlphaBar();
+updateFabVisibility();
 
 function setLetter(l){
   if(l===''){selectedLetters.clear();}else{if(selectedLetters.has(l))selectedLetters.delete(l);else selectedLetters.add(l);}
@@ -758,6 +771,15 @@ document.getElementById('searchInput').addEventListener('input',e=>{
   update();
 });
 
+function getPosClass(pos){
+  if(!pos) return '';
+  const p = pos.toLowerCase();
+  if(p.startsWith('n')) return 'pos-n';
+  if(p.startsWith('v')) return 'pos-v';
+  if(p.startsWith('adj')) return 'pos-adj';
+  if(p.startsWith('adv')) return 'pos-adv';
+  return 'pos-other';
+}
 function getZhDef(zh) {
   if (!zh) return '';
   const parts = zh.split('；');
@@ -797,7 +819,7 @@ function update(){
             </svg>
           </button>
         </div>
-        ${w.pos?`<span class="pos-tag">${w.pos}</span>`:''}
+        ${w.pos?`<span class="pos-tag ${getPosClass(w.pos)}">${w.pos}</span>`:''}
         ${w.zh?`<div class="zh-def">${getZhDef(w.zh)}</div>`:''}
         <button class="mark-btn ${markedWords&&markedWords.has(w.word)?'marked':''}" onclick="event.stopPropagation();toggleMark('${w.word}',this)" title="加入複習清單">⭐</button>
       </div>`).join('');
@@ -828,6 +850,7 @@ function setDictMode(mode, btn){
   btn.classList.add('active');
   document.getElementById('wordView').style.display = mode === 'word' ? '' : 'none';
   document.getElementById('phraseView').style.display = mode === 'phrase' ? '' : 'none';
+  updateFabVisibility();
   if(mode === 'phrase'){
     phraseUpdate();
     // 綁定搜尋事件（延遲到模式切換時）
@@ -933,7 +956,6 @@ let paraMode = 'story';
 let qSource = 'unfamiliar';
 let qMode = 'sentence';
 let qQuestions = [], qIndex = 0, qScore = 0, qSelected = null;
-let dictMode = 'word';
 let phraseFiltered = [], phrasePage = 1, phraseSearch = '', phraseSelectedLetters = new Set(), phraseSort = 'az';
 let qSubject = 'word';
 
@@ -963,9 +985,17 @@ function switchTab(tab){
     const btn = document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1));
     if(btn) btn.classList.toggle('active', t===tab);
   });
+  updateFabVisibility();
   if(tab==='quiz')      renderQuizSetup();
   if(tab==='mywords')   renderMyWords();
   if(tab==='paragraph') renderParagraphTab();
+}
+function updateFabVisibility(){
+  const fab = document.getElementById('fabAddWord');
+  if(!fab) return;
+  const onDict = document.getElementById('dictSection').style.display !== 'none';
+  const onWord = dictMode === 'word';
+  fab.classList.toggle('fab-visible', onDict && onWord);
 }
 
 function renderQuizSetup(){
