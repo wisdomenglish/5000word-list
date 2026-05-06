@@ -780,7 +780,7 @@ let qSource = 'unfamiliar';
 let qMode = 'sentence';
 let qQuestions = [], qIndex = 0, qScore = 0, qSelected = null;
 let dictMode = 'word';
-let phraseFiltered = [...PHRASES], phrasePage = 1, phraseSearch = '', phraseSelectedLetters = new Set(), phraseSort = 'az';
+let phraseFiltered = [], phrasePage = 1, phraseSearch = '', phraseSelectedLetters = new Set(), phraseSort = 'az';
 let qSubject = 'word';
 
 function saveMark(){ localStorage.setItem('vocab_marked', JSON.stringify([...markedWords])); }
