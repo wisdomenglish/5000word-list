@@ -251,7 +251,8 @@ header{top:48px!important;}
 .dict-mode-btn{flex:1;background:none;border:none;border-bottom:3px solid transparent;color:var(--muted);padding:10px 6px;font-size:0.85rem;font-weight:500;cursor:pointer;transition:all .2s;}
 .dict-mode-btn.active{color:var(--accent);border-bottom-color:var(--accent);background:rgba(124,106,247,.06);}
 /* ── Phrase Card ── */
-.phrase-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;}
+.phrase-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;cursor:pointer;transition:all .2s;}
+.phrase-card:hover{border-color:var(--accent);background:rgba(124,106,247,.06);}
 .phrase-en{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--text);line-height:1.3;}
 .phrase-zh{color:var(--muted);font-size:0.85rem;line-height:1.5;}
 </style>
@@ -454,6 +455,20 @@ header{top:48px!important;}
     <div class="modal-footer">
       <button class="modal-mark-btn" id="modalMarkBtn" onclick="toggleModalMark()"></button>
     </div>
+  </div>
+</div>
+
+<!-- Phrase Modal -->
+<div id="phraseModal" style="display:none" onclick="if(event.target===this)closePhraseModal()">
+  <div class="modal-box">
+    <div class="modal-drag"></div>
+    <button class="modal-close" onclick="closePhraseModal()">✕</button>
+    <div class="modal-header">
+      <div class="modal-word-text" id="phraseModalText" style="font-size:1.5rem"></div>
+    </div>
+    <div class="modal-zh" id="phraseModalZh"></div>
+    <hr class="modal-divider">
+    <div id="phraseModalEx"></div>
   </div>
 </div>
 
@@ -753,7 +768,7 @@ function renderPhraseGrid(){
   document.getElementById('phraseStatsBar').textContent = `顯示 ${total} 個片語`;
   const grid = document.getElementById('phraseGrid');
   grid.innerHTML = slice.length
-    ? slice.map(p => `<div class="phrase-card"><div class="phrase-en">${p.p}</div><div class="phrase-zh">${p.z}</div></div>`).join('')
+    ? slice.map(p => `<div class="phrase-card" onclick="openPhraseModal('${p.p.replace(/'/g, "\\'")}')" style="cursor:pointer"><div class="phrase-en">${p.p}</div><div class="phrase-zh">${p.z}</div></div>`).join('')
     : `<div class="empty">找不到符合的片語</div>`;
   renderPhrasePagination(totalPages);
 }
@@ -1431,6 +1446,7 @@ function deleteCustomWord(word){
 const EXAMPLE_FN_URL  = 'https://generatewordexample-gtlccx6nka-uc.a.run.app';
 const ETYMOLOGY_FN_URL = 'https://generatewordetymology-gtlccx6nka-uc.a.run.app';
 let currentModalWord = null;
+let currentModalPhrase = null;
 
 function switchModalTab(tab) {
   document.getElementById('tabBtnEx').classList.toggle('active', tab === 'ex');
@@ -1562,6 +1578,69 @@ function closeWordModal() {
   document.getElementById('wordModal').style.display = 'none';
   document.body.style.overflow = '';
   currentModalWord = null;
+}
+
+// ─── Phrase Modal Functions ───
+function openPhraseModal(phraseText){
+  const p = PHRASES.find(x => x.p === phraseText);
+  if(!p) return;
+  currentModalPhrase = p;
+  document.getElementById('phraseModalText').textContent = p.p;
+  document.getElementById('phraseModalZh').textContent = p.z;
+
+  const exEl = document.getElementById('phraseModalEx');
+  const cacheKey = 'vocab_phrase_ex_' + p.p;
+  const cached = localStorage.getItem(cacheKey);
+  if(cached){
+    renderPhraseModalEx(JSON.parse(cached));
+  } else {
+    exEl.innerHTML = '<div class="modal-ex-loading"><div class="modal-ex-spin"></div>Claude AI 生成例句中…</div>';
+    fetchPhraseExample(p, exEl);
+  }
+
+  document.getElementById('phraseModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closePhraseModal(){
+  document.getElementById('phraseModal').style.display = 'none';
+  document.body.style.overflow = '';
+  currentModalPhrase = null;
+}
+
+function fetchPhraseExample(p, exEl){
+  fetch(EXAMPLE_FN_URL, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({word: p.p, pos: '', zh: p.z})
+  })
+  .then(r=>{ if(!r.ok) throw new Error(r.status); return r.json(); })
+  .then(data=>{
+    localStorage.setItem('vocab_phrase_ex_' + p.p, JSON.stringify(data));
+    renderPhraseModalEx(data);
+  })
+  .catch(()=>{
+    exEl.innerHTML = '<span style="color:var(--muted);font-size:0.85rem">例句生成失敗</span>'
+      + `<button class="modal-retry" onclick="retryPhraseModalEx()">🔄 重試</button>`;
+  });
+}
+
+function renderPhraseModalEx(data){
+  const phrase = currentModalPhrase ? currentModalPhrase.p : '';
+  const escaped = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const sentence = (data.sentence || '').replace(
+    new RegExp(escaped, 'gi'),
+    '<strong>$&</strong>'
+  );
+  document.getElementById('phraseModalEx').innerHTML =
+    `<div class="modal-ex-sentence">${sentence}</div>`
+    + `<div class="modal-ex-trans">${data.translation || ''}</div>`;
+}
+
+function retryPhraseModalEx(){
+  if(!currentModalPhrase) return;
+  const exEl = document.getElementById('phraseModalEx');
+  exEl.innerHTML = '<div class="modal-ex-loading"><div class="modal-ex-spin"></div>Claude AI 生成例句中…</div>';
+  fetchPhraseExample(currentModalPhrase, exEl);
 }
 
 function openAddWordModal(prefill){
