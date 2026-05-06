@@ -246,8 +246,17 @@ header{top:48px!important;}
 #authBtn{width:100%;padding:13px;background:#7c6af7;border:none;border-radius:10px;color:#fff;font-size:1rem;font-weight:600;cursor:pointer;transition:background .2s;}
 #authBtn:hover{background:#6b5ce7;}
 #authErr{color:#ff6b6b;font-size:0.82rem;margin-top:12px;min-height:18px;}
+/* ── Dict Mode Bar ── */
+.dict-mode-bar{display:flex;background:#12121c;border-bottom:1px solid var(--border);}
+.dict-mode-btn{flex:1;background:none;border:none;border-bottom:3px solid transparent;color:var(--muted);padding:10px 6px;font-size:0.85rem;font-weight:500;cursor:pointer;transition:all .2s;}
+.dict-mode-btn.active{color:var(--accent);border-bottom-color:var(--accent);background:rgba(124,106,247,.06);}
+/* ── Phrase Card ── */
+.phrase-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;}
+.phrase-en{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--text);line-height:1.3;}
+.phrase-zh{color:var(--muted);font-size:0.85rem;line-height:1.5;}
 </style>
 <script src="vocabulary-data.js"></script>
+<script src="phrases-data.js"></script>
 </head>
 <body>
 <div id="authOverlay">
@@ -271,6 +280,11 @@ header{top:48px!important;}
   <button class="tab-btn" id="tabNews" onclick="switchTab('news')">📢 公告</button>
 </div>
 <div id="dictSection">
+<div class="dict-mode-bar">
+  <button class="dict-mode-btn active" onclick="setDictMode('word',this)">📚 單字</button>
+  <button class="dict-mode-btn" onclick="setDictMode('phrase',this)">🔖 片語</button>
+</div>
+<div id="wordView">
 <header>
   <div class="header-top">
     <h1>📚 5000英文單字</h1>
@@ -295,6 +309,29 @@ header{top:48px!important;}
 </div>
 <div class="grid" id="grid"></div>
 <div class="pagination" id="pagination"></div>
+</div><!-- /wordView -->
+
+<div id="phraseView" style="display:none">
+  <header>
+    <div class="header-top">
+      <h1>🔖 英文片語</h1>
+      <span class="word-count" id="phraseCount">共 1,125 個片語</span>
+    </div>
+    <div class="controls">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="search" id="phraseSearchInput" placeholder="搜尋英文片語或中文解釋...">
+      </div>
+      <button class="sort-btn active" id="phraseSortAZ" onclick="setPhraseSort('az')">A → Z</button>
+      <button class="sort-btn" id="phraseSortZA" onclick="setPhraseSort('za')">Z → A</button>
+    </div>
+    <div class="alpha-bar" id="phraseAlphaBar"></div>
+  </header>
+  <div class="stats-bar" id="phraseStatsBar"></div>
+  <div class="grid" id="phraseGrid"></div>
+  <div class="pagination" id="phrasePagination"></div>
+</div><!-- /phraseView -->
+
 </div><!-- /dictSection -->
 
 <div id="quizSection" style="display:none"></div>
@@ -647,6 +684,90 @@ function renderPagination(pages){
 }
 function goPage(n){currentPage=n;window.scrollTo({top:0,behavior:'smooth'});update();}
 
+// ─── 片語瀏覽 ───
+function setDictMode(mode, btn){
+  dictMode = mode;
+  document.querySelectorAll('.dict-mode-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('wordView').style.display = mode === 'word' ? '' : 'none';
+  document.getElementById('phraseView').style.display = mode === 'phrase' ? '' : 'none';
+  if(mode === 'phrase') phraseUpdate();
+}
+
+function buildPhraseAlphaBar(){
+  const bar = document.getElementById('phraseAlphaBar');
+  const letters = [...new Set(PHRASES.map(p => p.p[0].toUpperCase()))].sort();
+  bar.innerHTML =
+    `<button class="alpha-btn all ${phraseSelectedLetters.size===0?'active':''}" onclick="setPhraseLetter('')">全部</button>` +
+    letters.map(l =>
+      `<button class="alpha-btn ${phraseSelectedLetters.has(l)?'active':''}" onclick="setPhraseLetter('${l}')">${l}</button>`
+    ).join('');
+  document.getElementById('phraseCount').textContent = `共 ${PHRASES.length} 個片語`;
+}
+
+function setPhraseLetter(l){
+  phraseSelectedLetters.clear();
+  if(l) phraseSelectedLetters.add(l);
+  phrasePage = 1;
+  phraseUpdate();
+}
+
+function setPhraseSort(s){
+  phraseSort = s;
+  document.getElementById('phraseSortAZ').classList.toggle('active', s === 'az');
+  document.getElementById('phraseSortZA').classList.toggle('active', s === 'za');
+  phraseUpdate();
+}
+
+function phraseUpdate(){
+  buildPhraseAlphaBar();
+  let list = [...PHRASES];
+  if(phraseSelectedLetters.size > 0) list = list.filter(p => phraseSelectedLetters.has(p.p[0].toUpperCase()));
+  if(phraseSearch) list = list.filter(p => p.p.toLowerCase().includes(phraseSearch.toLowerCase()) || p.z.includes(phraseSearch));
+  list.sort((a,b) => phraseSort === 'az' ? a.p.localeCompare(b.p) : b.p.localeCompare(a.p));
+  phraseFiltered = list;
+  renderPhraseGrid();
+}
+
+function renderPhraseGrid(){
+  const PER = 60, total = phraseFiltered.length;
+  const totalPages = Math.max(1, Math.ceil(total / PER));
+  phrasePage = Math.min(phrasePage, totalPages);
+  const slice = phraseFiltered.slice((phrasePage - 1) * PER, phrasePage * PER);
+  document.getElementById('phraseStatsBar').textContent = `顯示 ${total} 個片語`;
+  const grid = document.getElementById('phraseGrid');
+  grid.innerHTML = slice.length
+    ? slice.map(p => `<div class="phrase-card"><div class="phrase-en">${p.p}</div><div class="phrase-zh">${p.z}</div></div>`).join('')
+    : `<div class="empty">找不到符合的片語</div>`;
+  renderPhrasePagination(totalPages);
+}
+
+function renderPhrasePagination(pages){
+  const p = document.getElementById('phrasePagination');
+  if(pages <= 1){ p.innerHTML = ''; return; }
+  let html = `<button class="page-btn" ${phrasePage === 1 ? 'disabled' : ''} onclick="goPhrasePage(${phrasePage - 1})">‹ 上頁</button>`;
+  let s = Math.max(1, phrasePage - 2), e = Math.min(pages, phrasePage + 2);
+  if(phrasePage <= 3) e = Math.min(5, pages);
+  if(phrasePage >= pages - 2) s = Math.max(1, pages - 4);
+  if(s > 1){ html += `<button class="page-btn" onclick="goPhrasePage(1)">1</button>`; if(s > 2) html += `<span class="page-info">…</span>`; }
+  for(let i = s; i <= e; i++) html += `<button class="page-btn ${i === phrasePage ? 'active' : ''}" onclick="goPhrasePage(${i})">${i}</button>`;
+  if(e < pages){ if(e < pages - 1) html += `<span class="page-info">…</span>`; html += `<button class="page-btn" onclick="goPhrasePage(${pages})">${pages}</button>`; }
+  html += `<button class="page-btn" ${phrasePage === pages ? 'disabled' : ''} onclick="goPhrasePage(${phrasePage + 1})">下頁 ›</button>`;
+  html += `<span class="page-info">${phrasePage} / ${pages} 頁</span>`;
+  p.innerHTML = html;
+}
+
+function goPhrasePage(n){ phrasePage = n; window.scrollTo({top: 0, behavior: 'smooth'}); phraseUpdate(); }
+
+// 片語搜尋事件監聽（頁面載入時執行）
+if(document.getElementById('phraseSearchInput')){
+  document.getElementById('phraseSearchInput').addEventListener('input', e => {
+    phraseSearch = e.target.value.trim();
+    phrasePage = 1;
+    phraseUpdate();
+  });
+}
+
 // ─── 複習清單 & AI 測驗 ───
 const QUIZ_FN_URL = 'https://generatevocabquiz-gtlccx6nka-uc.a.run.app';
 const PARAGRAPH_FN_URL = 'https://us-central1-news-english-ef2e4.cloudfunctions.net/generateParagraph';
@@ -655,6 +776,9 @@ let paraMode = 'story';
 let qSource = 'unfamiliar';
 let qMode = 'sentence';
 let qQuestions = [], qIndex = 0, qScore = 0, qSelected = null;
+let dictMode = 'word';
+let phraseFiltered = [...PHRASES], phrasePage = 1, phraseSearch = '', phraseSelectedLetters = new Set(), phraseSort = 'az';
+let qSubject = 'word';
 
 function saveMark(){ localStorage.setItem('vocab_marked', JSON.stringify([...markedWords])); }
 function syncMarkCount(){
@@ -690,9 +814,19 @@ function switchTab(tab){
 function renderQuizSetup(){
   const unfCount = getAllWords().filter(w=>markedWords.has(w.word)).length;
   const filtCount = filtered.length;
+  const phraseFilteredCount = phraseFiltered.length;
   if(qSource==='unfamiliar' && unfCount===0) qSource = filtCount>0?'filtered':'all';
-  document.getElementById('quizSection').innerHTML = `
+
+  let html = `
     <div class="quiz-setup">
+      <div class="quiz-opt-label">出題科目</div>
+      <div class="quiz-opt-group">
+        <button class="quiz-subj-opt quiz-opt ${qSubject==='word'?'selected':''}" onclick="setQSubject('word',this)">📚 單字測驗</button>
+        <button class="quiz-subj-opt quiz-opt ${qSubject==='phrase'?'selected':''}" onclick="setQSubject('phrase',this)">🔖 片語測驗</button>
+      </div>`;
+
+  if(qSubject==='word'){
+    html += `
       <div class="quiz-setup-title">✏️ 單字測驗</div>
       <p>選擇適合的題型測驗你的單字程度。答錯自動加入複習清單，答對從清單移除。</p>
       <div class="quiz-opt-label">題目類型</div>
@@ -707,8 +841,25 @@ function renderQuizSetup(){
         <button class="quiz-opt ${qSource==='all'?'selected':''}" onclick="setQSource('all',this)">📚 全部單字 (${getAllWords().length})</button>
       </div>
       <button class="quiz-start-btn" onclick="startQuiz()">開始 AI 出題 →</button>
-      <div class="quiz-note">由 Claude Haiku AI 生成 · 需要網路連線</div>
-    </div>`;
+      <div class="quiz-note">由 Claude Haiku AI 生成 · 需要網路連線</div>`;
+  } else {
+    html += `
+      <div class="quiz-setup-title">🔖 片語測驗</div>
+      <p>選擇片語進行快速選義練習。每次 10 題，完全本地生成，無需網路。</p>
+      <div class="quiz-opt-label">題目類型</div>
+      <div class="quiz-opt-group">
+        <button class="quiz-opt" style="opacity:0.6;cursor:default">🔤 片語選義（已選）</button>
+      </div>
+      <div class="quiz-opt-label">出題範圍</div>
+      <div class="quiz-opt-group">
+        <button class="quiz-opt ${qSource==='filtered'?'selected':''}" onclick="setQSource('filtered',this)">🔍 目前篩選 (${phraseFilteredCount})</button>
+        <button class="quiz-opt ${qSource==='all'?'selected':''}" onclick="setQSource('all',this)">📚 全部片語 (${PHRASES.length})</button>
+      </div>
+      <button class="quiz-start-btn" onclick="startQuiz()">開始片語測驗 →</button>`;
+  }
+
+  html += `</div>`;
+  document.getElementById('quizSection').innerHTML = html;
 }
 
 function setQSource(src, btn){
@@ -723,7 +874,23 @@ function setQMode(mode, btn){
   btn.classList.add('selected');
 }
 
+function setQSubject(subj, btn){
+  qSubject=subj;
+  document.querySelectorAll('.quiz-subj-opt').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  renderQuizSetup();
+}
+
 async function startQuiz(){
+  if(qSubject === 'phrase'){
+    let pool = (qSource === 'filtered' && phraseFiltered.length) ? phraseFiltered : PHRASES;
+    const selected = [...pool].sort(() => Math.random() - .5).slice(0, 10);
+    qQuestions = generatePhraseQuestions(selected);
+    qIndex = 0; qScore = 0; qSelected = null;
+    renderQuestion();
+    return;
+  }
+
   let pool=[];
   if(qSource==='unfamiliar') pool=getAllWords().filter(w=>markedWords.has(w.word));
   else if(qSource==='filtered') pool=[...filtered];
@@ -783,9 +950,22 @@ function generateMeaningQuestions(selected){
   });
 }
 
+function generatePhraseQuestions(selected){
+  return selected.map(p=>{
+    const distractors=PHRASES
+      .filter(a=>a.p!==p.p && a.z!==p.z)
+      .sort(()=>Math.random()-.5)
+      .slice(0,3)
+      .map(a=>a.z);
+    const opts=[p.z,...distractors].sort(()=>Math.random()-.5);
+    return {type:'phrase',phrase:p.p,zh:p.z,options:opts,answer:opts.indexOf(p.z)};
+  });
+}
+
 function renderQuestion(){
   const q=qQuestions[qIndex];
   if(q.type==='meaning') renderMeaningQuestion();
+  else if(q.type==='phrase') renderPhraseQuestion();
   else renderSentenceQuestion();
 }
 
@@ -854,12 +1034,47 @@ function renderMeaningQuestion(){
     </div>`;
 }
 
+function renderPhraseQuestion(){
+  const q=qQuestions[qIndex];
+  const pct=((qIndex+1)/qQuestions.length)*100;
+  const answered=qSelected!==null;
+  document.getElementById('quizSection').innerHTML=`
+    <div class="quiz-panel">
+      <div class="quiz-hdr">
+        <span style="color:var(--muted);font-size:0.83rem">題目 ${qIndex+1} / ${qQuestions.length}</span>
+        <span style="color:var(--accent);font-size:0.83rem;font-weight:700">得分: ${qScore}</span>
+      </div>
+      <div class="quiz-pbar-wrap"><div class="quiz-pbar" style="width:${pct}%"></div></div>
+      <div class="quiz-card-wrap" style="text-align:center;padding:30px 24px">
+        <div style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;letter-spacing:.02em;margin-bottom:10px;line-height:1.4">${q.phrase}</div>
+        <div style="color:var(--muted);font-size:0.82rem;margin-bottom:18px">選出正確的中文意思</div>
+        <div class="quiz-opts">
+          ${q.options.map((opt,idx)=>{
+            let cls='quiz-opt-btn';
+            if(answered){ if(idx===q.answer)cls+=' correct'; else if(idx===qSelected)cls+=' wrong'; else cls+=' faded'; }
+            return `<button class="${cls}" onclick="answerQ(${idx})" ${answered?'disabled':''}><span class="quiz-opt-letter">${String.fromCharCode(65+idx)}</span>${opt}</button>`;
+          }).join('')}
+        </div>
+        ${answered?`
+        <div class="quiz-explain">
+          <div class="quiz-explain-lbl">📖 完整解釋</div>
+          <div class="quiz-explain-zh">「${q.zh}」</div>
+        </div>
+        <button class="quiz-next" onclick="nextQ()">${qIndex<qQuestions.length-1?'下一題 →':'完成測驗並結算'}</button>`:''}
+      </div>
+    </div>`;
+}
+
 function answerQ(idx){
   if(qSelected!==null)return;
   qSelected=idx;
   const q=qQuestions[qIndex];
-  if(idx===q.answer){ qScore++; removeMark(q.word); }
-  else { addMark(q.word); }
+  if(idx===q.answer){
+    qScore++;
+    if(q.type!=='phrase') removeMark(q.word);
+  } else {
+    if(q.type!=='phrase') addMark(q.word);
+  }
   renderQuestion();
 }
 

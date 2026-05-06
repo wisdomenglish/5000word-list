@@ -1,10 +1,10 @@
-const CACHE = 'vocab-app-v19';
+const CACHE = 'vocab-app-v20';
 const BASE  = '/5000word-list';
 
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE)
-      .then(c => c.addAll([BASE + '/', BASE + '/index.html', BASE + '/vocabulary-data.js']))
+      .then(c => c.addAll([BASE + '/', BASE + '/index.html', BASE + '/vocabulary-data.js', BASE + '/phrases-data.js']))
       .then(() => self.skipWaiting())
   );
 });
