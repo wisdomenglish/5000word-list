@@ -24,8 +24,9 @@
 
 - [index.html](index.html) — 單一檔案 PWA，包含所有 CSS/JS
 - [vocabulary-data.js](vocabulary-data.js) — 外部單字庫（4,506 字，格式：`{w, z, p}`）
+- [phrases-data.js](phrases-data.js) — 外部片語庫（1,125 條，格式：`{p, z}`）
 - [manifest.json](manifest.json) — PWA 設定（name: 5000英文單字學習）
-- [sw.js](sw.js) — Service Worker，支援離線使用（目前版本：`vocab-app-v16`）
+- [sw.js](sw.js) — Service Worker，支援離線使用（目前版本：`vocab-app-v20`）
 - [icon-192.png](icon-192.png) / [icon-512.png](icon-512.png) — Wisdom logo 圖示
 
 ### 功能
@@ -33,8 +34,10 @@
 - 4,506 英文單字瀏覽、搜尋、字母篩選（移除重複變化形後）
 - Claude AI 生成例句（單字詳細 Modal，📝 例句 Tab）
 - Claude AI 字根拆解（單字詳細 Modal，🌱 字根 Tab）
-- AI 測驗 Tab + 複習清單
+- AI 測驗 Tab + 複習清單（單字／片語皆可出題）
+- **片語查詢**：1,125 條英文片語，支援搜尋、A–Z 篩選、點擊開啟 Modal + AI 生成例句
 - **自訂單字庫**：學生可新增自己的單字，整合進字典/搜尋/測驗（見下方說明）
+- **雲端同步**：登入 Google 帳號後自訂單字庫自動同步至 Firebase Firestore
 - **更新公告頁**：📢 公告 Tab，記錄功能更新歷史
 - PWA：可加入主畫面、離線字典
 
@@ -48,6 +51,7 @@
 
 - 例句結果以 `vocab_ex_{word}` 為 key 存入 localStorage（快取）
 - 字根結果以 `vocab_etym_{word}` 為 key 存入 localStorage（快取）
+- **片語例句**以 `vocab_phrase_ex_{phrase}` 為 key 存入 localStorage（快取）
 - 自訂單字以 `vocab_custom_words` 為 key 存入 localStorage（JSON array，格式：`{word, pos, zh, custom:true}`）
 - 所有 Cloud Run 服務已設定 `allUsers` `roles/run.invoker`（允許未登入呼叫）
 - **密碼保護**：首次開啟需輸入授權密碼，通過後以 SHA-256 hash 存入 localStorage（key：`vocab_auth_v1`）；更換密碼只需在 `index.html` 更新 `AUTH_HASH` 常數即可強制所有用戶重新驗證（詳見 memory）
@@ -71,6 +75,28 @@
 - 新增時會檢查是否與現有單字重複（大小寫不敏感）
 - 「⭐ 我的單字」Tab 有「📝 自訂單字庫」區塊，可點「✕ 刪除」移除
 - **重要**：`customWords`（`let`）必須宣告在 `buildAlphaBar()` 呼叫之前，否則 TDZ 錯誤導致整頁當掉
+
+### 片語資料庫架構
+
+- 格式：`const PHRASES = [{p, z}, ...]`（p=英文片語, z=中文解釋）
+- 字典頁面有「📚 單字 / 🔖 片語」切換列（`dict-mode-bar`），呼叫 `setDictMode('word'/'phrase')`
+- 片語卡片用 `data-pidx` + 事件委派觸發 `openPhraseModal(phraseText)`（避免特殊字符 onclick 解析錯誤）
+- `renderPhraseGrid()` 每次重新渲染後只綁定一次 click 事件（`grid._phraseClickBound` 旗標防重複）
+- `#phraseModal` 的 CSS 必須和 `#wordModal` 共用 `position:fixed;inset:0` 樣式，缺少會導致 Modal 不顯示
+- 片語測驗：`qSubject='phrase'` 時，`generatePhraseQuestions()` 本地生成四選一題目，不呼叫 Cloud Function
+
+### 雲端同步架構（Firebase）
+
+- **Firebase 專案**：`news-english-ef2e4`（與 LINE Bot 共用）
+- **SDK**：Firebase Compat v10（`<script>` 標記，非 ESM），載入 Auth + Firestore
+- **Authentication**：Google Sign-In，授權網域需包含 `wisdomenglish.github.io`
+- **Firestore 路徑**：`users/{uid}/customWords`（陣列）
+- **Security Rules**：只允許 `auth.uid === userId` 讀寫自己的文件
+- **`saveCustomWords()`**：同時寫入 localStorage 和 Firestore（已登入時）
+- **登入流程**：`onAuthStateChanged` → `syncFromCloud(uid)` → 雲端優先覆蓋本地 → 刷新 UI
+- **首次登入**：若 Firestore 無資料但本地有，自動上傳本地單字到雲端
+- Tab 列右側顯示 **☁ 同步** 按鈕（未登入）或大頭貼＋登出按鈕（已登入）
+- **未登入**：行為與之前相同，純 localStorage
 
 ### 更新公告頁
 
@@ -337,7 +363,8 @@ node trigger-reminder.js --cache-only
 #### 自動化監控（GitHub Actions）
 
 ✅ **已設定**：`.github/workflows/cache-update.yml`
-- **觸發時間**：每週一 23:00 台灣時間（UTC 15:00）
+- **觸發時間**：每天 07:00 台灣時間（UTC 23:00 前一天）
+- **為什麼是 07:00？**：`calendarReminder` 在 08:00 執行，需要預先更新快取（見下方快取同步問題）
 - **執行命令**：`node trigger-reminder.js --cache-only`
 - **執行記錄**：GitHub → Actions → Weekly Calendar Cache Update
 
@@ -351,6 +378,32 @@ node trigger-reminder.js --cache-only
   - 產生新 token：`firebase login:ci`
   - 更新 Secrets：GitHub → Settings → Secrets and variables → Actions
 - 查看 GitHub Actions 的錯誤日誌（紅色 ❌）
+
+#### 快取同步問題（2026-05-05 事件）
+
+**問題說明**：
+- 5/5 早上 08:00 的 `calendarReminder` 應該發送隔日（5/6）的事件，包括 `[Xin]114學測模考本`
+- 但 5/5 早上的快取中沒有 5/6 的 114 事件，導致未發送提醒
+- 5/5 晚上 23:00 的 `eveningFollowUp` 也因此無法催促相關老師
+
+**根本原因**：
+1. Cloud Run IP 被 Google 封鎖，無法直接抓 Google Calendar iCal
+2. 系統依賴 Firebase `/calendar-cache`（24 小時 TTL）
+3. 5/5 早上的快取已超過 24 小時且無法更新 → 使用舊快取（缺少新事件）
+4. 沒有在 08:00 前自動更新快取的機制
+
+**解決方案**（2026-05-06 實施）：
+- 改為每天 07:00 台灣時間執行 GitHub Actions，自動更新快取
+- 確保快取始終是最新的，08:00 的提醒能找到所有事件
+- 若 workflow 失敗，快取會使用舊資料（但有 24 小時容限）
+
+**設定 `FIREBASE_TOKEN`（必須）**：
+```powershell
+firebase login:ci
+# 複製產生的 token，設定為 GitHub Secret
+# GitHub → Settings → Secrets and variables → Actions → New repository secret
+# Name: FIREBASE_TOKEN
+```
 
 ---
 
