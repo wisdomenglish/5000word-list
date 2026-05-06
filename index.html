@@ -707,14 +707,17 @@ function setDictMode(mode, btn){
 }
 
 function buildPhraseAlphaBar(){
+  if(!PHRASES || !PHRASES.length) return;
   const bar = document.getElementById('phraseAlphaBar');
+  if(!bar) return;
   const letters = [...new Set(PHRASES.map(p => p.p[0].toUpperCase()))].sort();
   bar.innerHTML =
     `<button class="alpha-btn all ${phraseSelectedLetters.size===0?'active':''}" onclick="setPhraseLetter('')">全部</button>` +
     letters.map(l =>
       `<button class="alpha-btn ${phraseSelectedLetters.has(l)?'active':''}" onclick="setPhraseLetter('${l}')">${l}</button>`
     ).join('');
-  document.getElementById('phraseCount').textContent = `共 ${PHRASES.length} 個片語`;
+  const countEl = document.getElementById('phraseCount');
+  if(countEl) countEl.textContent = `共 ${PHRASES.length} 個片語`;
 }
 
 function setPhraseLetter(l){
@@ -732,6 +735,7 @@ function setPhraseSort(s){
 }
 
 function phraseUpdate(){
+  if(!PHRASES || !PHRASES.length) return;
   buildPhraseAlphaBar();
   let list = [...PHRASES];
   if(phraseSelectedLetters.size > 0) list = list.filter(p => phraseSelectedLetters.has(p.p[0].toUpperCase()));
