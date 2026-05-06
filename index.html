@@ -54,11 +54,21 @@ input[type=search]::placeholder{color:var(--muted);}
   .stats-bar{padding:8px 16px;}.pagination{padding:14px 16px;}header h1{font-size:1.3rem;}
 }
 /* ── Tab Nav ── */
-#tabNav{display:flex;background:#12121c;border-bottom:2px solid var(--border);position:sticky;top:0;z-index:200;}
+#tabNav{display:flex;background:#12121c;border-bottom:2px solid var(--border);position:sticky;top:0;z-index:200;align-items:center;}
 .tab-btn{flex:1;background:none;border:none;border-bottom:3px solid transparent;color:var(--muted);padding:13px 6px;font-size:0.82rem;font-weight:500;cursor:pointer;transition:all .2s;letter-spacing:.02em;}
 .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);background:rgba(124,106,247,.06);}
 .tab-btn:hover:not(.active){color:var(--text);background:rgba(255,255,255,.03);}
 header{top:48px!important;}
+/* ── Google Auth ── */
+#googleAuthArea{display:flex;align-items:center;padding:0 10px;flex-shrink:0;border-left:1px solid var(--border);}
+#googleLoginBtn{display:flex;align-items:center;gap:5px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:6px 10px;font-size:0.75rem;cursor:pointer;white-space:nowrap;transition:border-color .2s;}
+#googleLoginBtn:hover{border-color:var(--accent);}
+#googleUserInfo{display:none;align-items:center;gap:6px;}
+#googleUserInfo img{width:24px;height:24px;border-radius:50%;}
+#googleUserName{font-size:0.72rem;color:var(--muted);max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#googleLogoutBtn{background:none;border:1px solid var(--border);color:var(--muted);padding:3px 7px;border-radius:6px;font-size:0.7rem;cursor:pointer;}
+#googleLogoutBtn:hover{color:var(--text);}
+.sync-badge{font-size:0.65rem;color:var(--accent);margin-left:2px;}
 /* ── Star Button on Word Card ── */
 .mark-btn{position:absolute;bottom:9px;right:10px;background:none;border:none;cursor:pointer;font-size:0.95rem;opacity:0.22;transition:opacity .2s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 .mark-btn:hover,.mark-btn.marked{opacity:1;}
@@ -256,6 +266,9 @@ header{top:48px!important;}
 .phrase-en{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--text);line-height:1.3;}
 .phrase-zh{color:var(--muted);font-size:0.85rem;line-height:1.5;}
 </style>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="vocabulary-data.js"></script>
 <script src="phrases-data.js"></script>
 </head>
@@ -279,6 +292,14 @@ header{top:48px!important;}
   <button class="tab-btn" id="tabMywords" onclick="switchTab('mywords')">⭐ 我的單字 (<span id="myWordsCount"></span>)</button>
   <button class="tab-btn" id="tabParagraph" onclick="switchTab('paragraph')">📖 段落理解</button>
   <button class="tab-btn" id="tabNews" onclick="switchTab('news')">📢 公告</button>
+  <div id="googleAuthArea">
+    <button id="googleLoginBtn" onclick="fbGoogleSignIn()">☁ 同步</button>
+    <div id="googleUserInfo">
+      <img id="googleAvatar" src="" alt="">
+      <span id="googleUserName"></span>
+      <button id="googleLogoutBtn" onclick="fbSignOut()">登出</button>
+    </div>
+  </div>
 </div>
 <div id="dictSection">
 <div class="dict-mode-bar">
@@ -520,8 +541,71 @@ const PER_PAGE=60;
 let filtered=[...WORDS],currentPage=1,selectedLetters=new Set(),currentSort='az',searchQ='';
 const CUSTOM_WORDS_KEY = 'vocab_custom_words';
 let customWords = JSON.parse(localStorage.getItem(CUSTOM_WORDS_KEY) || '[]');
-function saveCustomWords(){ localStorage.setItem(CUSTOM_WORDS_KEY, JSON.stringify(customWords)); }
+function saveCustomWords(){
+  localStorage.setItem(CUSTOM_WORDS_KEY, JSON.stringify(customWords));
+  if(window._fbUser && window._fbDb){
+    window._fbDb.collection('users').doc(window._fbUser.uid)
+      .set({ customWords }).catch(()=>{});
+  }
+}
 function getAllWords(){ return [...WORDS, ...customWords]; }
+
+/* ── Firebase Google Auth + Firestore 雲端同步 ── */
+(function initFirebase(){
+  const cfg = {
+    apiKey:"AIzaSyAvr2g4M8OzdR63oElWurndcv8dE190_DU",
+    authDomain:"news-english-ef2e4.firebaseapp.com",
+    projectId:"news-english-ef2e4",
+    storageBucket:"news-english-ef2e4.firebasestorage.app",
+    messagingSenderId:"1039973180615",
+    appId:"1:1039973180615:web:26067ea33794014628cae2"
+  };
+  if(!firebase.apps.length) firebase.initializeApp(cfg);
+  const auth = firebase.auth();
+  const db   = firebase.firestore();
+  window._fbDb = db;
+
+  auth.onAuthStateChanged(async user => {
+    window._fbUser = user;
+    const loginBtn  = document.getElementById('googleLoginBtn');
+    const userInfo  = document.getElementById('googleUserInfo');
+    const avatar    = document.getElementById('googleAvatar');
+    const nameEl    = document.getElementById('googleUserName');
+    if(user){
+      loginBtn.style.display  = 'none';
+      userInfo.style.display  = 'flex';
+      avatar.src = user.photoURL || '';
+      nameEl.textContent = user.displayName || user.email || '';
+      await syncFromCloud(user.uid, db);
+      if(typeof renderMyWords==='function') renderMyWords();
+      if(typeof buildAlphaBar==='function') buildAlphaBar();
+      if(typeof update==='function') update();
+    } else {
+      loginBtn.style.display  = 'flex';
+      userInfo.style.display  = 'none';
+    }
+  });
+})();
+
+function fbGoogleSignIn(){
+  const provider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider).catch(e=>alert('登入失敗：'+e.message));
+}
+function fbSignOut(){ firebase.auth().signOut(); }
+
+async function syncFromCloud(uid, db){
+  try{
+    const ref  = db.collection('users').doc(uid);
+    const snap = await ref.get();
+    if(snap.exists){
+      const cloud = snap.data().customWords || [];
+      customWords = cloud;
+      localStorage.setItem(CUSTOM_WORDS_KEY, JSON.stringify(customWords));
+    } else if(customWords.length > 0){
+      await ref.set({ customWords });
+    }
+  }catch(e){ console.error('雲端同步失敗',e); }
+}
 let editingWordKey = null;
 let currentBtn=null;
 const player=document.getElementById('player');
