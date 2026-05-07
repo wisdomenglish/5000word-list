@@ -65,15 +65,33 @@ input[type=search]::placeholder{color:var(--muted);}
 .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);background:rgba(124,106,247,.06);}
 .tab-btn:hover:not(.active){color:var(--text);background:rgba(255,255,255,.03);}
 header{top:48px!important;}
-/* ── Google Auth ── */
-#googleAuthArea{display:flex;align-items:center;padding:0 10px;flex-shrink:0;border-left:1px solid var(--border);}
-#googleLoginBtn{display:flex;align-items:center;gap:5px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:6px 10px;font-size:0.75rem;cursor:pointer;white-space:nowrap;transition:border-color .2s;}
-#googleLoginBtn:hover{border-color:var(--accent);}
-#googleUserInfo{display:none;align-items:center;gap:6px;}
-#googleUserInfo img{width:24px;height:24px;border-radius:50%;}
-#googleUserName{font-size:0.72rem;color:var(--muted);max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-#googleLogoutBtn{background:none;border:1px solid var(--border);color:var(--muted);padding:3px 7px;border-radius:6px;font-size:0.7rem;cursor:pointer;}
-#googleLogoutBtn:hover{color:var(--text);}
+/* ── Drawer Toggle Button ── */
+#drawerToggleBtn{background:none;border:none;border-left:1px solid var(--border);color:var(--muted);padding:0 16px;font-size:1.3rem;cursor:pointer;flex-shrink:0;height:100%;display:flex;align-items:center;transition:color .2s;-webkit-tap-highlight-color:transparent;}
+#drawerToggleBtn:hover{color:var(--text);}
+/* ── Side Drawer ── */
+#drawerOverlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:290;display:none;backdrop-filter:blur(2px);}
+#drawerOverlay.open{display:block;}
+#sideDrawer{position:fixed;top:0;right:-300px;width:270px;height:100%;background:var(--surface);border-left:1px solid var(--border);z-index:295;transition:right .25s ease;overflow-y:auto;display:flex;flex-direction:column;}
+#sideDrawer.open{right:0;}
+.drawer-hdr{display:flex;align-items:center;justify-content:space-between;padding:20px 18px 16px;border-bottom:1px solid var(--border);}
+.drawer-title{font-family:'Playfair Display',serif;font-size:1rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.drawer-close-btn{background:var(--tag-bg);border:none;color:var(--muted);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:0.85rem;display:flex;align-items:center;justify-content:center;}
+.drawer-close-btn:hover{color:var(--text);}
+.drawer-section{padding:18px 18px;border-bottom:1px solid var(--border);}
+.drawer-section-label{color:var(--muted);font-size:0.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;}
+.drawer-nav-btn{display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;border-radius:10px;color:var(--text);padding:11px 12px;font-size:0.9rem;cursor:pointer;text-align:left;transition:background .15s;-webkit-tap-highlight-color:transparent;}
+.drawer-nav-btn:hover{background:rgba(255,255,255,.05);}
+.drawer-nav-btn.active{background:rgba(124,106,247,.1);color:var(--accent);}
+/* ── Google Auth (inside drawer) ── */
+#googleAuthArea{padding:18px 18px;border-bottom:1px solid var(--border);}
+#googleAuthArea .drawer-section-label{margin-bottom:12px;}
+#googleLoginBtn{display:flex;align-items:center;gap:8px;width:100%;background:rgba(124,106,247,.08);border:1px solid rgba(124,106,247,.28);border-radius:10px;color:var(--accent);padding:11px 14px;font-size:0.88rem;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent;}
+#googleLoginBtn:hover{background:rgba(124,106,247,.16);}
+#googleUserInfo{display:none;align-items:center;gap:10px;flex-wrap:wrap;}
+#googleUserInfo img{width:36px;height:36px;border-radius:50%;border:2px solid rgba(124,106,247,.3);}
+#googleUserName{font-size:0.84rem;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#googleLogoutBtn{background:none;border:1px solid var(--border);color:var(--muted);padding:5px 10px;border-radius:6px;font-size:0.75rem;cursor:pointer;width:100%;margin-top:8px;transition:border-color .2s;}
+#googleLogoutBtn:hover{color:var(--text);border-color:var(--muted);}
 .sync-badge{font-size:0.65rem;color:var(--accent);margin-left:2px;}
 /* ── Star Button on Word Card ── */
 .mark-btn{position:absolute;bottom:4px;right:4px;background:none;border:none;cursor:pointer;font-size:0.95rem;opacity:0.22;transition:opacity .2s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;padding:10px;}
@@ -331,14 +349,26 @@ header{top:48px!important;}
   <button class="tab-btn" id="tabQuiz" onclick="switchTab('quiz')">✏️ 測驗</button>
   <button class="tab-btn" id="tabMywords" onclick="switchTab('mywords')">⭐ 我的單字 (<span id="myWordsCount"></span>)</button>
   <button class="tab-btn" id="tabParagraph" onclick="switchTab('paragraph')">📖 段落理解</button>
-  <button class="tab-btn" id="tabNews" onclick="switchTab('news')">📢 公告</button>
+  <button id="drawerToggleBtn" onclick="openDrawer()" title="選單">☰</button>
+</div>
+<div id="drawerOverlay" onclick="closeDrawer()"></div>
+<div id="sideDrawer">
+  <div class="drawer-hdr">
+    <span class="drawer-title">選單</span>
+    <button class="drawer-close-btn" onclick="closeDrawer()">✕</button>
+  </div>
   <div id="googleAuthArea">
-    <button id="googleLoginBtn" onclick="fbGoogleSignIn()">☁ 同步</button>
+    <div class="drawer-section-label">帳號同步</div>
+    <button id="googleLoginBtn" onclick="fbGoogleSignIn()">☁ 同步 Google 帳號</button>
     <div id="googleUserInfo">
       <img id="googleAvatar" src="" alt="">
       <span id="googleUserName"></span>
       <button id="googleLogoutBtn" onclick="fbSignOut()">登出</button>
     </div>
+  </div>
+  <div class="drawer-section">
+    <div class="drawer-section-label">其他</div>
+    <button class="drawer-nav-btn" id="drawerNewsBtn" onclick="switchTab('news');closeDrawer()">📢 公告 &amp; 更新記錄</button>
   </div>
 </div>
 <div id="dictSection">
@@ -1054,19 +1084,31 @@ function addMark(word){ if(!markedWords.has(word)){ markedWords.add(word); saveM
 function removeMark(word){ if(markedWords.has(word)){ markedWords.delete(word); saveMark(); syncMarkCount(); update(); } }
 
 function switchTab(tab){
-  document.getElementById('dictSection').style.display   = tab==='dict'    ? '' : 'none';
-  document.getElementById('quizSection').style.display     = tab==='quiz'      ? '' : 'none';
-  document.getElementById('myWordsSection').style.display  = tab==='mywords'   ? '' : 'none';
-  document.getElementById('paragraphSection').style.display= tab==='paragraph' ? '' : 'none';
-  document.getElementById('newsSection').style.display     = tab==='news'      ? '' : 'none';
-  ['dict','quiz','mywords','paragraph','news'].forEach(t=>{
+  document.getElementById('dictSection').style.display    = tab==='dict'      ? '' : 'none';
+  document.getElementById('quizSection').style.display    = tab==='quiz'      ? '' : 'none';
+  document.getElementById('myWordsSection').style.display = tab==='mywords'   ? '' : 'none';
+  document.getElementById('paragraphSection').style.display= tab==='paragraph'? '' : 'none';
+  document.getElementById('newsSection').style.display    = tab==='news'      ? '' : 'none';
+  ['dict','quiz','mywords','paragraph'].forEach(t=>{
     const btn = document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1));
     if(btn) btn.classList.toggle('active', t===tab);
   });
+  const drawerNewsBtn = document.getElementById('drawerNewsBtn');
+  if(drawerNewsBtn) drawerNewsBtn.classList.toggle('active', tab==='news');
   updateFabVisibility();
   if(tab==='quiz')      renderQuizSetup();
   if(tab==='mywords')   renderMyWords();
   if(tab==='paragraph') renderParagraphTab();
+}
+function openDrawer(){
+  document.getElementById('sideDrawer').classList.add('open');
+  document.getElementById('drawerOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeDrawer(){
+  document.getElementById('sideDrawer').classList.remove('open');
+  document.getElementById('drawerOverlay').classList.remove('open');
+  document.body.style.overflow = '';
 }
 function updateFabVisibility(){
   const fab = document.getElementById('fabAddWord');
@@ -1936,7 +1978,8 @@ function toggleModalMark() {
 
 document.addEventListener('keydown', e => {
   if(e.key === 'Escape'){
-    if(document.getElementById('wotdModal').style.display !== 'none') closeWotd();
+    if(document.getElementById('sideDrawer').classList.contains('open')) closeDrawer();
+    else if(document.getElementById('wotdModal').style.display !== 'none') closeWotd();
     else closeWordModal();
   }
 });
