@@ -250,6 +250,35 @@ header{top:48px!important;}
 /* ── Add Word Modal (reuses wordModal layout) ── */
 #addWordModal{position:fixed;inset:0;z-index:500;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);}
 @media(min-width:600px){#addWordModal{align-items:center;}}
+/* ── Word of the Day Modal ── */
+#wotdModal{position:fixed;inset:0;z-index:600;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.78);backdrop-filter:blur(8px);padding:20px;}
+.wotd-card{background:var(--surface);border:1px solid rgba(124,106,247,.25);border-radius:24px;width:100%;max-width:420px;overflow:hidden;box-shadow:0 12px 48px rgba(0,0,0,.6);animation:wotdIn .32s cubic-bezier(.34,1.56,.64,1);}
+@keyframes wotdIn{from{transform:scale(.82);opacity:0}to{transform:scale(1);opacity:1}}
+.wotd-header{background:linear-gradient(135deg,#1c1240 0%,#2d1a52 100%);padding:20px 22px 18px;position:relative;border-bottom:1px solid rgba(124,106,247,.2);}
+.wotd-label{color:rgba(176,158,248,.85);font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;margin-bottom:5px;}
+.wotd-date{color:#d8d0ff;font-size:0.88rem;font-weight:500;}
+.wotd-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.65);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:0.85rem;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+.wotd-close:hover{background:rgba(255,255,255,.22);color:#fff;}
+.wotd-body{padding:22px 22px 8px;}
+.wotd-word-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.wotd-word{font-family:'Playfair Display',serif;font-size:2rem;color:var(--text);flex:1;line-height:1.2;}
+.wotd-speak{background:rgba(124,106,247,.15);border:1px solid rgba(124,106,247,.3);border-radius:10px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--accent);flex-shrink:0;transition:all .15s;}
+.wotd-speak:hover{background:rgba(124,106,247,.28);}
+.wotd-speak.playing{background:var(--accent);color:#fff;}
+.wotd-pos{margin-bottom:8px;}
+.wotd-zh{color:#c0bedd;font-size:0.92rem;line-height:1.65;margin-bottom:18px;}
+.wotd-divider{border:none;border-top:1px solid var(--border);margin:0 0 14px;}
+.wotd-ex-label{color:var(--accent2);font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;}
+.wotd-ex-area{min-height:72px;margin-bottom:18px;}
+.wotd-ex-sentence{color:var(--text);font-size:0.95rem;line-height:1.85;margin-bottom:6px;}
+.wotd-ex-sentence strong{color:var(--accent);}
+.wotd-ex-trans{color:var(--muted);font-size:0.84rem;line-height:1.6;}
+.wotd-footer{display:flex;gap:10px;padding:0 22px 22px;}
+.wotd-mark-btn{flex:1;background:rgba(124,106,247,.12);border:1px solid rgba(124,106,247,.35);border-radius:12px;color:var(--accent);padding:13px;font-size:0.88rem;font-weight:600;cursor:pointer;transition:all .2s;}
+.wotd-mark-btn:hover{background:rgba(124,106,247,.22);}
+.wotd-mark-btn.done{background:rgba(92,184,92,.1);border-color:#5cb85c;color:#7eda7e;}
+.wotd-skip-btn{background:var(--card);border:1px solid var(--border);border-radius:12px;color:var(--muted);padding:13px 18px;font-size:0.88rem;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.wotd-skip-btn:hover{color:var(--text);border-color:var(--muted);}
 /* ── Auth Overlay ── */
 #authOverlay{position:fixed;inset:0;background:#0d0d1a;z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;}
 #authCard{background:#1a1a2e;border:1px solid rgba(124,106,247,.3);border-radius:20px;padding:40px 32px;width:100%;max-width:360px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.6);}
@@ -542,6 +571,38 @@ header{top:48px!important;}
   </div>
 </div>
 
+<!-- Word of the Day Modal -->
+<div id="wotdModal" style="display:none">
+  <div class="wotd-card">
+    <div class="wotd-header">
+      <div class="wotd-label">✨ 每日一字 · Word of the Day</div>
+      <div class="wotd-date" id="wotdDate"></div>
+      <button class="wotd-close" onclick="closeWotd()">✕</button>
+    </div>
+    <div class="wotd-body">
+      <div class="wotd-word-row">
+        <div class="wotd-word" id="wotdWord"></div>
+        <button class="wotd-speak" id="wotdSpeakBtn" onclick="wotdSpeak()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+          </svg>
+        </button>
+      </div>
+      <div class="wotd-pos" id="wotdPos"></div>
+      <div class="wotd-zh" id="wotdZh"></div>
+      <hr class="wotd-divider">
+      <div class="wotd-ex-label">📝 例句</div>
+      <div class="wotd-ex-area" id="wotdEx"></div>
+    </div>
+    <div class="wotd-footer">
+      <button class="wotd-mark-btn" id="wotdMarkBtn" onclick="wotdMarkWord()">⭐ 加入我的單字</button>
+      <button class="wotd-skip-btn" onclick="closeWotd()">✕ 今天不用了</button>
+    </div>
+  </div>
+</div>
+
 <!-- 全域音訊元素，iOS 必須用同一個 audio 元素才能正常播放 -->
 <audio id="player" preload="none" playsinline webkit-playsinline></audio>
 
@@ -550,7 +611,7 @@ header{top:48px!important;}
 const AUTH_HASH='d2385bdd804c953c95c695035586a09086fb161996a3f9c0e244cc442ad10aca';
 const AUTH_KEY='vocab_auth_v1';
 async function _sha256(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
-(function checkAuth(){try{const d=JSON.parse(localStorage.getItem(AUTH_KEY)||'null');if(d&&d.h===AUTH_HASH){document.getElementById('authOverlay').style.display='none';}}catch(e){}}());
+(function checkAuth(){try{const d=JSON.parse(localStorage.getItem(AUTH_KEY)||'null');if(d&&d.h===AUTH_HASH){document.getElementById('authOverlay').style.display='none';setTimeout(showWotdIfNeeded,600);}}catch(e){}}());
 document.getElementById('authPw').addEventListener('keydown',e=>{if(e.key==='Enter')submitAuth();});
 ['awmWordEn','awmWordPos','awmWordZh'].forEach(id=>{
   document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')saveWordFromModal();});
@@ -562,6 +623,7 @@ async function submitAuth(){
   if(h===AUTH_HASH){
     localStorage.setItem(AUTH_KEY,JSON.stringify({h:AUTH_HASH}));
     document.getElementById('authOverlay').style.display='none';
+    setTimeout(showWotdIfNeeded,400);
   }else{
     const el=document.getElementById('authErr');
     el.textContent='密碼錯誤，請重新輸入';
@@ -1856,10 +1918,120 @@ function toggleModalMark() {
   updateModalMarkBtn();
 }
 
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeWordModal(); });
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape'){
+    if(document.getElementById('wotdModal').style.display !== 'none') closeWotd();
+    else closeWordModal();
+  }
+});
 
 syncMarkCount();
 update();
+
+// ── Word of the Day ──
+const WOTD_SHOWN_KEY = 'vocab_wotd_shown';
+let _wotdWord = null;
+
+function getTWDate(){
+  return new Date().toLocaleDateString('en-CA', {timeZone: 'Asia/Taipei'});
+}
+
+function getTWDateDisplay(){
+  return new Date().toLocaleDateString('zh-TW', {
+    timeZone:'Asia/Taipei', year:'numeric', month:'long', day:'numeric', weekday:'short'
+  });
+}
+
+function getWotdWord(){
+  const seed = parseInt(getTWDate().replace(/-/g, ''));
+  const words = WORDS;
+  return words[seed % words.length];
+}
+
+function showWotdIfNeeded(){
+  if(localStorage.getItem(WOTD_SHOWN_KEY) === getTWDate()) return;
+  showWotd();
+}
+
+function showWotd(){
+  const w = getWotdWord();
+  _wotdWord = w;
+
+  document.getElementById('wotdDate').textContent = getTWDateDisplay();
+  document.getElementById('wotdWord').textContent = w.word;
+  document.getElementById('wotdZh').textContent = w.zh || '';
+  document.getElementById('wotdPos').innerHTML = w.pos
+    ? `<span class="pos-tag ${getPosClass(w.pos)}">${w.pos}</span>` : '';
+
+  const markBtn = document.getElementById('wotdMarkBtn');
+  if(markedWords.has(w.word)){
+    markBtn.textContent = '✅ 已在單字庫';
+    markBtn.classList.add('done');
+  } else {
+    markBtn.textContent = '⭐ 加入我的單字';
+    markBtn.classList.remove('done');
+  }
+
+  const exEl = document.getElementById('wotdEx');
+  const cacheKey = 'vocab_ex_' + w.word;
+  const cached = localStorage.getItem(cacheKey);
+  if(cached){
+    renderWotdEx(JSON.parse(cached));
+  } else {
+    exEl.innerHTML = '<div class="modal-ex-loading"><div class="modal-ex-spin"></div>Claude AI 生成例句中…</div>';
+    fetch(EXAMPLE_FN_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({word: w.word, pos: w.pos || '', zh: w.zh || ''})
+    })
+    .then(r => { if(!r.ok) throw new Error(r.status); return r.json(); })
+    .then(data => {
+      localStorage.setItem(cacheKey, JSON.stringify(data));
+      renderWotdEx(data);
+    })
+    .catch(() => {
+      exEl.innerHTML = '<span style="color:var(--muted);font-size:0.85rem">例句生成失敗，可點單字卡片重試</span>';
+    });
+  }
+
+  document.getElementById('wotdModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function renderWotdEx(data){
+  if(!_wotdWord) return;
+  const escaped = _wotdWord.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const sentence = (data.sentence || '').replace(
+    new RegExp('\\b' + escaped + '\\b', 'gi'), '<strong>$&</strong>'
+  );
+  document.getElementById('wotdEx').innerHTML =
+    `<div class="wotd-ex-sentence">${sentence}</div>
+     <div class="wotd-ex-trans">${data.translation || ''}</div>`;
+}
+
+function wotdSpeak(){
+  if(!_wotdWord) return;
+  speak(_wotdWord.word, document.getElementById('wotdSpeakBtn'));
+}
+
+function wotdMarkWord(){
+  if(!_wotdWord) return;
+  if(markedWords.has(_wotdWord.word)){
+    document.getElementById('wotdMarkBtn').textContent = '✅ 已在單字庫';
+    document.getElementById('wotdMarkBtn').classList.add('done');
+    return;
+  }
+  markedWords.add(_wotdWord.word);
+  saveMark(); syncMarkCount();
+  document.getElementById('wotdMarkBtn').textContent = '✅ 已加入！';
+  document.getElementById('wotdMarkBtn').classList.add('done');
+}
+
+function closeWotd(){
+  document.getElementById('wotdModal').style.display = 'none';
+  document.body.style.overflow = '';
+  localStorage.setItem(WOTD_SHOWN_KEY, getTWDate());
+}
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
