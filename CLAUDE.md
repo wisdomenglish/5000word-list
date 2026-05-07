@@ -65,9 +65,26 @@
 - **getZhDef() 邏輯**：若第一段（`；` 前）≤ 2 字，自動合併第二段，避免擷取到語境詞（如「飛機」）而非完整解釋
 - 每次修改 vocabulary-data.js 後必須升版 `sw.js` 的 `CACHE` 常數，否則舊使用者拿到快取版
 
+### UI 設計規範
+
+- **色彩主題**：暗色（`--bg:#0f0f14`），強調色 `--accent:#7c6af7`（紫）、`--accent2:#e06c8a`（粉紅）
+- **字體**：標題 Playfair Display（serif），內文 DM Sans（sans-serif）
+- **詞性標籤分色**（`.pos-tag` + class）：
+  - `n.` → 綠（`.pos-n`，`#6ecf88`）
+  - `v.` → 藍（`.pos-v`，`#5bc0de`）
+  - `adj.` → 琥珀（`.pos-adj`，`#f0ad4e`）
+  - `adv.` → 淡紫（`.pos-adv`，`#b09ef8`）
+  - 其他 → 粉紅（`.pos-other`，`--accent2`）
+  - `getPosClass(pos)` helper 依前綴判斷（`n`→n, `v`→v, `adj`→adj, `adv`→adv）
+- **A–Z 篩選列**（`.alpha-bar`）：`flex-wrap:nowrap;overflow-x:auto` 橫向滾動，按鈕 40×40px，`flex-shrink:0` 防止壓縮
+- **「＋ 新增」按鈕**：以固定 FAB（`#fabAddWord`，`position:fixed;bottom:24px;right:20px`）取代 controls 內的按鈕；`updateFabVisibility()` 控制只在字典 + 單字模式時顯示
+- **`dictMode`**：必須宣告在 `buildAlphaBar()` 呼叫之前（否則 TDZ 錯誤），預設值 `'word'`
+- **觸控熱區**：星號 `.mark-btn` 加 `padding:10px` 擴大熱區；FAB 52×52px 圓形
+- **語音測試列**（`#audioTest`）：低調樣式（`background:var(--surface);border-bottom:1px solid var(--border)`），不搶奪視覺焦點
+
 ### 自訂單字庫架構
 
-- 字典 header 右側有「＋ 新增」按鈕，點擊後彈出底部 sheet 填寫
+- 字典右下角固定 FAB「＋」按鈕（`#fabAddWord`），點擊後彈出底部 sheet 填寫
 - 自訂單字儲存於 `localStorage['vocab_custom_words']`，格式：`[{word, pos, zh, custom:true}, ...]`
 - `getAllWords()` 函式統一合併 `WORDS`（vocabulary-data.js）＋ `customWords`，所有功能（搜尋、測驗、modal）皆透過此函式取得單字清單
 - 自訂單字在字典卡片與 Modal 顯示粉色「自訂」徽章
