@@ -1231,6 +1231,7 @@ async function startQuiz(){
     const data=await resp.json();
     qQuestions=Array.isArray(data)?data:(data.questions||[]);
     if(!qQuestions.length) throw new Error('題目為空，請重試');
+    if(qSource==='filtered' && selectedLetters.size>0) qQuestions=enforceLetterDistractors(qQuestions,selectedLetters);
     qIndex=0; qScore=0; qSelected=null;
     renderQuestion();
   }catch(e){
@@ -1241,6 +1242,30 @@ async function startQuiz(){
         <button class="quiz-start-btn" style="width:auto;padding:12px 28px" onclick="renderQuizSetup()">返回重試</button>
       </div>`;
   }
+}
+
+function enforceLetterDistractors(questions, filterLetters){
+  const allW=getAllWords();
+  return questions.map(q=>{
+    if(!q.options||q.answer===undefined) return q;
+    const correctOpt=q.options[q.answer];
+    const firstLetter=(correctOpt[0]||'').toUpperCase();
+    if(!filterLetters.has(firstLetter)) return q;
+    const sameCount=q.options.filter(o=>(o[0]||'').toUpperCase()===firstLetter).length;
+    if(sameCount>=2) return q;
+    const candidates=allW
+      .filter(w=>w.word[0].toUpperCase()===firstLetter && w.word.toLowerCase()!==correctOpt.toLowerCase())
+      .sort(()=>Math.random()-.5);
+    if(!candidates.length) return q;
+    const newOpts=[...q.options];
+    for(let i=0;i<newOpts.length;i++){
+      if(i!==q.answer && (newOpts[i][0]||'').toUpperCase()!==firstLetter){
+        newOpts[i]=candidates[0].word; break;
+      }
+    }
+    const shuffled=newOpts.sort(()=>Math.random()-.5);
+    return {...q,options:shuffled,answer:shuffled.indexOf(correctOpt)};
+  });
 }
 
 function generateMeaningQuestions(selected){
