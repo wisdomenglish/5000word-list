@@ -2086,7 +2086,8 @@ function _runAutoLookup(enId, zhId, posId, statusId, ref){
   if(!statusEl) return;
   if(!word || word.length < 2){ statusEl.textContent = ''; return; }
 
-  const match = getAllWords().find(w => w.word.toLowerCase() === word.toLowerCase());
+  const wordLower = word.toLowerCase();
+  const match = WORDS.find(w => w.word.toLowerCase() === wordLower) || customWords.find(w => w.word.toLowerCase() === wordLower);
   if(match){
     statusEl.innerHTML = '<span style="color:#6ecf88">✓ 已在字典中找到，已自動填入</span>';
     if(zhEl && !zhEl.value) zhEl.value = match.zh;
@@ -2096,22 +2097,21 @@ function _runAutoLookup(enId, zhId, posId, statusId, ref){
 
   statusEl.textContent = '';
   ref.t = setTimeout(async () => {
-    const cur = (document.getElementById(enId)?.value || '').trim();
-    if(cur.toLowerCase() !== word.toLowerCase()) return;
+    if((wordEl?.value || '').trim().toLowerCase() !== wordLower) return;
     if(zhEl && !zhEl.value){ zhEl.disabled = true; zhEl.placeholder = 'AI 查詢中…'; }
     try {
       const resp = await fetch(DEFINITION_FN_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({word}) });
       if(!resp.ok) throw new Error();
       const data = await resp.json();
-      if(zhEl){ zhEl.disabled = false; zhEl.placeholder = '中文解釋 *'; }
       if(data.zh){
         if(zhEl && !zhEl.value) zhEl.value = data.zh;
         if(posEl && !posEl.value && data.pos) posEl.value = data.pos;
         if(statusEl) statusEl.innerHTML = '<span style="color:var(--accent)">✨ AI 已自動填入，可自行修改</span>';
       } else { if(statusEl) statusEl.textContent = ''; }
     } catch(e){
-      if(zhEl){ zhEl.disabled = false; zhEl.placeholder = '中文解釋 *'; }
       if(statusEl) statusEl.textContent = '';
+    } finally {
+      if(zhEl){ zhEl.disabled = false; zhEl.placeholder = '中文解釋 *'; }
     }
   }, 300);
 }
@@ -2121,9 +2121,10 @@ function newWordAutoLookup(){ _runAutoLookup('newWordEn','newWordZh','newWordPos
 function awmAutoLookup(){ _runAutoLookup('awmWordEn','awmWordZh','awmWordPos','awmLookupStatus', _awmTimerRef); }
 
 function openAddWordModal(prefill){
+  const _awmPh = {awmWordEn:'英文單字 *', awmWordPos:'詞性（選填）', awmWordZh:'中文解釋 *'};
   ['awmWordEn','awmWordPos','awmWordZh'].forEach(id=>{
     const el=document.getElementById(id);
-    if(el){ el.value=''; el.disabled=false; el.placeholder=(id==='awmWordZh'?'中文解釋 *':(id==='awmWordPos'?'詞性（選填）':'英文單字 *')); }
+    if(el){ el.value=''; el.disabled=false; el.placeholder=_awmPh[id]; }
   });
   clearTimeout(_awmTimerRef.t);
   document.getElementById('awmErr').textContent='';
