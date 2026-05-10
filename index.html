@@ -2087,8 +2087,9 @@ function getTWDateDisplay(){
 
 function getWotdWord(){
   const seed = parseInt(getTWDate().replace(/-/g, ''));
-  const words = WORDS;
-  return words[seed % words.length];
+  // Knuth multiplicative hash — spreads consecutive dates across the full alphabet
+  const idx = ((seed * 2654435761) >>> 0) % WORDS.length;
+  return WORDS[idx];
 }
 
 function showWotdIfNeeded(){
