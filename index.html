@@ -1084,6 +1084,7 @@ function goPhrasePage(n){ phrasePage = n; window.scrollTo({top: 0, behavior: 'sm
 
 // ─── 複習清單 & AI 測驗 ───
 const QUIZ_FN_URL = 'https://generatevocabquiz-gtlccx6nka-uc.a.run.app';
+const PHRASE_QUIZ_FN_URL = 'https://generatephrasequiz-gtlccx6nka-uc.a.run.app';
 const PARAGRAPH_FN_URL = 'https://us-central1-news-english-ef2e4.cloudfunctions.net/generateParagraph';
 let markedWords = new Set(JSON.parse(localStorage.getItem('vocab_marked') || '[]'));
 let paraMode = 'story';
@@ -1092,6 +1093,7 @@ let qMode = 'sentence';
 let qQuestions = [], qIndex = 0, qScore = 0, qSelected = null;
 let phraseFiltered = [], phrasePage = 1, phraseSearch = '', phraseSelectedLetters = new Set(), phraseSort = 'az';
 let qSubject = 'word';
+let qPhraseMode = 'meaning';
 
 function saveMark(){
   localStorage.setItem('vocab_marked', JSON.stringify([...markedWords]));
@@ -1184,17 +1186,19 @@ function renderQuizSetup(){
   } else {
     html += `
       <div class="quiz-setup-title">🔖 片語測驗</div>
-      <p>選擇片語進行快速選義練習。每次 10 題，完全本地生成，無需網路。</p>
+      <p>選擇片語進行選義或句子填空練習，每次 10 題。</p>
       <div class="quiz-opt-label">題目類型</div>
       <div class="quiz-opt-group">
-        <button class="quiz-opt" style="opacity:0.6;cursor:default">🔤 片語選義（已選）</button>
+        <button class="quiz-pmode-opt quiz-opt ${qPhraseMode==='meaning'?'selected':''}" onclick="setQPhraseMode('meaning',this)">🔤 片語選義（基礎）</button>
+        <button class="quiz-pmode-opt quiz-opt ${qPhraseMode==='sentence'?'selected':''}" onclick="setQPhraseMode('sentence',this)">📝 句子填空選擇</button>
       </div>
       <div class="quiz-opt-label">出題範圍</div>
       <div class="quiz-opt-group">
         <button class="quiz-opt ${qSource==='filtered'?'selected':''}" onclick="setQSource('filtered',this)">🔍 目前篩選 (${phraseFilteredCount})</button>
         <button class="quiz-opt ${qSource==='all'?'selected':''}" onclick="setQSource('all',this)">📚 全部片語 (${PHRASES.length})</button>
       </div>
-      <button class="quiz-start-btn" onclick="startQuiz()">開始片語測驗 →</button>`;
+      <button class="quiz-start-btn" onclick="startQuiz()">${qPhraseMode==='sentence'?'開始 AI 出題 →':'開始片語測驗 →'}</button>
+      ${qPhraseMode==='sentence'?'<div class="quiz-note">由 Claude Haiku AI 生成 · 需要網路連線</div>':''}`;
   }
 
   html += `</div>`;
@@ -1219,14 +1223,51 @@ function setQSubject(subj, btn){
   btn.classList.add('selected');
   renderQuizSetup();
 }
+function setQPhraseMode(mode, btn){
+  qPhraseMode=mode;
+  document.querySelectorAll('.quiz-pmode-opt').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  renderQuizSetup();
+}
 
 async function startQuiz(){
   if(qSubject === 'phrase'){
     let pool = (qSource === 'filtered' && phraseFiltered.length) ? phraseFiltered : PHRASES;
     const selected = [...pool].sort(() => Math.random() - .5).slice(0, 10);
-    qQuestions = generatePhraseQuestions(selected);
-    qIndex = 0; qScore = 0; qSelected = null;
-    renderQuestion();
+
+    if(qPhraseMode === 'meaning'){
+      qQuestions = generatePhraseQuestions(selected);
+      qIndex = 0; qScore = 0; qSelected = null;
+      renderQuestion();
+      return;
+    }
+
+    // sentence 模式：呼叫 AI 生成句子
+    document.getElementById('quizSection').innerHTML=`
+      <div class="quiz-loading">
+        <div class="quiz-spinner"></div>
+        <h3>Claude AI 正在生成片語例句…</h3>
+        <p>正在為 ${selected.length} 個片語量身設計考題</p>
+      </div>`;
+    try{
+      const resp = await fetch(PHRASE_QUIZ_FN_URL,{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({phrases: selected.map(p=>({p:p.p,z:p.z}))})
+      });
+      if(!resp.ok) throw new Error(`伺服器錯誤 (HTTP ${resp.status})`);
+      const aiItems = await resp.json();
+      if(!Array.isArray(aiItems)||!aiItems.length) throw new Error('題目為空，請重試');
+      qQuestions = buildPhraseSentenceQuestions(selected, aiItems);
+      qIndex = 0; qScore = 0; qSelected = null;
+      renderQuestion();
+    }catch(e){
+      document.getElementById('quizSection').innerHTML=`
+        <div class="quiz-error">
+          <h3>⚠️ 出題失敗</h3>
+          <p>${e.message}</p>
+          <button class="quiz-start-btn" style="width:auto;padding:12px 28px" onclick="renderQuizSetup()">返回重試</button>
+        </div>`;
+    }
     return;
   }
 
@@ -1311,6 +1352,27 @@ function generateMeaningQuestions(selected){
       .map(a=>a.zh);
     const opts=[w.zh,...distractors].sort(()=>Math.random()-.5);
     return {type:'meaning',word:w.word,pos:w.pos||'',zh:w.zh,options:opts,answer:opts.indexOf(w.zh)};
+  });
+}
+
+function buildPhraseSentenceQuestions(selected, aiItems){
+  return aiItems.map((item, i)=>{
+    const p = selected[i] || selected[0];
+    const distractors = PHRASES
+      .filter(a => a.p !== p.p)
+      .sort(() => Math.random() - .5)
+      .slice(0, 3)
+      .map(a => a.p);
+    const opts = [p.p, ...distractors].sort(() => Math.random() - .5);
+    return {
+      type: 'phrase_sentence',
+      phrase: p.p, zh: p.z,
+      sentence: item.sentence || '',
+      translation: item.translation || '',
+      explanation: item.explanation || '',
+      options: opts,
+      answer: opts.indexOf(p.p)
+    };
   });
 }
 
@@ -1435,9 +1497,9 @@ function answerQ(idx){
   const q=qQuestions[qIndex];
   if(idx===q.answer){
     qScore++;
-    if(q.type!=='phrase') removeMark(q.word);
+    if(q.type==='meaning'||q.type==='sentence') removeMark(q.word);
   } else {
-    if(q.type!=='phrase') addMark(q.word);
+    if(q.type==='meaning'||q.type==='sentence') addMark(q.word);
   }
   renderQuestion();
 }
