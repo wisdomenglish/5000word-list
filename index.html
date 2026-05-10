@@ -2086,10 +2086,14 @@ function awmAutoLookup(){
   }
 
   // Step 2: debounced AI lookup
-  statusEl.innerHTML = '<span style="color:var(--muted)">🔍 查詢中…</span>';
+  statusEl.textContent = '';
   _awmTimer = setTimeout(async () => {
     const currentWord = (document.getElementById('awmWordEn')?.value || '').trim();
     if(currentWord.toLowerCase() !== word.toLowerCase()) return;
+    if(zhEl && !zhEl.value){
+      zhEl.disabled = true;
+      zhEl.placeholder = 'AI 查詢中…';
+    }
     try {
       const resp = await fetch(DEFINITION_FN_URL, {
         method: 'POST', headers: {'Content-Type': 'application/json'},
@@ -2097,14 +2101,17 @@ function awmAutoLookup(){
       });
       if(!resp.ok) throw new Error();
       const data = await resp.json();
+      if(zhEl) { zhEl.disabled = false; zhEl.placeholder = '中文解釋 *'; }
+      if(posEl) { posEl.disabled = false; }
       if(data.zh){
         if(zhEl && !zhEl.value) zhEl.value = data.zh;
         if(posEl && !posEl.value && data.pos) posEl.value = data.pos;
-        statusEl.innerHTML = '<span style="color:var(--accent)">✨ AI 已自動生成中文意思，可自行修改</span>';
+        statusEl.innerHTML = '<span style="color:var(--accent)">✨ AI 已自動填入，可自行修改</span>';
       } else {
         statusEl.textContent = '';
       }
     } catch(e) {
+      if(zhEl) { zhEl.disabled = false; zhEl.placeholder = '中文解釋 *'; }
       statusEl.textContent = '';
     }
   }, 650);
@@ -2113,8 +2120,9 @@ function awmAutoLookup(){
 function openAddWordModal(prefill){
   ['awmWordEn','awmWordPos','awmWordZh'].forEach(id=>{
     const el=document.getElementById(id);
-    if(el) el.value='';
+    if(el){ el.value=''; el.disabled=false; el.placeholder=(id==='awmWordZh'?'中文解釋 *':(id==='awmWordPos'?'詞性（選填）':'英文單字 *')); }
   });
+  clearTimeout(_awmTimer);
   document.getElementById('awmErr').textContent='';
   document.getElementById('awmLookupStatus').textContent='';
   if(prefill){ document.getElementById('awmWordEn').value=prefill; awmAutoLookup(); }
