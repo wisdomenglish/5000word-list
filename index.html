@@ -573,10 +573,11 @@ header{top:48px!important;}
     <button class="modal-close" onclick="closeAddWordModal()">✕</button>
     <div style="font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--text);margin-bottom:4px">＋ 新增單字</div>
     <div style="color:var(--muted);font-size:0.82rem;margin-bottom:18px">將單字加入自訂單字庫，可搜尋、發音、AI 例句、加入測驗</div>
-    <div class="form-row" style="margin-bottom:12px">
-      <input class="add-word-input" id="awmWordEn" placeholder="英文單字 *" autocomplete="off">
+    <div class="form-row" style="margin-bottom:6px">
+      <input class="add-word-input" id="awmWordEn" placeholder="英文單字 *" autocomplete="off" oninput="awmAutoLookup()">
       <input class="add-word-input add-word-pos" id="awmWordPos" placeholder="詞性（選填）" autocomplete="off">
     </div>
+    <div id="awmLookupStatus" style="font-size:0.75rem;min-height:16px;margin-bottom:8px;padding-left:2px"></div>
     <div class="form-row" style="margin-bottom:16px">
       <input class="add-word-input" id="awmWordZh" placeholder="中文解釋 *" autocomplete="off">
     </div>
@@ -1767,6 +1768,7 @@ function deleteCustomWord(word){
 // ─── Word Detail Modal ───
 const EXAMPLE_FN_URL  = 'https://generatewordexample-gtlccx6nka-uc.a.run.app';
 const ETYMOLOGY_FN_URL = 'https://generatewordetymology-gtlccx6nka-uc.a.run.app';
+const DEFINITION_FN_URL = 'https://generateworddefinition-gtlccx6nka-uc.a.run.app';
 let currentModalWord = null;
 let currentModalPhrase = null;
 
@@ -1965,13 +1967,58 @@ function retryPhraseModalEx(){
   fetchPhraseExample(currentModalPhrase, exEl);
 }
 
+let _awmTimer = null;
+function awmAutoLookup(){
+  const word = (document.getElementById('awmWordEn')?.value || '').trim();
+  const statusEl = document.getElementById('awmLookupStatus');
+  const zhEl = document.getElementById('awmWordZh');
+  const posEl = document.getElementById('awmWordPos');
+  clearTimeout(_awmTimer);
+  if(!statusEl) return;
+  if(!word || word.length < 2){ statusEl.textContent = ''; return; }
+
+  // Step 1: check local dictionary (instant)
+  const match = getAllWords().find(w => w.word.toLowerCase() === word.toLowerCase());
+  if(match){
+    statusEl.innerHTML = '<span style="color:#6ecf88">✓ 已在字典中找到，已自動填入</span>';
+    if(zhEl && !zhEl.value) zhEl.value = match.zh;
+    if(posEl && !posEl.value && match.pos) posEl.value = match.pos;
+    return;
+  }
+
+  // Step 2: debounced AI lookup
+  statusEl.innerHTML = '<span style="color:var(--muted)">🔍 查詢中…</span>';
+  _awmTimer = setTimeout(async () => {
+    const currentWord = (document.getElementById('awmWordEn')?.value || '').trim();
+    if(currentWord.toLowerCase() !== word.toLowerCase()) return;
+    try {
+      const resp = await fetch(DEFINITION_FN_URL, {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({word})
+      });
+      if(!resp.ok) throw new Error();
+      const data = await resp.json();
+      if(data.zh){
+        if(zhEl && !zhEl.value) zhEl.value = data.zh;
+        if(posEl && !posEl.value && data.pos) posEl.value = data.pos;
+        statusEl.innerHTML = '<span style="color:var(--accent)">✨ AI 已自動生成中文意思，可自行修改</span>';
+      } else {
+        statusEl.textContent = '';
+      }
+    } catch(e) {
+      statusEl.textContent = '';
+    }
+  }, 650);
+}
+
 function openAddWordModal(prefill){
   ['awmWordEn','awmWordPos','awmWordZh'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.value='';
   });
   document.getElementById('awmErr').textContent='';
-  if(prefill){ document.getElementById('awmWordEn').value=prefill; }
+  document.getElementById('awmLookupStatus').textContent='';
+  if(prefill){ document.getElementById('awmWordEn').value=prefill; awmAutoLookup(); }
   document.getElementById('addWordModal').style.display='flex';
   document.body.style.overflow='hidden';
   setTimeout(()=>document.getElementById('awmWordEn').focus(),80);
