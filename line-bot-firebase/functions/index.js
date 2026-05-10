@@ -1694,6 +1694,62 @@ Rules:
   }
 });
 
+// ========== Phrase Quiz API ==========
+const { Anthropic: AnthropicPQ } = require("@anthropic-ai/sdk");
+
+exports.generatePhraseQuiz = onRequest({ cors: true, invoker: "public" }, async (req, res) => {
+  if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
+  const { phrases } = req.body || {};
+  if (!phrases || !phrases.length) return res.status(400).json({ error: "Missing phrases" });
+
+  try {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY");
+    const client = new AnthropicPQ({ apiKey });
+
+    const phraseList = phrases.slice(0, 10)
+      .map(p => `"${p.p}" (meaning: ${p.z})`)
+      .join("\n");
+    const count = Math.min(phrases.length, 10);
+
+    const prompt = `Create ${count} fill-in-the-blank quiz sentences for these English phrases:
+${phraseList}
+
+Respond ONLY with a valid JSON array, no markdown, no extra text:
+[
+  {
+    "phrase": "the exact tested phrase",
+    "sentence": "English sentence with ______ where the phrase fits naturally.",
+    "translation": "整句話的繁體中文翻譯",
+    "explanation": "一句繁體中文解釋這個片語的用法或意思"
+  }
+]
+
+Rules:
+- Use ______ (6 underscores) as the blank
+- The sentence context should hint at the phrase meaning without revealing it
+- Keep sentences natural and at B1-B2 level
+- ALL Chinese text must be Traditional Chinese (繁體中文), NOT Simplified Chinese (簡體中文)
+- Output ONLY the JSON array, nothing else`;
+
+    const message = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 4096,
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    let raw = message.content[0].text.trim();
+    if (raw.startsWith("```"))
+      raw = raw.replace(/^```json?\s*/, "").replace(/\s*```$/, "").trim();
+
+    const data = JSON.parse(raw);
+    res.json(data);
+  } catch (e) {
+    console.error("[ERROR] generatePhraseQuiz:", e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ========== Paragraph Generation API ==========
 const { Anthropic: AnthropicPara } = require("@anthropic-ai/sdk");
 
