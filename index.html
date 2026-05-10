@@ -2279,6 +2279,10 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/5000word-list/sw.js');
   });
+  // 新 SW 接管後自動 reload，使用者重開網頁即可看到最新版本
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    window.location.reload();
+  });
 }
 </script>
 </body>
