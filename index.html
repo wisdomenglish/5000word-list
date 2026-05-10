@@ -702,7 +702,7 @@ function saveCustomWords(){
   localStorage.setItem(CUSTOM_WORDS_KEY, JSON.stringify(customWords));
   if(window._fbUser && window._fbDb){
     window._fbDb.collection('users').doc(window._fbUser.uid)
-      .set({ customWords }).catch(()=>{});
+      .set({ customWords }, { merge: true }).catch(()=>{});
   }
 }
 function getAllWords(){ return [...WORDS, ...customWords]; }
@@ -755,11 +755,24 @@ async function syncFromCloud(uid, db){
     const ref  = db.collection('users').doc(uid);
     const snap = await ref.get();
     if(snap.exists){
-      const cloud = snap.data().customWords || [];
-      customWords = cloud;
+      const data = snap.data();
+      // 自訂單字庫
+      customWords = data.customWords || [];
       localStorage.setItem(CUSTOM_WORDS_KEY, JSON.stringify(customWords));
-    } else if(customWords.length > 0){
-      await ref.set({ customWords });
+      // 複習清單（⭐ 星號單字）
+      if(data.markedWords !== undefined){
+        markedWords = new Set(data.markedWords);
+        localStorage.setItem('vocab_marked', JSON.stringify([...markedWords]));
+      } else if(markedWords.size > 0){
+        // 舊帳號首次同步：上傳本地星號到雲端
+        await ref.set({ markedWords: [...markedWords] }, { merge: true });
+      }
+    } else {
+      // 全新帳號：上傳本地資料到雲端
+      const upload = {};
+      if(customWords.length > 0) upload.customWords = customWords;
+      if(markedWords.size  > 0) upload.markedWords  = [...markedWords];
+      if(Object.keys(upload).length > 0) await ref.set(upload);
     }
   }catch(e){ console.error('雲端同步失敗',e); }
 }
@@ -1080,7 +1093,13 @@ let qQuestions = [], qIndex = 0, qScore = 0, qSelected = null;
 let phraseFiltered = [], phrasePage = 1, phraseSearch = '', phraseSelectedLetters = new Set(), phraseSort = 'az';
 let qSubject = 'word';
 
-function saveMark(){ localStorage.setItem('vocab_marked', JSON.stringify([...markedWords])); }
+function saveMark(){
+  localStorage.setItem('vocab_marked', JSON.stringify([...markedWords]));
+  if(window._fbUser && window._fbDb){
+    window._fbDb.collection('users').doc(window._fbUser.uid)
+      .set({ markedWords: [...markedWords] }, { merge: true }).catch(()=>{});
+  }
+}
 function syncMarkCount(){
   const el = document.getElementById('myWordsCount');
   if(!el) return;
