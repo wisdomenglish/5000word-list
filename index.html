@@ -1673,9 +1673,10 @@ function _speakBtnSvg(){ return `<svg width="13" height="13" viewBox="0 0 24 24"
 function _addWordFormHtml(){
   return `<div id="addWordForm" class="add-word-form" style="display:none">
     <div class="form-row">
-      <input class="add-word-input" id="newWordEn" placeholder="英文單字 *" autocomplete="off">
+      <input class="add-word-input" id="newWordEn" placeholder="英文單字 *" autocomplete="off" oninput="newWordAutoLookup()">
       <input class="add-word-input add-word-pos" id="newWordPos" placeholder="詞性（選填）" autocomplete="off">
     </div>
+    <div id="newWordLookupStatus" style="font-size:0.75rem;min-height:16px;margin-bottom:8px;padding-left:2px"></div>
     <div class="form-row">
       <input class="add-word-input" id="newWordZh" placeholder="中文解釋 *" autocomplete="off">
     </div>
@@ -1782,7 +1783,13 @@ function toggleAddWordForm(){
   const visible = form.style.display !== 'none';
   if(visible){
     editingWordKey = null;
-    ['newWordEn','newWordPos','newWordZh'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+    clearTimeout(_newWordTimerRef.t);
+    [['newWordEn','英文單字 *'],['newWordPos','詞性（選填）'],['newWordZh','中文解釋 *']].forEach(([id,ph])=>{
+      const el=document.getElementById(id);
+      if(el){ el.value=''; el.disabled=false; el.placeholder=ph; }
+    });
+    const statusEl=document.getElementById('newWordLookupStatus');
+    if(statusEl) statusEl.textContent='';
     const btn = document.getElementById('saveWordBtn');
     if(btn) btn.textContent = '儲存';
     const errEl = document.getElementById('addWordErr');
@@ -2066,17 +2073,19 @@ function retryPhraseModalEx(){
   fetchPhraseExample(currentModalPhrase, exEl);
 }
 
-let _awmTimer = null;
-function awmAutoLookup(){
-  const word = (document.getElementById('awmWordEn')?.value || '').trim();
-  const statusEl = document.getElementById('awmLookupStatus');
-  const zhEl = document.getElementById('awmWordZh');
-  const posEl = document.getElementById('awmWordPos');
-  clearTimeout(_awmTimer);
+const _awmTimerRef = {t:null};
+const _newWordTimerRef = {t:null};
+
+function _runAutoLookup(enId, zhId, posId, statusId, ref){
+  const wordEl   = document.getElementById(enId);
+  const zhEl     = document.getElementById(zhId);
+  const posEl    = document.getElementById(posId);
+  const statusEl = document.getElementById(statusId);
+  const word = (wordEl?.value || '').trim();
+  clearTimeout(ref.t);
   if(!statusEl) return;
   if(!word || word.length < 2){ statusEl.textContent = ''; return; }
 
-  // Step 1: check local dictionary (instant)
   const match = getAllWords().find(w => w.word.toLowerCase() === word.toLowerCase());
   if(match){
     statusEl.innerHTML = '<span style="color:#6ecf88">✓ 已在字典中找到，已自動填入</span>';
@@ -2085,44 +2094,38 @@ function awmAutoLookup(){
     return;
   }
 
-  // Step 2: debounced AI lookup
   statusEl.textContent = '';
-  _awmTimer = setTimeout(async () => {
-    const currentWord = (document.getElementById('awmWordEn')?.value || '').trim();
-    if(currentWord.toLowerCase() !== word.toLowerCase()) return;
-    if(zhEl && !zhEl.value){
-      zhEl.disabled = true;
-      zhEl.placeholder = 'AI 查詢中…';
-    }
+  ref.t = setTimeout(async () => {
+    const cur = (document.getElementById(enId)?.value || '').trim();
+    if(cur.toLowerCase() !== word.toLowerCase()) return;
+    if(zhEl && !zhEl.value){ zhEl.disabled = true; zhEl.placeholder = 'AI 查詢中…'; }
     try {
-      const resp = await fetch(DEFINITION_FN_URL, {
-        method: 'POST', headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({word})
-      });
+      const resp = await fetch(DEFINITION_FN_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({word}) });
       if(!resp.ok) throw new Error();
       const data = await resp.json();
-      if(zhEl) { zhEl.disabled = false; zhEl.placeholder = '中文解釋 *'; }
-      if(posEl) { posEl.disabled = false; }
+      if(zhEl){ zhEl.disabled = false; zhEl.placeholder = '中文解釋 *'; }
       if(data.zh){
         if(zhEl && !zhEl.value) zhEl.value = data.zh;
         if(posEl && !posEl.value && data.pos) posEl.value = data.pos;
-        statusEl.innerHTML = '<span style="color:var(--accent)">✨ AI 已自動填入，可自行修改</span>';
-      } else {
-        statusEl.textContent = '';
-      }
-    } catch(e) {
-      if(zhEl) { zhEl.disabled = false; zhEl.placeholder = '中文解釋 *'; }
-      statusEl.textContent = '';
+        if(statusEl) statusEl.innerHTML = '<span style="color:var(--accent)">✨ AI 已自動填入，可自行修改</span>';
+      } else { if(statusEl) statusEl.textContent = ''; }
+    } catch(e){
+      if(zhEl){ zhEl.disabled = false; zhEl.placeholder = '中文解釋 *'; }
+      if(statusEl) statusEl.textContent = '';
     }
   }, 300);
 }
+
+function newWordAutoLookup(){ _runAutoLookup('newWordEn','newWordZh','newWordPos','newWordLookupStatus', _newWordTimerRef); }
+
+function awmAutoLookup(){ _runAutoLookup('awmWordEn','awmWordZh','awmWordPos','awmLookupStatus', _awmTimerRef); }
 
 function openAddWordModal(prefill){
   ['awmWordEn','awmWordPos','awmWordZh'].forEach(id=>{
     const el=document.getElementById(id);
     if(el){ el.value=''; el.disabled=false; el.placeholder=(id==='awmWordZh'?'中文解釋 *':(id==='awmWordPos'?'詞性（選填）':'英文單字 *')); }
   });
-  clearTimeout(_awmTimer);
+  clearTimeout(_awmTimerRef.t);
   document.getElementById('awmErr').textContent='';
   document.getElementById('awmLookupStatus').textContent='';
   if(prefill){ document.getElementById('awmWordEn').value=prefill; awmAutoLookup(); }
