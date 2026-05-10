@@ -539,6 +539,10 @@ async function getOrFetchCalendarEvents() {
 
 function detectCalendarIntent(text) {
   if (/^(完成|未完成)/.test(text)) return "task_report";
+  if (/^教師名單$/.test(text.trim())) return "teacher_list";
+  if (/^新增老師\s+/.test(text.trim())) return "add_teacher";
+  if (/^我的ID$/.test(text.trim())) return "my_id";
+  if (/^移除老師\s+/.test(text.trim())) return "remove_teacher";
   if (/使用說明|使用方式|說明|指令|指令列表|選單|功能|訂閱功能|查詢功能|怎麼用|怎麼使用|如何使用|幫助|help/i.test(text)) return "help";
   if (/提醒狀態|訂閱狀態|目前狀態|檢查提醒|確認提醒|提醒確認|提醒開了嗎|提醒關了嗎|我訂閱了嗎|我有訂閱嗎|訂閱了嗎/.test(text)) return "status";
   if (/開啟提醒|訂閱提醒|加入提醒|開始提醒/.test(text)) return "subscribe";
@@ -728,7 +732,9 @@ function formatCalendarEvents(events, label) {
 // Returns { names: string[] | null, cleanTitle: string }
 // names=null means "everyone" ([全部] or no bracket)
 function parseEventTarget(title) {
-  const m = title.match(/^\[([^\]]+)\]\s*(.*)/);
+  // Normalize full-width brackets (e.g. ［Frank］ or [Frank］) to ASCII
+  const normalized = title.replace(/［/g, "[").replace(/］/g, "]");
+  const m = normalized.match(/^\[([^\]]+)\]\s*(.*)/);
   if (!m) return { names: null, cleanTitle: title };
   const inside = m[1].trim();
   const cleanTitle = m[2].trim() || title;
@@ -777,6 +783,7 @@ function buildReminderMessage(evt, cleanTitle, isToday = false) {
   msg += isToday
     ? `\n\n今天加油！💪`
     : `\n\n請做好準備，加油！💪`;
+  msg += `\n\n若老師尚未完成，請回覆：\n「${displayTitle}尚未完成，預計[日期]前完成」`;
   return msg;
 }
 
@@ -797,6 +804,51 @@ async function handleCalendarMessage(userMessage, replyToken, token, userId) {
         ? `✅ 已記錄：【${taskTitle}】完成！\n\n謝謝老師回報 😊`
         : `📝 已記錄：【${taskTitle}】未完成。\n\n已記下，加油！🙏`;
       await replyLineMessage(replyToken, { type: "text", text: replyText }, token);
+      return;
+    }
+    if (intent === "teacher_list") {
+      initializeFirebase();
+      const teacherSnap = await dbRef.ref("/teacher-mapping").get();
+      if (!teacherSnap.exists()) {
+        await replyLineMessage(replyToken, { type: "text", text: "📋 目前尚無老師清單" }, token);
+        return;
+      }
+      const teachers = Object.keys(teacherSnap.val());
+      const listText = `📋 教師名單（共 ${teachers.length} 位）\n\n${teachers.join("、")}`;
+      await replyLineMessage(replyToken, { type: "text", text: listText }, token);
+      return;
+    }
+    if (intent === "add_teacher") {
+      const m = userMessage.match(/^新增老師\s+(\S+)\s+(\S+)$/);
+      if (!m) {
+        await replyLineMessage(replyToken, { type: "text", text: "❌ 格式錯誤\n\n請使用：新增老師 名字 userID\n\n例如：新增老師 Frank U795afcd27f7012e5091e148880346c2e" }, token);
+        return;
+      }
+      const [, name, userIdValue] = m;
+      initializeFirebase();
+      await dbRef.ref(`/teacher-mapping/${name}`).set({ userId: userIdValue });
+      await replyLineMessage(replyToken, { type: "text", text: `✅ 已新增老師【${name}】！` }, token);
+      return;
+    }
+    if (intent === "my_id") {
+      await replyLineMessage(replyToken, { type: "text", text: `🆔 您的 ID：\n\n${userId}` }, token);
+      return;
+    }
+    if (intent === "remove_teacher") {
+      const m = userMessage.match(/^移除老師\s+(\S+)$/);
+      if (!m) {
+        await replyLineMessage(replyToken, { type: "text", text: "❌ 格式錯誤\n\n請使用：移除老師 名字\n\n例如：移除老師 Frank" }, token);
+        return;
+      }
+      const [, name] = m;
+      initializeFirebase();
+      const teacherSnap = await dbRef.ref(`/teacher-mapping/${name}`).get();
+      if (!teacherSnap.exists()) {
+        await replyLineMessage(replyToken, { type: "text", text: `❌ 老師【${name}】不存在` }, token);
+        return;
+      }
+      await dbRef.ref(`/teacher-mapping/${name}`).remove();
+      await replyLineMessage(replyToken, { type: "text", text: `✅ 已移除老師【${name}】！` }, token);
       return;
     }
     if (intent === "refresh") {
@@ -1536,6 +1588,51 @@ Rules:
     res.json(data);
   } catch (e) {
     console.error("[ERROR] generateWordExample:", e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ========== Word Definition API ==========
+const { Anthropic: AnthropicDef } = require("@anthropic-ai/sdk");
+
+exports.generateWordDefinition = onRequest({ cors: true, invoker: "public" }, async (req, res) => {
+  if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
+  const { word } = req.body || {};
+  if (!word) return res.status(400).json({ error: "Missing word" });
+
+  try {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY");
+    const client = new AnthropicDef({ apiKey });
+
+    const prompt = `Look up the English word "${word}" and provide its primary Traditional Chinese definition and part of speech.
+
+Respond ONLY with valid JSON, no markdown, no extra text:
+{
+  "zh": "主要中文意思",
+  "pos": "詞性縮寫"
+}
+
+Rules:
+- zh: most common meaning in Traditional Chinese (繁體中文), concise (3-12 characters). If 2 common meanings, separate with ；
+- pos: use standard abbreviations only: n. / v. / adj. / adv. / prep. / conj. / pron. / interj.
+- ALL Chinese text must be Traditional Chinese (繁體中文), NOT Simplified Chinese
+- Output ONLY the JSON object, nothing else`;
+
+    const message = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 128,
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    let raw = message.content[0].text.trim();
+    if (raw.startsWith("```"))
+      raw = raw.replace(/^```json?\s*/, "").replace(/\s*```$/, "").trim();
+
+    const data = JSON.parse(raw);
+    res.json(data);
+  } catch (e) {
+    console.error("[ERROR] generateWordDefinition:", e.message);
     res.status(500).json({ error: e.message });
   }
 });
