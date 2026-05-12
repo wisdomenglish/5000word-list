@@ -15,9 +15,11 @@ const BOT_CONFIG = {
   "Ubf2dcf1c5ebd1103328a7af4e9d7aee7": {
     name: "Frank Line英語教室 v2",
     channelId: 2009816850,
+    supportsImage: true,
+    imageMode: "solve",
     secretEnvVar: "LINE_CHANNEL_SECRET",
     tokenEnvVar: "LINE_CHANNEL_ACCESS_TOKEN",
-    joinMessage: `大家好！我是 Frank 老師的英文小幫手 👋\n\n使用方式：\n在訊息中 @Bot 並提問即可\n\n例如：\n@Bot 文法: is 和 are 的差別\n@Bot 單字: serendipity\n\n期待為大家解答英文問題！😊`
+    joinMessage: `大家好！我是 Frank 老師的英文小幫手 👋\n\n我可以幫你：\n\n📚 文法問答、單字查詢、句子糾錯\n📝 作文批改、寫作範例、句子翻譯\n📷 傳照片解題（選擇題、填空題、閱讀測驗等）\n\n直接傳圖 → 我幫你解題！📸\n\n群組使用：@Bot 並提問或傳圖即可\n\n期待為大家解答英文問題！😊`
   },
   "U45ed153ac9a4c65ec21dc3eb446649c1": {
     name: "Ivy's English Calendar",
@@ -30,6 +32,7 @@ const BOT_CONFIG = {
   "U47f8478ef76c01abaf8a136b1ab80bbf": {
     name: "Wisdom AI Teacher",
     supportsImage: true,
+    imageMode: "rewrite",
     secretEnvVar: "LINE_CHANNEL_SECRET_BOT3",
     tokenEnvVar: "LINE_CHANNEL_ACCESS_TOKEN_BOT3",
     joinMessage: `大家好！我是 Wisdom AI Teacher 👋\n\n我可以幫你：\n\n📚 文法問答、單字查詢、句子糾錯\n📝 作文批改、寫作範例、句子翻譯\n🖼️ 傳照片作文或看圖 → 我幫你改寫！\n\n傳圖片後，在 30 秒內回覆：\n✏️「初階改寫」→ 簡單易懂版\n🎯「進階改寫」→ 高分進階版\n\n期待為大家解答英文問題！😊`
@@ -317,7 +320,7 @@ function buildPrompt(intent, subIntent = null) {
 function generateSmartResponse(userMessage) {
   const greetingPattern = /^(hi|hello|你好|嗨|早安|晚安|早|晚|哈|hi there)/i;
   if (greetingPattern.test(userMessage.trim())) {
-    return `嗨！我是 Frank Lin 老師的英文學習助手 😊\n\n我可以幫你：\n\n📚 文法問答\n例：is 和 are 的差別？\n\n📖 單字查詢\n例：單字: serendipity\n\n✏️ 句子糾錯\n例：糾錯: I go to school yesterday\n\n📝 作文批改\n例：批改: [貼上英文段落]\n\n🌐 句子翻譯\n例：翻譯: How are you?\n\n有任何英文問題都可以問我！💪`;
+    return `嗨！我是 Frank Lin 老師的英文學習助手 😊\n\n我可以幫你：\n\n📚 文法問答\n例：is 和 are 的差別？\n\n📖 單字查詢\n例：單字: serendipity\n\n✏️ 句子糾錯\n例：糾錯: I go to school yesterday\n\n📝 作文批改\n例：批改: [貼上英文段落]\n\n🌐 句子翻譯\n例：翻譯: How are you?\n\n📷 傳照片解題\n選擇題、填空題、閱讀測驗都可以！\n直接拍照傳給我 📸\n\n有任何英文問題都可以問我！💪`;
   }
   const englishKeywords = /英文|文法|單字|單词|詞彙|翻譯|句子|作文|文章|發音|例句|糾正|改正|寫作|批改|grammar|word|sentence|essay|writing|pronunciation/i;
   if (!englishKeywords.test(userMessage)) {
@@ -327,7 +330,7 @@ function generateSmartResponse(userMessage) {
 }
 
 function getHelpMessage() {
-  return `嗨！我是 Frank Lin 老師的英文學習助手 😊\n\n我可以幫你：\n\n📚 文法問答\n例：is 和 are 的差別？\n\n📖 單字查詢\n例：單字: serendipity\n\n✏️ 句子糾錯\n例：糾錯: I go to school yesterday\n\n📝 作文批改\n例：批改: [貼上英文段落]\n\n🌐 句子翻譯\n例：翻譯: How are you?\n\n有任何英文問題都可以問我！💪`;
+  return `嗨！我是 Frank Lin 老師的英文學習助手 😊\n\n我可以幫你：\n\n📚 文法問答\n例：is 和 are 的差別？\n\n📖 單字查詢\n例：單字: serendipity\n\n✏️ 句子糾錯\n例：糾錯: I go to school yesterday\n\n📝 作文批改\n例：批改: [貼上英文段落]\n\n🌐 句子翻譯\n例：翻譯: How are you?\n\n📷 傳照片解題\n選擇題、填空題、閱讀測驗都可以！\n直接拍照傳給我 📸\n\n有任何英文問題都可以問我！💪`;
 }
 
 // ========== 行事曆 Functions ==========
@@ -1172,6 +1175,60 @@ async function handleImageMessage(messageId, replyToken, token, userId) {
   }
 }
 
+// ========== 圖片解題（Frank Line英語教室）==========
+async function handleFrankImageMessage(messageId, replyToken, token) {
+  try {
+    const { base64, mediaType } = await fetchLineImageAsBase64(messageId, token);
+    initializeAnthropic();
+    const systemPrompt = `你是 Frank Lin 老師的英文解題助手。學生傳來英文題目的照片，請幫忙解題。
+
+題型可能包括：選擇題、填空題、閱讀測驗、文法改錯、翻譯題、作文題、單字練習等。
+
+請依下列格式回應：
+
+📸 題目辨識
+━━━━━━━━━━━━━━━━
+[用繁體中文描述照片中的題型與主要內容]
+
+✅ 答案與解析
+━━━━━━━━━━━━━━━━
+[逐題或逐步給出答案，並說明理由]
+
+📖 文法／概念說明
+━━━━━━━━━━━━━━━━
+[解釋題目涉及的文法規則或重點概念，幫助學生真正理解]
+
+💡 小提醒
+━━━━━━━━━━━━━━━━
+[給學生一個實用的學習建議，避免類似錯誤]
+
+💪 [鼓勵語]
+
+格式規定：
+- 全程使用繁體中文
+- 使用分隔線 ━━━━━━━━━━━━━━━━ 和 emoji 區分段落
+- 絕對不使用 ** 粗體標記
+- 若照片模糊或看不清楚題目，請說明並請學生重新拍照`;
+
+    const message = await anthropic.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 2048,
+      system: systemPrompt,
+      messages: [{
+        role: "user",
+        content: [
+          { type: "image", source: { type: "base64", media_type: mediaType, data: base64 } },
+          { type: "text", text: "請幫我解這道英文題目" }
+        ]
+      }]
+    });
+    await replyLineMessage(replyToken, { type: "text", text: message.content[0].text }, token);
+  } catch (error) {
+    console.error("[ERROR] handleFrankImageMessage:", error.message);
+    await replyLineMessage(replyToken, { type: "text", text: "抱歉，處理圖片時發生錯誤。請稍後再試，或重新拍一張更清楚的照片。📸" }, token);
+  }
+}
+
 // Wisdom AI Teacher 專屬文字訊息處理（智能回覆使用 Wisdom 風格訊息）
 async function handleWisdomTextMessage(userMessage, replyToken, token) {
   try {
@@ -1299,16 +1356,20 @@ app.post("/", async (req, res) => {
         }
         if (botConfig.role === "calendar") {
           await handleCalendarMessage(userMessage, event.replyToken, botCredentials.token, event.source.userId);
-        } else if (botConfig.supportsImage && /^(初階改寫|進階改寫)$/.test(userMessage.trim())) {
+        } else if (botConfig.imageMode === "rewrite" && /^(初階改寫|進階改寫)$/.test(userMessage.trim())) {
           const level = userMessage.trim().startsWith("進階") ? "進階" : "初階";
           await handleRewriteRequest(level, event.replyToken, botCredentials.token, event.source.userId);
-        } else if (botConfig.supportsImage) {
+        } else if (botConfig.imageMode === "rewrite") {
           await handleWisdomTextMessage(userMessage, event.replyToken, botCredentials.token);
         } else {
           await handleTextMessage(userMessage, event.replyToken, botCredentials.token);
         }
       } else if (event.type === "message" && event.message.type === "image" && botConfig.supportsImage) {
-        await handleImageMessage(event.message.id, event.replyToken, botCredentials.token, event.source.userId);
+        if (botConfig.imageMode === "rewrite") {
+          await handleImageMessage(event.message.id, event.replyToken, botCredentials.token, event.source.userId);
+        } else {
+          await handleFrankImageMessage(event.message.id, event.replyToken, botCredentials.token);
+        }
       } else if (event.type === "join") {
         try {
           const joinMessage = botConfig.joinMessage;
@@ -1726,8 +1787,10 @@ Respond ONLY with a valid JSON array, no markdown, no extra text:
 ]
 
 Rules:
-- Use ______ (6 underscores) as the blank
-- The sentence context should hint at the phrase meaning without revealing it
+- Use ______ (6 underscores) as the blank placeholder for the phrase
+- CRITICAL: Do NOT include any part of the phrase text anywhere else in the sentence — the phrase must appear ONLY as ______
+- CRITICAL: The sentence MUST be structured so that inserting the EXACT phrase (word-for-word, no conjugation) directly into the blank produces a grammatically correct English sentence. Before finalising each sentence, verify: [words before blank] + EXACT_PHRASE + [words after blank] = grammatically correct. If the phrase starts with "be" (e.g. "be opposed to", "be aware of"), do NOT place a conjugated form of "be" or any auxiliary verb immediately before the blank — instead use a modal (would, should, might, can) or infinitive marker "to" before the blank so the base form fits naturally (e.g. "My parents would ______ my decision" → "would be opposed to" ✓; NOT "My parents are ______ my decision" → "are be opposed to" ✗)
+- The sentence context (surrounding words) should imply the meaning without revealing the exact phrase
 - Keep sentences natural and at B1-B2 level
 - ALL Chinese text must be Traditional Chinese (繁體中文), NOT Simplified Chinese (簡體中文)
 - Output ONLY the JSON array, nothing else`;
