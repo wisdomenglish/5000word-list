@@ -1330,7 +1330,7 @@ function renderPhraseGrid(){
   grid.innerHTML = slice.length
     ? slice.map((p, i) => {
         const idx = (phrasePage - 1) * PER + i;
-        return `<div class="phrase-card" data-pidx="${idx}" style="cursor:pointer"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px"><div class="phrase-en">${p.p}</div><button class="speak-btn" style="width:32px;height:32px;flex-shrink:0;margin-top:1px" data-word="${cleanPhraseText(p.p).replace(/"/g,'&quot;')}" onclick="event.stopPropagation();speak(this.dataset.word,this)">${_speakBtnSvg()}</button></div><div class="phrase-zh">${p.z}</div></div>`;
+        return `<div class="phrase-card" data-pidx="${idx}"><div class="card-top"><div class="phrase-en">${p.p}</div><button class="speak-btn" data-word="${cleanPhraseText(p.p).replace(/"/g,'&quot;')}" onclick="event.stopPropagation();speak(this.dataset.word,this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg></button></div><div class="phrase-zh">${p.z}</div></div>`;
       }).join('')
     : `<div class="empty">找不到符合的片語</div>`;
   if(!grid._phraseClickBound){
