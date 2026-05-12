@@ -93,6 +93,38 @@ header{top:48px!important;}
 #googleLogoutBtn{background:none;border:1px solid var(--border);color:var(--muted);padding:5px 10px;border-radius:6px;font-size:0.75rem;cursor:pointer;width:100%;margin-top:8px;transition:border-color .2s;}
 #googleLogoutBtn:hover{color:var(--text);border-color:var(--muted);}
 .sync-badge{font-size:0.65rem;color:var(--accent);margin-left:2px;}
+/* ── Profile & Stats (drawer) ── */
+#drawerProfileSection{padding:14px 18px;border-bottom:1px solid var(--border);}
+.drawer-stats{display:flex;gap:6px;margin-top:10px;}
+.drawer-stat-chip{flex:1;background:rgba(124,106,247,.08);border:1px solid rgba(124,106,247,.15);border-radius:8px;padding:7px 5px;text-align:center;}
+.drawer-stat-num{font-size:1.05rem;font-weight:700;color:var(--accent);}
+.drawer-stat-lbl{font-size:0.6rem;color:var(--muted);margin-top:2px;}
+.profile-info{font-size:0.82rem;color:var(--text);line-height:1.5;margin-bottom:6px;}
+.profile-edit-btn{background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:0.74rem;padding:5px 10px;cursor:pointer;transition:all .2s;margin-top:8px;}
+.profile-edit-btn:hover{border-color:var(--muted);color:var(--text);}
+/* ── Leaderboard (drawer) ── */
+#drawerLbSection{padding:14px 18px 22px;}
+.lb-tabs{display:flex;gap:3px;margin-bottom:11px;background:var(--card);border-radius:8px;padding:3px;}
+.lb-tab{flex:1;background:none;border:none;border-radius:6px;color:var(--muted);font-size:0.68rem;padding:5px 2px;cursor:pointer;transition:all .15s;font-family:inherit;}
+.lb-tab.active{background:rgba(124,106,247,.18);color:var(--accent);font-weight:600;}
+.lb-row{display:flex;align-items:center;gap:8px;padding:7px 3px;border-bottom:1px solid rgba(255,255,255,.04);}
+.lb-row:last-child{border-bottom:none;}
+.lb-row.lb-self{background:rgba(124,106,247,.07);border-radius:8px;padding:7px 8px;margin:2px -5px;}
+.lb-rank{font-size:0.82rem;min-width:22px;text-align:center;flex-shrink:0;}
+.lb-info{flex:1;min-width:0;}
+.lb-name{font-size:0.79rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lb-meta{font-size:0.64rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lb-you{background:rgba(124,106,247,.2);color:var(--accent);font-size:0.57rem;padding:1px 5px;border-radius:10px;font-weight:700;vertical-align:middle;margin-left:4px;}
+.lb-count{font-size:0.86rem;font-weight:700;color:var(--accent);flex-shrink:0;text-align:right;line-height:1.2;}
+.lb-unit{font-size:0.63rem;color:var(--muted);font-weight:400;}
+.lb-empty{color:var(--muted);font-size:0.79rem;padding:14px 4px;text-align:center;}
+/* ── Profile Setup Modal ── */
+#profileModal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:400;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);}
+.pm-box{background:var(--surface);border-radius:24px 24px 0 0;padding:26px 22px 36px;width:100%;max-width:480px;position:relative;}
+.pm-title{font-size:1rem;font-weight:700;margin-bottom:18px;}
+.pm-label{font-size:0.74rem;color:var(--muted);display:block;margin-bottom:5px;font-weight:600;letter-spacing:.04em;}
+.pm-input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:0.9rem;padding:10px 12px;outline:none;box-sizing:border-box;margin-bottom:12px;transition:border-color .2s;font-family:inherit;}
+.pm-input:focus{border-color:var(--accent);}
 /* ── Star Button on Word Card ── */
 .mark-btn{position:absolute;bottom:4px;right:4px;background:none;border:none;cursor:pointer;font-size:0.95rem;opacity:0.22;transition:opacity .2s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;padding:10px;}
 .mark-btn:hover,.mark-btn.marked{opacity:1;}
@@ -366,9 +398,25 @@ header{top:48px!important;}
       <button id="googleLogoutBtn" onclick="fbSignOut()">登出</button>
     </div>
   </div>
+  <div id="drawerProfileSection" style="display:none">
+    <div class="drawer-section-label">👤 我的資料</div>
+    <div id="drawerProfileInfo" class="profile-info"></div>
+    <div id="drawerStatsArea" class="drawer-stats"></div>
+    <button class="profile-edit-btn" onclick="openProfileModal()">✏️ 設定 / 編輯資料</button>
+  </div>
   <div class="drawer-section">
     <div class="drawer-section-label">其他</div>
     <button class="drawer-nav-btn" id="drawerNewsBtn" onclick="switchTab('news');closeDrawer()">📢 公告 &amp; 更新記錄</button>
+  </div>
+  <div id="drawerLbSection">
+    <div class="drawer-section-label">🏆 排行榜</div>
+    <div class="lb-tabs">
+      <button class="lb-tab active" data-mode="week"  onclick="showLeaderboard('week',this)">本週</button>
+      <button class="lb-tab"        data-mode="month" onclick="showLeaderboard('month',this)">本月</button>
+      <button class="lb-tab"        data-mode="total" onclick="showLeaderboard('total',this)">累積</button>
+      <button class="lb-tab"        data-mode="words" onclick="showLeaderboard('words',this)">單字庫</button>
+    </div>
+    <div id="leaderboardList"><div class="lb-empty">開啟選單自動載入</div></div>
   </div>
 </div>
 <div id="dictSection">
@@ -433,6 +481,21 @@ header{top:48px!important;}
   <div class="news-wrap">
     <div class="news-page-title">📢 更新公告</div>
     <div class="news-page-sub">記錄每次功能新增與優化內容</div>
+
+    <!-- ══ 2026-05-12 ══ -->
+    <div class="news-card">
+      <div class="news-card-top">
+        <span class="news-date">2026-05-12</span>
+        <span class="news-type feature">新功能</span>
+      </div>
+      <div class="news-title">🏆 新增班級排行榜功能</div>
+      <ul class="news-list">
+        <li><strong>週 / 月 / 累計答題排行榜</strong>：登入 Google 帳號並設定姓名後，即可出現在班級排行榜。每次在測驗 Tab 回答一道題目算 1 次，每週一自動重新計算週排名。</li>
+        <li><strong>自訂單字庫排行</strong>：另有「單字庫」排行，顯示各同學新增的自訂單字總數量。</li>
+        <li><strong>設定個人資料</strong>：點擊右上角 ☰ 選單 → 「設定 / 編輯資料」輸入姓名、年級、學校，即可出現在排行榜中。</li>
+        <li><strong>個人答題統計</strong>：登入後在 ☰ 選單可看到本週 / 本月 / 累計答題數。</li>
+      </ul>
+    </div>
 
     <!-- ══ 2026-05-10 ══ -->
     <div class="news-card">
@@ -648,6 +711,21 @@ header{top:48px!important;}
   </div>
 </div>
 
+<div id="profileModal" style="display:none" onclick="if(event.target===this)closeProfileModal()">
+  <div class="pm-box">
+    <button class="modal-close" onclick="closeProfileModal()">✕</button>
+    <div class="pm-title">👤 設定我的資料</div>
+    <label class="pm-label">姓名 / 暱稱（排行榜顯示用）*</label>
+    <input class="pm-input" id="pmName" placeholder="例如：小明、M同學" maxlength="30">
+    <label class="pm-label">年級（選填）</label>
+    <input class="pm-input" id="pmGrade" placeholder="例如：高一、大三" maxlength="20">
+    <label class="pm-label">學校（選填）</label>
+    <input class="pm-input" id="pmSchool" placeholder="例如：台北高中" maxlength="40">
+    <div id="pmErr" style="color:#e06c8a;font-size:0.8rem;min-height:18px;margin-bottom:10px"></div>
+    <button class="quiz-start-btn" onclick="saveProfile()">儲存並加入排行榜</button>
+  </div>
+</div>
+
 <!-- Word of the Day Modal -->
 <div id="wotdModal" style="display:none">
   <div class="wotd-card">
@@ -722,8 +800,157 @@ function saveCustomWords(){
     window._fbDb.collection('users').doc(window._fbUser.uid)
       .set({ customWords }, { merge: true }).catch(()=>{});
   }
+  debouncedSaveStats();
 }
 function getAllWords(){ return [...WORDS, ...customWords]; }
+
+/* ── Stats & Leaderboard ── */
+const STATS_KEY   = 'vocab_stats';
+const PROFILE_KEY = 'vocab_profile';
+let userStats   = JSON.parse(localStorage.getItem(STATS_KEY)   || '{"weeklyReviews":0,"monthlyReviews":0,"totalReviews":0,"weekKey":"","monthKey":""}');
+let userProfile = JSON.parse(localStorage.getItem(PROFILE_KEY) || 'null');
+
+function _escH(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function getWeekKey(d){
+  const date = new Date(d);
+  const day  = date.getDay() || 7;
+  date.setDate(date.getDate() - day + 1);
+  return date.toISOString().slice(0, 10);
+}
+
+function incrementReviewStat(){
+  const now = new Date();
+  const wk  = getWeekKey(now);
+  const mk  = now.toISOString().slice(0, 7);
+  if(userStats.weekKey  !== wk){ userStats.weeklyReviews  = 0; userStats.weekKey  = wk; }
+  if(userStats.monthKey !== mk){ userStats.monthlyReviews = 0; userStats.monthKey = mk; }
+  userStats.weeklyReviews++;
+  userStats.monthlyReviews++;
+  userStats.totalReviews++;
+  localStorage.setItem(STATS_KEY, JSON.stringify(userStats));
+  debouncedSaveStats();
+}
+
+let _statsTimer = null;
+function debouncedSaveStats(){ clearTimeout(_statsTimer); _statsTimer = setTimeout(saveStatsToCloud, 2000); }
+
+async function saveStatsToCloud(){
+  const user = window._fbUser;
+  const db   = window._fbDb;
+  if(!user || !db) return;
+  try{
+    await db.collection('users').doc(user.uid).set({ stats: userStats }, { merge: true });
+    if(userProfile?.name){
+      await db.collection('leaderboard').doc(user.uid).set({
+        name:           userProfile.name,
+        grade:          userProfile.grade  || '',
+        school:         userProfile.school || '',
+        weeklyReviews:  userStats.weeklyReviews,
+        monthlyReviews: userStats.monthlyReviews,
+        totalReviews:   userStats.totalReviews,
+        customWordCount: customWords.length,
+        weekKey:        userStats.weekKey,
+        monthKey:       userStats.monthKey,
+        updatedAt:      firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
+  }catch(e){ console.error('排行榜同步失敗', e); }
+}
+
+function renderDrawerStats(){
+  const sec  = document.getElementById('drawerProfileSection');
+  const user = window._fbUser;
+  if(!user){ if(sec) sec.style.display='none'; return; }
+  if(sec) sec.style.display='block';
+  const infoEl  = document.getElementById('drawerProfileInfo');
+  const statsEl = document.getElementById('drawerStatsArea');
+  if(infoEl) infoEl.innerHTML = userProfile?.name
+    ? `<strong>${_escH(userProfile.name)}</strong>${userProfile.grade ? ` · ${_escH(userProfile.grade)}` : ''}${userProfile.school ? ` · ${_escH(userProfile.school)}` : ''}`
+    : '<span style="color:var(--muted);font-size:0.78rem">尚未設定暱稱，設定後可加入排行榜</span>';
+  if(statsEl) statsEl.innerHTML =
+    `<div class="drawer-stat-chip"><div class="drawer-stat-num">${userStats.weeklyReviews}</div><div class="drawer-stat-lbl">本週答題</div></div>` +
+    `<div class="drawer-stat-chip"><div class="drawer-stat-num">${userStats.monthlyReviews}</div><div class="drawer-stat-lbl">本月答題</div></div>` +
+    `<div class="drawer-stat-chip"><div class="drawer-stat-num">${userStats.totalReviews}</div><div class="drawer-stat-lbl">累計答題</div></div>`;
+}
+
+function openProfileModal(){
+  if(!window._fbUser){ alert('請先登入 Google 帳號才能設定資料'); return; }
+  document.getElementById('pmName').value   = userProfile?.name   || '';
+  document.getElementById('pmGrade').value  = userProfile?.grade  || '';
+  document.getElementById('pmSchool').value = userProfile?.school || '';
+  document.getElementById('pmErr').textContent = '';
+  document.getElementById('profileModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeProfileModal(){
+  document.getElementById('profileModal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+async function saveProfile(){
+  const name = document.getElementById('pmName').value.trim().slice(0, 30);
+  if(!name){ document.getElementById('pmErr').textContent = '請輸入姓名或暱稱'; return; }
+  userProfile = {
+    name,
+    grade:  document.getElementById('pmGrade').value.trim().slice(0, 20),
+    school: document.getElementById('pmSchool').value.trim().slice(0, 40)
+  };
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(userProfile));
+  const user = window._fbUser, db = window._fbDb;
+  if(user && db){
+    try{
+      await db.collection('users').doc(user.uid).set({ profile: userProfile }, { merge: true });
+      await saveStatsToCloud();
+    }catch(e){ console.error('儲存資料失敗', e); }
+  }
+  closeProfileModal();
+  renderDrawerStats();
+  const activeTab = document.querySelector('.lb-tab.active');
+  showLeaderboard(activeTab?.dataset.mode || 'week', activeTab);
+}
+
+async function showLeaderboard(mode, btn){
+  document.querySelectorAll('.lb-tab').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  const listEl = document.getElementById('leaderboardList');
+  if(!listEl) return;
+  listEl.innerHTML = '<div class="lb-empty">載入中…</div>';
+  const db = window._fbDb;
+  if(!db){ listEl.innerHTML = '<div class="lb-empty">請連線網路後重試</div>'; return; }
+  try{
+    const fieldMap = { week:'weeklyReviews', month:'monthlyReviews', total:'totalReviews', words:'customWordCount' };
+    const field    = fieldMap[mode] || 'weeklyReviews';
+    const snap = await db.collection('leaderboard').orderBy(field, 'desc').limit(20).get();
+    const curWeek  = getWeekKey(new Date());
+    const curMonth = new Date().toISOString().slice(0, 7);
+    const uid = window._fbUser?.uid;
+    let docs = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+    if(mode === 'week')  docs.forEach(d => { if(d.weekKey  !== curWeek)  d.weeklyReviews  = 0; });
+    if(mode === 'month') docs.forEach(d => { if(d.monthKey !== curMonth) d.monthlyReviews = 0; });
+    if(mode === 'week')  docs.sort((a, b) => b.weeklyReviews  - a.weeklyReviews);
+    if(mode === 'month') docs.sort((a, b) => b.monthlyReviews - a.monthlyReviews);
+    docs = docs.filter(d => (d[field] || 0) > 0);
+    if(!docs.length){ listEl.innerHTML = '<div class="lb-empty">本期尚無記錄，快去答題搶第一！🎯</div>'; return; }
+    const unit = mode === 'words' ? '字' : '題';
+    listEl.innerHTML = docs.map((d, i) => {
+      const isSelf = d.uid === uid;
+      const count  = d[field] || 0;
+      const medal  = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
+      const meta   = [d.grade, d.school].filter(Boolean).map(_escH).join(' · ');
+      return `<div class="lb-row${isSelf ? ' lb-self' : ''}">
+        <span class="lb-rank">${medal}</span>
+        <div class="lb-info">
+          <div class="lb-name">${_escH(d.name)}${isSelf ? '<span class="lb-you">我</span>' : ''}</div>
+          ${meta ? `<div class="lb-meta">${meta}</div>` : ''}
+        </div>
+        <div class="lb-count">${count} <span class="lb-unit">${unit}</span></div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    console.error('排行榜讀取失敗', e);
+    listEl.innerHTML = '<div class="lb-empty">載入失敗（請確認 Firestore 規則）</div>';
+  }
+}
 
 /* ── Firebase Google Auth + Firestore 雲端同步 ── */
 (function initFirebase(){
@@ -752,6 +979,7 @@ function getAllWords(){ return [...WORDS, ...customWords]; }
       avatar.src = user.photoURL || '';
       nameEl.textContent = user.displayName || user.email || '';
       await syncFromCloud(user.uid, db);
+      renderDrawerStats();
       if(typeof renderMyWords==='function') renderMyWords();
       if(typeof buildAlphaBar==='function') buildAlphaBar();
       if(typeof update==='function') update();
@@ -782,8 +1010,16 @@ async function syncFromCloud(uid, db){
         markedWords = new Set(data.markedWords);
         localStorage.setItem('vocab_marked', JSON.stringify([...markedWords]));
       } else if(markedWords.size > 0){
-        // 舊帳號首次同步：上傳本地星號到雲端
         await ref.set({ markedWords: [...markedWords] }, { merge: true });
+      }
+      // 答題統計 & 個人資料
+      if(data.stats){
+        userStats = { ...userStats, ...data.stats };
+        localStorage.setItem(STATS_KEY, JSON.stringify(userStats));
+      }
+      if(data.profile){
+        userProfile = data.profile;
+        localStorage.setItem(PROFILE_KEY, JSON.stringify(userProfile));
       }
     } else {
       // 全新帳號：上傳本地資料到雲端
@@ -1156,6 +1392,9 @@ function openDrawer(){
   document.getElementById('sideDrawer').classList.add('open');
   document.getElementById('drawerOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
+  renderDrawerStats();
+  const activeTab = document.querySelector('.lb-tab.active');
+  showLeaderboard(activeTab?.dataset.mode || 'week', activeTab);
 }
 function closeDrawer(){
   document.getElementById('sideDrawer').classList.remove('open');
@@ -1519,6 +1758,7 @@ function answerQ(idx){
   } else {
     if(q.type==='meaning'||q.type==='sentence') addMark(q.word);
   }
+  incrementReviewStat();
   renderQuestion();
 }
 
