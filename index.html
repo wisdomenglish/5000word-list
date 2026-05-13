@@ -417,6 +417,13 @@ header{top:52px!important;}
 .drawer-nav-btn.active{background:rgba(67,97,238,.08);color:var(--accent);}
 .drawer-stat-chip{background:rgba(67,97,238,.06);border:1px solid rgba(67,97,238,.12);}
 .drawer-stat-num{color:var(--accent);}
+.drawer-featured-btn{display:flex;align-items:center;gap:12px;width:100%;background:linear-gradient(135deg,rgba(67,97,238,.1),rgba(123,158,255,.14));border:1.5px solid rgba(67,97,238,.28);border-radius:14px;padding:14px 16px;cursor:pointer;text-align:left;transition:all .2s;-webkit-tap-highlight-color:transparent;}
+.drawer-featured-btn:hover{background:linear-gradient(135deg,rgba(67,97,238,.18),rgba(123,158,255,.22));}
+.dfb-icon{font-size:1.6rem;flex-shrink:0;}
+.dfb-text{flex:1;}
+.dfb-title{font-size:0.96rem;font-weight:700;color:var(--accent);}
+.dfb-sub{font-size:0.73rem;color:var(--muted);margin-top:2px;}
+.dfb-arrow{color:var(--accent);font-size:1.3rem;line-height:1;}
 .lb-row.lb-self{background:rgba(67,97,238,.06);}
 .lb-count{color:var(--accent);}
 #googleLoginBtn{background:rgba(67,97,238,.07);border-color:rgba(67,97,238,.25);color:var(--accent);}
@@ -546,10 +553,16 @@ header{top:52px!important;}
     <div id="drawerStatsArea" class="drawer-stats"></div>
     <button class="profile-edit-btn" onclick="openProfileModal()">✏️ 設定 / 編輯資料</button>
   </div>
-  <div class="drawer-section">
+  <div class="drawer-section" style="border-bottom:none;">
     <div class="drawer-section-label">其他功能</div>
-    <button class="drawer-nav-btn" onclick="switchTab('paragraph');closeDrawer()">📖 段落理解</button>
-    <button class="drawer-nav-btn" id="drawerNewsBtn" onclick="switchTab('news');closeDrawer()">📢 公告 &amp; 更新記錄</button>
+    <button class="drawer-featured-btn" onclick="switchTab('paragraph');closeDrawer()">
+      <div class="dfb-icon">📖</div>
+      <div class="dfb-text">
+        <div class="dfb-title">段落理解</div>
+        <div class="dfb-sub">AI 生成真實情境段落，深化單字理解</div>
+      </div>
+      <div class="dfb-arrow">›</div>
+    </button>
   </div>
 </div>
 <div id="dictSection" style="display:none">
@@ -1628,12 +1641,10 @@ function trackAccuracy(correct){
 function renderHome(){
   const container = document.getElementById('homeContent');
   if(!container) return;
-  /* Countdown to 學測 (117學測 ≈ 2028-01-21, but we use next GSAT) */
+  /* Countdown to 116學測 2027-01-16 */
   const today = new Date();
-  const gsatYear = today.getFullYear() + (today.getMonth() >= 1 ? 1 : 0);
-  const gsatDate = new Date(gsatYear, 0, 18);
-  if(gsatDate <= today) gsatDate.setFullYear(gsatYear+1);
-  const daysLeft = Math.ceil((gsatDate - today) / 86400000);
+  const gsatDate = new Date(2027, 0, 16);
+  const daysLeft = Math.max(0, Math.ceil((gsatDate - today) / 86400000));
   /* Streak */
   const s = getStreakData();
   const badge = document.getElementById('streakBadge');
