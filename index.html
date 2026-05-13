@@ -1429,9 +1429,8 @@ function getZhDef(zh) {
   if (!zh) return '';
   const parts = zh.split('；');
   let def = parts[0];
-  // first segment ≤2 chars means it's likely a context label (e.g."飛機"), not a full definition
-  if (def.length <= 2 && parts.length > 1) def = def + parts[1];
-  return def.length <= 10 ? def : def.substring(0, 10);
+  if (def.length <= 2 && parts.length > 1) def = def + '；' + parts[1];
+  return def.length <= 12 ? def : def.substring(0, 12);
 }
 
 function update(){
@@ -2773,7 +2772,7 @@ function openWordModal(word) {
 
   document.getElementById('modalWord').textContent = w.word;
   document.getElementById('modalPos').textContent  = w.pos || '';
-  document.getElementById('modalZh').textContent   = getZhDef(w.zh);
+  document.getElementById('modalZh').textContent   = w.zh || '';
   updateModalMarkBtn();
 
   // reset tabs to 例句
