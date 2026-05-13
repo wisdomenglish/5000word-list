@@ -555,12 +555,10 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
     <button class="profile-edit-btn" onclick="openProfileModal()">✏️ 設定 / 編輯資料</button>
   </div>
   <div class="drawer-section">
-    <div class="drawer-section-label">學習資源</div>
-    <a class="drawer-nav-btn" href="https://drive.google.com/drive/folders/1eHS-Swd7QaOA24xN9JfNlcysx1eK33uJ?usp=drive_link" target="_blank" rel="noopener" style="text-decoration:none;">📁 學習歷程 <span style="font-size:0.7rem;color:var(--muted);margin-left:auto;">↗</span></a>
-    <a class="drawer-nav-btn" href="https://drive.google.com/file/d/1Otgba8z4BeoJzl-U8AzF5De7tKF4eKHN/view?usp=drive_link" target="_blank" rel="noopener" style="text-decoration:none;">🎯 面試攻略 <span style="font-size:0.7rem;color:var(--muted);margin-left:auto;">↗</span></a>
-    <a class="drawer-nav-btn" href="https://drive.google.com/file/d/11G55vTFgxP7apHKaT-xu_7EL8nSZxcTO/view?usp=drive_link" target="_blank" rel="noopener" style="text-decoration:none;">📋 新課綱英文六級字彙參考表 <span style="font-size:0.7rem;color:var(--muted);margin-left:auto;">↗</span></a>
+    <div class="drawer-section-label">更新公告</div>
+    <button id="drawerNewsBtn" class="drawer-nav-btn" onclick="switchTab('news');closeDrawer()">📢 更新公告 &amp; 記錄</button>
   </div>
-  <div class="drawer-section" style="border-bottom:none;">
+  <div class="drawer-section">
     <div class="drawer-section-label">其他功能</div>
     <button class="drawer-featured-btn" onclick="switchTab('paragraph');closeDrawer()">
       <div class="dfb-icon">📖</div>
@@ -570,7 +568,12 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
       </div>
       <div class="dfb-arrow">›</div>
     </button>
-    <button id="drawerNewsBtn" class="drawer-nav-btn" onclick="switchTab('news');closeDrawer()" style="margin-top:8px;font-size:0.85rem;color:var(--muted);">📢 更新公告</button>
+  </div>
+  <div class="drawer-section" style="border-bottom:none;">
+    <div class="drawer-section-label">學習資源</div>
+    <a class="drawer-nav-btn" href="https://drive.google.com/drive/folders/1eHS-Swd7QaOA24xN9JfNlcysx1eK33uJ?usp=drive_link" target="_blank" rel="noopener" style="text-decoration:none;">📁 學習歷程 <span style="font-size:0.7rem;color:var(--muted);margin-left:auto;">↗</span></a>
+    <a class="drawer-nav-btn" href="https://drive.google.com/file/d/1Otgba8z4BeoJzl-U8AzF5De7tKF4eKHN/view?usp=drive_link" target="_blank" rel="noopener" style="text-decoration:none;">🎯 面試攻略 <span style="font-size:0.7rem;color:var(--muted);margin-left:auto;">↗</span></a>
+    <a class="drawer-nav-btn" href="https://drive.google.com/file/d/11G55vTFgxP7apHKaT-xu_7EL8nSZxcTO/view?usp=drive_link" target="_blank" rel="noopener" style="text-decoration:none;">📋 新課綱英文六級字彙參考表 <span style="font-size:0.7rem;color:var(--muted);margin-left:auto;">↗</span></a>
   </div>
 </div>
 <div id="dictSection" style="display:none">
