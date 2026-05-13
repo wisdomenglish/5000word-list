@@ -26,19 +26,23 @@
 - [vocabulary-data.js](vocabulary-data.js) — 外部單字庫（4,506 字，格式：`{w, z, p}`）
 - [phrases-data.js](phrases-data.js) — 外部片語庫（1,125 條，格式：`{p, z}`）
 - [manifest.json](manifest.json) — PWA 設定（name: 5000英文單字學習）
-- [sw.js](sw.js) — Service Worker，支援離線使用（目前版本：`vocab-app-v44`）
+- [sw.js](sw.js) — Service Worker，支援離線使用（目前版本：`vocab-app-v51`）
 - [icon-192.png](icon-192.png) / [icon-512.png](icon-512.png) — Wisdom logo 圖示
 
 ### 功能
 
-- 4,506 英文單字瀏覽、搜尋、字母篩選（移除重複變化形後）
+- 4,391 英文單字瀏覽、搜尋、字母篩選（移除重複變化形後）
 - Claude AI 生成例句（單字詳細 Modal，📝 例句 Tab）
 - Claude AI 字根拆解（單字詳細 Modal，🌱 字根 Tab）
 - AI 測驗 Tab + 複習清單（單字／片語皆可出題）
 - **片語查詢**：1,125 條英文片語，支援搜尋、A–Z 篩選、點擊開啟 Modal + AI 生成例句
 - **自訂單字庫**：學生可新增自己的單字，整合進字典/搜尋/測驗（見下方說明）
 - **雲端同步**：登入 Google 帳號後自訂單字庫與 ⭐ 星號複習清單自動同步至 Firebase Firestore
-- **更新公告頁**：📢 公告 Tab，記錄功能更新歷史
+- **🃏 單字卡模式**：翻卡互動練習，自評還不熟／普通／會了，結果自動加入複習清單並標色
+- **學習進度 Tab**：統計卡（掌握字數、連續打卡、正確率、本週答題）+ 本月熱力圖 + 排行榜
+- **首頁**：學測倒數（116 學測 2027-01-16）、今日目標進度、連續打卡、快速操作卡
+- **更新公告**：側邊欄 ☰ 可開啟，記錄功能更新歷史
+- **學習資源**：側邊欄 ☰ 含三個 Google Drive 外部連結（學習歷程、面試攻略、字彙表）
 - PWA：可加入主畫面、離線字典
 
 ### Cloud Functions（PWA 用）
@@ -55,6 +59,12 @@
 - 字根結果以 `vocab_etym_{word}` 為 key 存入 localStorage（快取）
 - **片語例句**以 `vocab_phrase_ex_{phrase}` 為 key 存入 localStorage（快取）
 - 自訂單字以 `vocab_custom_words` 為 key 存入 localStorage（JSON array，格式：`{word, pos, zh, custom:true}`）
+- **學習統計 localStorage keys**：
+  - `vocab_streak`：`{streak, best, lastDate}` 連續打卡天數
+  - `vocab_daily`：`{date, count, goal}` 今日答題數／目標
+  - `vocab_heatmap`：`{"YYYY-MM-DD": count, ...}` 每日答題熱力圖（保留 90 天）
+  - `vocab_accuracy`：`{correct, total}` 累計正確率
+  - `vocab_mastery`：`{word: "unfamiliar"|"moderate"}` 單字卡熟悉度標記
 - 所有 Cloud Run 服務已設定 `allUsers` `roles/run.invoker`（允許未登入呼叫）
 - **新增 Cloud Function 規範**：函式宣告需加 `invoker: "public"`（`onRequest({ cors: true, invoker: "public" }, ...)`）才能公開訪問。第一次 deploy 輸出 CF URL，第二次 deploy 才顯示 Cloud Run URL（`{name}-gtlccx6nka-uc.a.run.app`）
 - **密碼保護**：首次開啟需輸入授權密碼，通過後以 SHA-256 hash 存入 localStorage（key：`vocab_auth_v1`）；更換密碼只需在 `index.html` 更新 `AUTH_HASH` 常數即可強制所有用戶重新驗證（詳見 memory）
@@ -71,8 +81,14 @@
 
 ### UI 設計規範
 
-- **色彩主題**：暗色（`--bg:#0f0f14`），強調色 `--accent:#7c6af7`（紫）、`--accent2:#e06c8a`（粉紅）
+- **色彩主題**：明亮（`--bg:#F2F2F7`），強調色 `--accent:#4361EE`（藍紫）、`--accent2:#F72585`（粉紅）；`--surface:#FFFFFF;--text:#1C1C1E;--muted:#8E8E93`
 - **字體**：標題 Playfair Display（serif），內文 DM Sans（sans-serif）
+- **導覽結構**：
+  - 頂部固定列（`#globalTopBar`，52px）：Logo + 連續打卡 badge + ☰ 選單按鈕
+  - 底部固定導覽（`#bottomNav`，76px）：首頁／單字／測驗／我的單字／進度 共 5 個 tab
+  - `body` 設 `padding-top:52px; padding-bottom:76px`
+  - `switchTab(tab)` 控制各 section 顯示隱藏；預設顯示 `homeSection`
+- **側邊欄 `#sideDrawer`**（右側滑入）順序：帳號同步 → 👤 我的資料（登入後）→ 更新公告 → 其他功能（段落理解）→ 學習資源
 - **詞性標籤分色**（`.pos-tag` + class）：
   - `n.` → 綠（`.pos-n`，`#6ecf88`）
   - `v.` → 藍（`.pos-v`，`#5bc0de`）
@@ -85,6 +101,7 @@
 - **`dictMode`**：必須宣告在 `buildAlphaBar()` 呼叫之前（否則 TDZ 錯誤），預設值 `'word'`
 - **觸控熱區**：星號 `.mark-btn` 加 `padding:10px` 擴大熱區；FAB 52×52px 圓形
 - **語音測試列**（`#audioTest`）：低調樣式（`background:var(--surface);border-bottom:1px solid var(--border)`），不搶奪視覺焦點
+- **熟悉度標籤顏色**：還不熟 → 紅（`#FEE2E2` / `#DC2626`），普通 → 橘（`#FED7AA` / `#EA580C`）；複習清單左側色條同色
 
 ### 自訂單字庫架構
 
@@ -126,9 +143,27 @@
 - Tab 列右側顯示 **☁ 同步** 按鈕（未登入）或大頭貼＋登出按鈕（已登入）（按鈕位於 ☰ 側邊欄）
 - **未登入**：行為與之前相同，純 localStorage
 
+### 單字卡模式架構
+
+- `qMode = 'flashcard'` 時，`startQuiz()` 呼叫 `startFlashcard(pool)` 並 return，不走 AI 路徑
+- `fcCards`（陣列）/ `fcIndex`（當前索引）/ `fcFlipped`（是否翻面）為全域狀態
+- `renderFlashcard()`：正面顯示英文 + 詞性，點擊呼叫 `flipCard()` 切換 fcFlipped → 重繪；翻面後顯示中文 + 三個評分按鈕
+- `rateFc(level)`：`'unfamiliar'` → `setMastery(word,'unfamiliar')` + `addMark()`；`'moderate'` → `setMastery(word,'moderate')` + `addMark()`；`'mastered'` → `setMastery(word,null)`；然後 `fcIndex++` → `renderFlashcard()`
+- `fcNav(dir)`：左右跳卡，重置 fcFlipped
+- **優先複習**：`qPrioritizeUnfamiliar`（全域 boolean），在 `startFlashcard()` 和 `startQuiz()` 裡，若為 true 則先抽 mastery='unfamiliar' 的單字再接其他
+
+### 學習進度架構
+
+- `renderProgress()` 動態生成 `#progressSection` 內容：統計卡 → 熱力圖 → 排行榜
+- `buildHeatmap()`：讀 `vocab_heatmap`，生成 6 週日曆格，依 count 分 lv1–lv4（`rgba(67,97,238,...)` 透明度）
+- `touchStreak()`：每次 `incrementDailyCount()` 呼叫時更新 `vocab_streak`（連續打卡）
+- `trackAccuracy(correct)`：在 `answerQ()` 內呼叫，更新 `vocab_accuracy`
+- `renderHome()`：學測倒數固定 `new Date(2027,0,16)`，讀 streak / daily goal / heatmap 渲染首頁
+
 ### 更新公告頁
 
-- 第 4 個 Tab「📢 公告」，在 `#newsSection` 內以 `<div class="news-card">` 為單位手動維護
+- 公告從底部導覽移除，改為從側邊欄 ☰ 進入，對應 `#newsSection`（`switchTab('news')`）
+- 在 `#newsSection` 內以 `<div class="news-card">` 為單位手動維護
 - 每則公告結構：日期、分類徽章（`feature`/`fix`/`improve`）、標題、`<ul class="news-list">` 條列
 - 新增公告：在 `newsSection` 最上方複製一個 `news-card` div，修改日期與內容即可
 
@@ -494,7 +529,7 @@ python3 -m notebooklm login
 - **Cloud Function 語言**：prompt 中明確指定「ALL Chinese text must be in Traditional Chinese (繁體中文), NOT Simplified Chinese (簡體中文)」
 - **Cloud Function 架構**：每個 export 函式自帶 `require('@anthropic-ai/sdk')` 和 client 實例，不依賴模組頂層共用物件（避免 Cloud Run 作用域問題）
 - **generateVocabQuiz max_tokens**：必須設為 `4096`（非 1024），10 道題目的 JSON 約需 2500–3000 tokens，1024 會截斷 → `Unexpected end of JSON input` → 500 錯誤
-- **Service Worker 快取版本**：更動 `index.html` 或 `vocabulary-data.js` 需同步升版 `sw.js` 的 `CACHE` 常數（目前 `vocab-app-v16`），否則舊使用者看不到更新
+- **Service Worker 快取版本**：更動 `index.html` 或 `vocabulary-data.js` 需同步升版 `sw.js` 的 `CACHE` 常數（目前 `vocab-app-v51`），否則舊使用者看不到更新
 - **檔案編碼**：`functions/index.js` 和 `package.json` 必須存為 UTF-8（無 BOM），Windows PowerShell redirect 可能產生 UTF-16 BOM 導致部署失敗
 - **行事曆 iCal 日期格式化**：`formatCalendarEvents` 使用 `evt.start`（YYYY-MM-DD 字串）手動格式化日期，不使用 `toLocaleDateString`（Cloud Run 環境下對 Invalid Date 輸出字串 "Invalid Date"）；`startObj` 存為毫秒 timestamp（`getTime()`），用 `getUTC*` 方法讀取時間
 - **iCal 折疊（folding）**：iCal 超過 75 字元的行會折疊（`CRLF + 空格`），解析前必須先 unfolding（`icalText.replace(/\r\n[ \t]/g, "")...`），否則長標題（如 `[Sammy, Frank, Ivy] 考猜試教@ 府中`）會被截斷、名字解析失敗
