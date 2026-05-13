@@ -2117,6 +2117,7 @@ function renderQuizSetup(){
   const filtCount = filtered.length;
   const phraseFilteredCount = phraseFiltered.length;
   if(qSource==='unfamiliar' && unfCount===0) qSource = filtCount>0?'filtered':'all';
+  if(qSource==='custom' && customWords.length===0) qSource = 'all';
 
   let html = `
     <div class="quiz-setup">
@@ -2141,6 +2142,7 @@ function renderQuizSetup(){
         ${unfCount>0?`<button class="quiz-opt ${qSource==='unfamiliar'?'selected':''}" onclick="setQSource('unfamiliar',this)">⭐ 複習清單 (${unfCount})</button>`:''}
         <button class="quiz-opt ${qSource==='filtered'?'selected':''}" onclick="setQSource('filtered',this)">🔍 目前篩選 (${filtCount})</button>
         <button class="quiz-opt ${qSource==='all'?'selected':''}" onclick="setQSource('all',this)">📚 全部單字 (${getAllWords().length})</button>
+        ${customWords.length>0?`<button class="quiz-opt ${qSource==='custom'?'selected':''}" onclick="setQSource('custom',this)">📝 自訂單字庫 (${customWords.length})</button>`:''}
       </div>
       <label class="quiz-priority-row">
         <input type="checkbox" ${qPrioritizeUnfamiliar?'checked':''} onchange="qPrioritizeUnfamiliar=this.checked">
@@ -2239,6 +2241,7 @@ async function startQuiz(){
   let pool=[];
   if(qSource==='unfamiliar') pool=getAllWords().filter(w=>markedWords.has(w.word));
   else if(qSource==='filtered') pool=[...filtered];
+  else if(qSource==='custom') pool=[...customWords];
   else pool=getAllWords();
   if(!pool.length){ alert('此範圍沒有單字，請選擇其他範圍'); return; }
 
