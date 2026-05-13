@@ -1607,7 +1607,7 @@ let qSubject = 'word';
 let qPhraseMode = 'meaning';
 const MASTERY_KEY = 'vocab_mastery';
 let qPrioritizeUnfamiliar = false;
-let fcCards = [], fcIndex = 0, fcFlipped = false;
+let fcCards = [], fcPool = [], fcIndex = 0, fcFlipped = false;
 
 function saveMark(){
   localStorage.setItem('vocab_marked', JSON.stringify([...markedWords]));
@@ -1632,6 +1632,8 @@ function addMark(word){ if(!markedWords.has(word)){ markedWords.add(word); saveM
 function removeMark(word){ if(markedWords.has(word)){ markedWords.delete(word); saveMark(); syncMarkCount(); update(); } }
 function getMastery(){ return JSON.parse(localStorage.getItem(MASTERY_KEY)||'{}'); }
 function setMastery(word,level){ const m=getMastery(); if(level===null) delete m[word]; else m[word]=level; localStorage.setItem(MASTERY_KEY,JSON.stringify(m)); }
+function _masteryBadge(level){ return level==='unfamiliar'?`<span class="mastery-badge mastery-unfamiliar">還不熟</span>`:level==='moderate'?`<span class="mastery-badge mastery-moderate">普通</span>`:''; }
+function _sortByMastery(pool, mastery){ const unf=pool.filter(w=>mastery[w.word]==='unfamiliar').sort(()=>Math.random()-.5); const mod=pool.filter(w=>mastery[w.word]==='moderate').sort(()=>Math.random()-.5); const rest=pool.filter(w=>!mastery[w.word]).sort(()=>Math.random()-.5); return [...unf,...mod,...rest]; }
 
 function switchTab(tab){
   document.getElementById('homeSection').style.display       = tab==='home'      ? '' : 'none';
@@ -2066,10 +2068,7 @@ async function startQuiz(){
 
   let selected;
   if(qPrioritizeUnfamiliar){
-    const mastery=getMastery();
-    const unfFirst=pool.filter(w=>mastery[w.word]==='unfamiliar').sort(()=>Math.random()-.5);
-    const rest=pool.filter(w=>mastery[w.word]!=='unfamiliar').sort(()=>Math.random()-.5);
-    selected=[...unfFirst,...rest].slice(0,10);
+    selected=_sortByMastery(pool, getMastery()).slice(0,10);
   } else {
     const unfPart=pool.filter(w=>markedWords.has(w.word)).sort(()=>Math.random()-.5);
     const othPart=pool.filter(w=>!markedWords.has(w.word)).sort(()=>Math.random()-.5);
@@ -2139,16 +2138,11 @@ function enforceLetterDistractors(questions, filterLetters){
 
 /* ── Flashcard mode ── */
 function startFlashcard(pool){
+  fcPool=pool;
   const mastery=getMastery();
-  let cards;
-  if(qPrioritizeUnfamiliar){
-    const unf=pool.filter(w=>mastery[w.word]==='unfamiliar').sort(()=>Math.random()-.5);
-    const mod=pool.filter(w=>mastery[w.word]==='moderate').sort(()=>Math.random()-.5);
-    const rest=pool.filter(w=>!mastery[w.word]).sort(()=>Math.random()-.5);
-    cards=[...unf,...mod,...rest].slice(0,20);
-  } else {
-    cards=[...pool].sort(()=>Math.random()-.5).slice(0,20);
-  }
+  const cards=qPrioritizeUnfamiliar
+    ? _sortByMastery(pool, mastery).slice(0,20)
+    : [...pool].sort(()=>Math.random()-.5).slice(0,20);
   fcCards=cards; fcIndex=0; fcFlipped=false;
   renderFlashcard();
 }
@@ -2156,8 +2150,8 @@ function startFlashcard(pool){
 function renderFlashcard(){
   const sec=document.getElementById('quizSection');
   if(!fcCards.length){ renderQuizSetup(); return; }
+  const mastery=getMastery();
   if(fcIndex>=fcCards.length){
-    const mastery=getMastery();
     const unfCount=fcCards.filter(w=>mastery[w.word]==='unfamiliar').length;
     const modCount=fcCards.filter(w=>mastery[w.word]==='moderate').length;
     sec.innerHTML=`<div class="fc-end">
@@ -2170,21 +2164,18 @@ function renderFlashcard(){
         <span style="background:#DCFCE7;color:#16A34A;font-size:0.8rem;padding:4px 12px;border-radius:10px;font-weight:700">會了 ${fcCards.length-unfCount-modCount}</span>
       </div>
       <div class="quiz-action-row">
-        <button class="quiz-action-btn" onclick="startFlashcard(fcCards)">再來一次</button>
+        <button class="quiz-action-btn" onclick="startFlashcard(fcPool)">再來一次</button>
         <button class="quiz-action-btn pri" onclick="renderQuizSetup()">返回</button>
       </div>
     </div>`;
     return;
   }
   const w=fcCards[fcIndex];
-  const mastery=getMastery();
   const mLevel=mastery[w.word];
-  const masteryHtml=mLevel==='unfamiliar'?`<span class="mastery-badge mastery-unfamiliar">還不熟</span>`:
-    mLevel==='moderate'?`<span class="mastery-badge mastery-moderate">普通</span>`:'';
   sec.innerHTML=`<div class="fc-wrap">
     <div class="fc-progress-row">
       <span class="fc-progress">${fcIndex+1} / ${fcCards.length}</span>
-      <span>${masteryHtml}</span>
+      <span>${_masteryBadge(mLevel)}</span>
       <button onclick="renderQuizSetup()" style="background:none;border:none;color:var(--muted);font-size:0.8rem;cursor:pointer;">✕ 結束</button>
     </div>
     <div class="fc-card" onclick="flipCard()">
@@ -2558,7 +2549,6 @@ function renderMyWords(){
   const sec = document.getElementById('myWordsSection');
   const mastery = getMastery();
   const markedList = getAllWords().filter(w => markedWords.has(w.word));
-  // sort: moderate first, unfamiliar second, unrated last
   markedList.sort((a,b)=>{
     const order = {moderate:0, unfamiliar:1};
     const oa = mastery[a.word]!==undefined ? order[mastery[a.word]] : 2;
@@ -2608,8 +2598,7 @@ function renderMyWords(){
     <div class="mw-grid">
       ${markedList.map(w=>{
         const ml=mastery[w.word];
-        const mBadge=ml==='unfamiliar'?`<span class="mastery-badge mastery-unfamiliar">還不熟</span>`:
-          ml==='moderate'?`<span class="mastery-badge mastery-moderate">普通</span>`:'';
+        const mBadge=_masteryBadge(ml);
         const borderStyle=ml==='unfamiliar'?'border-left:3px solid #FECACA;':
           ml==='moderate'?'border-left:3px solid #FED7AA;':'';
         return `<div class="mw-item" style="${borderStyle}">
