@@ -148,6 +148,37 @@ header{top:52px!important;}
 .quiz-start-btn{width:100%;background:linear-gradient(135deg,var(--accent),#9b8bf0);border:none;color:#fff;padding:16px;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;transition:opacity .2s;}
 .quiz-start-btn:hover{opacity:0.88;}.quiz-start-btn:disabled{opacity:0.35;cursor:not-allowed;}
 .quiz-note{margin-top:14px;color:var(--muted);font-size:0.75rem;text-align:center;}
+/* ── Mastery badges ── */
+.mastery-badge{display:inline-block;font-size:0.62rem;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:6px;vertical-align:middle;line-height:1.5;}
+.mastery-unfamiliar{background:#FEE2E2;color:#DC2626;}
+.mastery-moderate{background:#FED7AA;color:#EA580C;}
+/* ── Flashcard ── */
+.fc-wrap{padding:16px 16px 24px;max-width:500px;margin:0 auto;}
+.fc-progress-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.fc-progress{font-size:0.8rem;color:var(--muted);}
+.fc-card{background:var(--surface);border:1.5px solid var(--border);border-radius:22px;padding:36px 24px 28px;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--shadow);position:relative;transition:box-shadow .2s;user-select:none;-webkit-tap-highlight-color:transparent;}
+.fc-card:active{box-shadow:none;}
+.fc-card-label{font-size:0.68rem;font-weight:700;letter-spacing:.1em;color:var(--muted);margin-bottom:18px;text-transform:uppercase;}
+.fc-word{font-family:'Playfair Display',serif;font-size:2.1rem;font-weight:700;color:var(--text);text-align:center;line-height:1.2;}
+.fc-pos-row{margin-top:10px;}
+.fc-zh{font-size:1.05rem;color:var(--text);text-align:center;line-height:1.6;padding:0 8px;}
+.fc-flip-hint{position:absolute;bottom:14px;font-size:0.72rem;color:var(--muted);}
+.fc-nav-row{display:flex;align-items:center;gap:10px;margin-top:14px;}
+.fc-nav-btn{background:var(--surface);border:1.5px solid var(--border);border-radius:50%;width:42px;height:42px;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:border-color .15s;}
+.fc-nav-btn:hover:not(:disabled){border-color:var(--accent);}
+.fc-nav-btn:disabled{opacity:.35;cursor:not-allowed;}
+.fc-detail-btn{flex:1;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:11px;font-size:0.84rem;cursor:pointer;color:var(--text);transition:border-color .15s;}
+.fc-detail-btn:hover{border-color:var(--accent);}
+.fc-rating{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:12px;}
+.fc-btn{border-radius:14px;padding:15px 8px;font-size:0.88rem;font-weight:600;cursor:pointer;border:1.5px solid transparent;-webkit-tap-highlight-color:transparent;}
+.fc-btn-unfamiliar{background:#FEF2F2;border-color:#FECACA;color:#DC2626;}
+.fc-btn-moderate{background:#FFF7ED;border-color:#FED7AA;color:#EA580C;}
+.fc-btn-mastered{background:var(--accent);border-color:var(--accent);color:#fff;}
+.fc-end{max-width:480px;margin:0 auto;text-align:center;padding:50px 20px;}
+/* ── Priority checkbox ── */
+.quiz-priority-row{display:flex;align-items:center;gap:8px;margin-top:14px;padding:12px 14px;background:rgba(67,97,238,.05);border:1px solid rgba(67,97,238,.15);border-radius:10px;cursor:pointer;}
+.quiz-priority-row input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;}
+.quiz-priority-label{font-size:0.82rem;color:var(--text);line-height:1.4;cursor:pointer;}
 .quiz-loading{text-align:center;padding:80px 20px;}
 .quiz-spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.9s linear infinite;margin:0 auto 20px;}
 @keyframes spin{to{transform:rotate(360deg);}}
@@ -1556,6 +1587,9 @@ let qQuestions = [], qIndex = 0, qScore = 0, qSelected = null;
 let phraseFiltered = [], phrasePage = 1, phraseSearch = '', phraseSelectedLetters = new Set(), phraseSort = 'az';
 let qSubject = 'word';
 let qPhraseMode = 'meaning';
+const MASTERY_KEY = 'vocab_mastery';
+let qPrioritizeUnfamiliar = false;
+let fcCards = [], fcIndex = 0, fcFlipped = false;
 
 function saveMark(){
   localStorage.setItem('vocab_marked', JSON.stringify([...markedWords]));
@@ -1578,6 +1612,8 @@ function toggleMark(word, btn){
 }
 function addMark(word){ if(!markedWords.has(word)){ markedWords.add(word); saveMark(); syncMarkCount(); update(); } }
 function removeMark(word){ if(markedWords.has(word)){ markedWords.delete(word); saveMark(); syncMarkCount(); update(); } }
+function getMastery(){ return JSON.parse(localStorage.getItem(MASTERY_KEY)||'{}'); }
+function setMastery(word,level){ const m=getMastery(); if(level===null) delete m[word]; else m[word]=level; localStorage.setItem(MASTERY_KEY,JSON.stringify(m)); }
 
 function switchTab(tab){
   document.getElementById('homeSection').style.display       = tab==='home'      ? '' : 'none';
@@ -1898,6 +1934,7 @@ function renderQuizSetup(){
       <p>選擇適合的題型測驗你的單字程度。答錯自動加入複習清單，答對從清單移除。</p>
       <div class="quiz-opt-label">題目類型</div>
       <div class="quiz-opt-group">
+        <button class="quiz-type-opt quiz-opt ${qMode==='flashcard'?'selected':''}" onclick="setQMode('flashcard',this)">🃏 單字卡模式</button>
         <button class="quiz-type-opt quiz-opt ${qMode==='meaning'?'selected':''}" onclick="setQMode('meaning',this)">🔤 單字選義（基礎）</button>
         <button class="quiz-type-opt quiz-opt ${qMode==='sentence'?'selected':''}" onclick="setQMode('sentence',this)">📝 句子填空選擇</button>
       </div>
@@ -1907,8 +1944,12 @@ function renderQuizSetup(){
         <button class="quiz-opt ${qSource==='filtered'?'selected':''}" onclick="setQSource('filtered',this)">🔍 目前篩選 (${filtCount})</button>
         <button class="quiz-opt ${qSource==='all'?'selected':''}" onclick="setQSource('all',this)">📚 全部單字 (${getAllWords().length})</button>
       </div>
-      <button class="quiz-start-btn" onclick="startQuiz()">開始 AI 出題 →</button>
-      <div class="quiz-note">由 Claude Haiku AI 生成 · 需要網路連線</div>`;
+      <label class="quiz-priority-row">
+        <input type="checkbox" ${qPrioritizeUnfamiliar?'checked':''} onchange="qPrioritizeUnfamiliar=this.checked">
+        <span class="quiz-priority-label">優先複習不熟單字（出題時排序「還不熟」標記的單字）</span>
+      </label>
+      <button class="quiz-start-btn" style="margin-top:14px" onclick="startQuiz()">${qMode==='flashcard'?'開始單字卡 →':'開始 AI 出題 →'}</button>
+      ${qMode!=='flashcard'?'<div class="quiz-note">由 Claude Haiku AI 生成 · 需要網路連線</div>':''}`;
   } else {
     html += `
       <div class="quiz-setup-title">🔖 片語測驗</div>
@@ -2003,9 +2044,19 @@ async function startQuiz(){
   else pool=getAllWords();
   if(!pool.length){ alert('此範圍沒有單字，請選擇其他範圍'); return; }
 
-  const unfPart=pool.filter(w=>markedWords.has(w.word)).sort(()=>Math.random()-.5);
-  const othPart=pool.filter(w=>!markedWords.has(w.word)).sort(()=>Math.random()-.5);
-  const selected=[...unfPart,...othPart].slice(0,10);
+  if(qMode==='flashcard'){ startFlashcard(pool); return; }
+
+  let selected;
+  if(qPrioritizeUnfamiliar){
+    const mastery=getMastery();
+    const unfFirst=pool.filter(w=>mastery[w.word]==='unfamiliar').sort(()=>Math.random()-.5);
+    const rest=pool.filter(w=>mastery[w.word]!=='unfamiliar').sort(()=>Math.random()-.5);
+    selected=[...unfFirst,...rest].slice(0,10);
+  } else {
+    const unfPart=pool.filter(w=>markedWords.has(w.word)).sort(()=>Math.random()-.5);
+    const othPart=pool.filter(w=>!markedWords.has(w.word)).sort(()=>Math.random()-.5);
+    selected=[...unfPart,...othPart].slice(0,10);
+  }
 
   if(qMode==='meaning'){
     qQuestions=generateMeaningQuestions(selected);
@@ -2066,6 +2117,90 @@ function enforceLetterDistractors(questions, filterLetters){
     const shuffled=newOpts.sort(()=>Math.random()-.5);
     return {...q,options:shuffled,answer:shuffled.indexOf(correctOpt)};
   });
+}
+
+/* ── Flashcard mode ── */
+function startFlashcard(pool){
+  const mastery=getMastery();
+  let cards;
+  if(qPrioritizeUnfamiliar){
+    const unf=pool.filter(w=>mastery[w.word]==='unfamiliar').sort(()=>Math.random()-.5);
+    const mod=pool.filter(w=>mastery[w.word]==='moderate').sort(()=>Math.random()-.5);
+    const rest=pool.filter(w=>!mastery[w.word]).sort(()=>Math.random()-.5);
+    cards=[...unf,...mod,...rest].slice(0,20);
+  } else {
+    cards=[...pool].sort(()=>Math.random()-.5).slice(0,20);
+  }
+  fcCards=cards; fcIndex=0; fcFlipped=false;
+  renderFlashcard();
+}
+
+function renderFlashcard(){
+  const sec=document.getElementById('quizSection');
+  if(!fcCards.length){ renderQuizSetup(); return; }
+  if(fcIndex>=fcCards.length){
+    const mastery=getMastery();
+    const unfCount=fcCards.filter(w=>mastery[w.word]==='unfamiliar').length;
+    const modCount=fcCards.filter(w=>mastery[w.word]==='moderate').length;
+    sec.innerHTML=`<div class="fc-end">
+      <div style="font-size:3rem;margin-bottom:12px">🎉</div>
+      <h2 style="font-family:'Playfair Display',serif;font-size:1.8rem;margin-bottom:8px">完成！</h2>
+      <p style="color:var(--muted);margin-bottom:20px">共複習 ${fcCards.length} 個單字</p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:24px">
+        ${unfCount?`<span class="mastery-badge mastery-unfamiliar" style="font-size:0.8rem;padding:4px 12px">還不熟 ${unfCount}</span>`:''}
+        ${modCount?`<span class="mastery-badge mastery-moderate" style="font-size:0.8rem;padding:4px 12px">普通 ${modCount}</span>`:''}
+        <span style="background:#DCFCE7;color:#16A34A;font-size:0.8rem;padding:4px 12px;border-radius:10px;font-weight:700">會了 ${fcCards.length-unfCount-modCount}</span>
+      </div>
+      <div class="quiz-action-row">
+        <button class="quiz-action-btn" onclick="startFlashcard(fcCards)">再來一次</button>
+        <button class="quiz-action-btn pri" onclick="renderQuizSetup()">返回</button>
+      </div>
+    </div>`;
+    return;
+  }
+  const w=fcCards[fcIndex];
+  const mastery=getMastery();
+  const mLevel=mastery[w.word];
+  const masteryHtml=mLevel==='unfamiliar'?`<span class="mastery-badge mastery-unfamiliar">還不熟</span>`:
+    mLevel==='moderate'?`<span class="mastery-badge mastery-moderate">普通</span>`:'';
+  sec.innerHTML=`<div class="fc-wrap">
+    <div class="fc-progress-row">
+      <span class="fc-progress">${fcIndex+1} / ${fcCards.length}</span>
+      <span>${masteryHtml}</span>
+      <button onclick="renderQuizSetup()" style="background:none;border:none;color:var(--muted);font-size:0.8rem;cursor:pointer;">✕ 結束</button>
+    </div>
+    <div class="fc-card" onclick="flipCard()">
+      <div class="fc-card-label">${fcFlipped?'中文意思':'ENGLISH'}</div>
+      ${fcFlipped
+        ?`<div class="fc-zh">${_escH(w.zh)}</div>`
+        :`<div class="fc-word">${_escH(w.word)}</div>
+          ${w.pos?`<div class="fc-pos-row"><span class="pos-tag ${getPosClass(w.pos)}">${w.pos}</span></div>`:''}`
+      }
+      ${!fcFlipped?'<div class="fc-flip-hint">點擊卡片翻面 →</div>':''}
+    </div>
+    <div class="fc-nav-row">
+      <button class="fc-nav-btn" onclick="fcNav(-1)" ${fcIndex===0?'disabled':''}>‹</button>
+      <button class="fc-detail-btn" onclick="openWordModal('${w.word}')">📖 看詳細解析</button>
+      <button class="fc-nav-btn" onclick="fcNav(1)" ${fcIndex===fcCards.length-1?'disabled':''}>›</button>
+    </div>
+    ${fcFlipped?`<div class="fc-rating">
+      <button class="fc-btn fc-btn-unfamiliar" onclick="rateFc('unfamiliar')">還不熟</button>
+      <button class="fc-btn fc-btn-moderate" onclick="rateFc('moderate')">普通</button>
+      <button class="fc-btn fc-btn-mastered" onclick="rateFc('mastered')">會了！</button>
+    </div>`:''}
+  </div>`;
+}
+
+function flipCard(){ fcFlipped=!fcFlipped; renderFlashcard(); }
+function fcNav(dir){ fcIndex=Math.max(0,Math.min(fcCards.length-1,fcIndex+dir)); fcFlipped=false; renderFlashcard(); }
+function rateFc(level){
+  const w=fcCards[fcIndex];
+  if(level==='unfamiliar'){ setMastery(w.word,'unfamiliar'); if(!markedWords.has(w.word)) addMark(w.word); }
+  else if(level==='moderate'){ setMastery(w.word,'moderate'); if(!markedWords.has(w.word)) addMark(w.word); }
+  else { setMastery(w.word,null); }
+  incrementDailyCount();
+  fcIndex++; fcFlipped=false;
+  renderFlashcard();
 }
 
 function generateMeaningQuestions(selected){
@@ -2403,7 +2538,15 @@ function _addWordFormHtml(){
 
 function renderMyWords(){
   const sec = document.getElementById('myWordsSection');
+  const mastery = getMastery();
   const markedList = getAllWords().filter(w => markedWords.has(w.word));
+  // sort: moderate first, unfamiliar second, unrated last
+  markedList.sort((a,b)=>{
+    const order = {moderate:0, unfamiliar:1};
+    const oa = mastery[a.word]!==undefined ? order[mastery[a.word]] : 2;
+    const ob = mastery[b.word]!==undefined ? order[mastery[b.word]] : 2;
+    return oa - ob;
+  });
 
   let html = `<div class="mw-wrap">
     <div class="mw-hdr">
@@ -2445,10 +2588,15 @@ function renderMyWords(){
       </div>
     </div>
     <div class="mw-grid">
-      ${markedList.map(w=>`
-        <div class="mw-item">
+      ${markedList.map(w=>{
+        const ml=mastery[w.word];
+        const mBadge=ml==='unfamiliar'?`<span class="mastery-badge mastery-unfamiliar">還不熟</span>`:
+          ml==='moderate'?`<span class="mastery-badge mastery-moderate">普通</span>`:'';
+        const borderStyle=ml==='unfamiliar'?'border-left:3px solid #FECACA;':
+          ml==='moderate'?'border-left:3px solid #FED7AA;':'';
+        return `<div class="mw-item" style="${borderStyle}">
           <div style="flex:1;min-width:0;cursor:pointer" onclick="openWordModal('${w.word}')">
-            <div class="mw-word">${w.word}${w.custom?`<span class="custom-badge">自訂</span>`:''}</div>
+            <div class="mw-word">${w.word}${w.custom?`<span class="custom-badge">自訂</span>`:''}${mBadge}</div>
             ${w.pos?`<div class="mw-pos">${w.pos}</div>`:''}
             ${w.zh?`<div class="mw-zh">${getZhDef(w.zh)}</div>`:''}
           </div>
@@ -2456,7 +2604,7 @@ function renderMyWords(){
             <button class="speak-btn" style="width:30px;height:30px" onclick="speak('${w.word}',this)">${_speakBtnSvg()}</button>
             <button class="mw-mastered" onclick="removeMark('${w.word}');renderMyWords()">✓ 已熟</button>
           </div>
-        </div>`).join('')}
+        </div>`;}).join('')}
     </div>`;
   } else {
     html += `<div class="${reviewHeaderClass}"><span class="mw-section-title">⭐ 複習清單</span></div>
