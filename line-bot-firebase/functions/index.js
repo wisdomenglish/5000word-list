@@ -19,7 +19,7 @@ const BOT_CONFIG = {
     imageMode: "solve",
     secretEnvVar: "LINE_CHANNEL_SECRET",
     tokenEnvVar: "LINE_CHANNEL_ACCESS_TOKEN",
-    joinMessage: `大家好！我是 Frank 老師的英文小幫手 👋\n\n我可以幫你：\n\n📚 文法問答、單字查詢、句子糾錯\n📝 作文批改、寫作範例、句子翻譯\n📷 傳照片解題（選擇題、填空題、閱讀測驗等）\n\n直接傳圖 → 我幫你解題！📸\n\n群組使用：@Bot 並提問或傳圖即可\n\n期待為大家解答英文問題！😊`
+    joinMessage: `大家好！我是 Frank 老師的英文小幫手 👋\n\n我可以幫你：\n\n📚 文法問答、單字查詢、句子糾錯\n📝 作文批改、寫作範例、句子翻譯\n📷 傳照片解題（選擇題、填空題、閱讀測驗等）\n\n群組使用方式：\n1️⃣ 先傳文字：「@Bot 解題」\n2️⃣ 再傳圖片（3 分鐘內）\n\n一對一聊天：直接傳圖即可 📸\n\n期待為大家解答英文問題！😊`
   },
   "U45ed153ac9a4c65ec21dc3eb446649c1": {
     name: "Ivy's English Calendar",
@@ -1353,6 +1353,15 @@ app.post("/", async (req, res) => {
             continue;
           }
           console.log("[INFO] Bot was mentioned in group, processing message");
+          // Frank bot: set pending image flag so next image within 3 min is processed
+          if (botConfig.imageMode === "solve") {
+            initializeFirebase();
+            const sourceId = event.source.groupId || event.source.roomId;
+            const flagKey = `${sourceId}_${event.source.userId}`;
+            await dbRef.ref(`/pending-frank-image/${flagKey}`).set({
+              expiresAt: Date.now() + 3 * 60 * 1000
+            });
+          }
         }
         if (botConfig.role === "calendar") {
           await handleCalendarMessage(userMessage, event.replyToken, botCredentials.token, event.source.userId);
@@ -1368,6 +1377,21 @@ app.post("/", async (req, res) => {
         if (botConfig.imageMode === "rewrite") {
           await handleImageMessage(event.message.id, event.replyToken, botCredentials.token, event.source.userId);
         } else {
+          // Frank bot: in group/room chats, only process image if @Bot was recently mentioned
+          const imgSourceType = event.source.type;
+          const isImgGroup = imgSourceType === "group" || imgSourceType === "room";
+          if (isImgGroup) {
+            initializeFirebase();
+            const sourceId = event.source.groupId || event.source.roomId;
+            const flagKey = `${sourceId}_${event.source.userId}`;
+            const snap = await dbRef.ref(`/pending-frank-image/${flagKey}`).get();
+            if (!snap.exists() || snap.val().expiresAt < Date.now()) {
+              console.log("[INFO] Group image without pending @Bot mention, skipping");
+              continue;
+            }
+            await dbRef.ref(`/pending-frank-image/${flagKey}`).remove();
+            console.log("[INFO] Pending image flag cleared, processing Frank group image");
+          }
           await handleFrankImageMessage(event.message.id, event.replyToken, botCredentials.token);
         }
       } else if (event.type === "join") {
