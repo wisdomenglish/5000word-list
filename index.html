@@ -443,6 +443,34 @@ header{top:52px!important;}
 .modal-box{box-shadow:0 -4px 30px rgba(0,0,0,.12);}
 .etym-morph{color:var(--accent);}
 .etym-desc{background:var(--bg);}
+/* ── Progress Section ── */
+#progressSection{padding:16px 16px 24px;min-height:70vh;}
+.progress-title{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--text);margin-bottom:16px;}
+.stat-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 14px;box-shadow:var(--shadow);}
+.stat-card-icon{font-size:1.2rem;margin-bottom:6px;line-height:1;}
+.stat-card-num{font-size:1.55rem;font-weight:800;color:var(--text);line-height:1.1;}
+.stat-card-num em{font-size:0.88rem;font-weight:500;font-style:normal;color:var(--muted);}
+.stat-card-label{font-size:0.7rem;font-weight:600;color:var(--muted);margin-top:3px;}
+.stat-card-sub{font-size:0.65rem;color:var(--muted);margin-top:1px;}
+.heatmap-section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow);}
+.heatmap-section-title{font-size:0.86rem;font-weight:600;color:var(--text);margin-bottom:12px;}
+.heatmap-grid{display:flex;gap:2px;}
+.heatmap-col{display:flex;flex-direction:column;gap:2px;}
+.heatmap-cell{width:13px;height:13px;border-radius:2px;background:var(--bg);flex-shrink:0;}
+.heatmap-cell.lv1{background:rgba(67,97,238,.18);}
+.heatmap-cell.lv2{background:rgba(67,97,238,.38);}
+.heatmap-cell.lv3{background:rgba(67,97,238,.62);}
+.heatmap-cell.lv4{background:rgba(67,97,238,.88);}
+.heatmap-cell.hm-today{outline:2px solid var(--accent);outline-offset:1px;}
+.heatmap-cell.hm-future{background:transparent;}
+.hm-month-row{display:flex;gap:2px;margin-bottom:4px;padding-left:20px;}
+.hm-month-lbl{font-size:0.6rem;color:var(--muted);width:13px;text-align:center;}
+.hm-day-col{display:flex;flex-direction:column;gap:2px;margin-right:4px;}
+.hm-day-lbl{font-size:0.6rem;color:var(--muted);height:13px;line-height:13px;text-align:right;width:16px;}
+.progress-lb-section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow);}
+.progress-lb-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.progress-lb-title{font-size:0.88rem;font-weight:700;color:var(--text);}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -489,7 +517,7 @@ header{top:52px!important;}
   <button class="bnav-btn" id="bnavMywords" onclick="switchTab('mywords')">
     <span class="bnav-icon">⭐</span>字本 <span id="myWordsCount" style="font-size:0.55rem"></span>
   </button>
-  <button class="bnav-btn" id="bnavProgress" onclick="switchTab('news')">
+  <button class="bnav-btn" id="bnavProgress" onclick="switchTab('progress')">
     <span class="bnav-icon">📊</span>進度
   </button>
 </div>
@@ -522,16 +550,6 @@ header{top:52px!important;}
     <div class="drawer-section-label">其他功能</div>
     <button class="drawer-nav-btn" onclick="switchTab('paragraph');closeDrawer()">📖 段落理解</button>
     <button class="drawer-nav-btn" id="drawerNewsBtn" onclick="switchTab('news');closeDrawer()">📢 公告 &amp; 更新記錄</button>
-  </div>
-  <div id="drawerLbSection">
-    <div class="drawer-section-label">🏆 排行榜</div>
-    <div class="lb-tabs">
-      <button class="lb-tab active" data-mode="week"  onclick="showLeaderboard('week',this)">本週</button>
-      <button class="lb-tab"        data-mode="month" onclick="showLeaderboard('month',this)">本月</button>
-      <button class="lb-tab"        data-mode="total" onclick="showLeaderboard('total',this)">累積</button>
-      <button class="lb-tab"        data-mode="words" onclick="showLeaderboard('words',this)">單字庫</button>
-    </div>
-    <div id="leaderboardList"><div class="lb-empty">開啟選單自動載入</div></div>
   </div>
 </div>
 <div id="dictSection" style="display:none">
@@ -592,6 +610,7 @@ header{top:52px!important;}
 <div id="quizSection" style="display:none"></div>
 <div id="myWordsSection" style="display:none"></div>
 <div id="paragraphSection" style="display:none"></div>
+<div id="progressSection" style="display:none"></div>
 <div id="newsSection" style="display:none">
   <div class="news-wrap">
     <div class="news-page-title">📢 更新公告</div>
@@ -1289,9 +1308,11 @@ function buildAlphaBar(){
 }
 buildAlphaBar();
 updateFabVisibility();
-/* Streak constants needed before initHome IIFE */
-const STREAK_KEY = 'vocab_streak';
-const DAILY_KEY  = 'vocab_daily';
+/* Streak / progress constants needed before initHome IIFE */
+const STREAK_KEY   = 'vocab_streak';
+const DAILY_KEY    = 'vocab_daily';
+const HEATMAP_KEY  = 'vocab_heatmap';
+const ACCURACY_KEY = 'vocab_accuracy';
 /* init home screen */
 (function initHome(){
   touchStreak();
@@ -1540,12 +1561,13 @@ function switchTab(tab){
   document.getElementById('quizSection').style.display       = tab==='quiz'      ? '' : 'none';
   document.getElementById('myWordsSection').style.display    = tab==='mywords'   ? '' : 'none';
   document.getElementById('paragraphSection').style.display  = tab==='paragraph' ? '' : 'none';
+  document.getElementById('progressSection').style.display   = tab==='progress'  ? '' : 'none';
   document.getElementById('newsSection').style.display       = tab==='news'      ? '' : 'none';
   /* bottom nav active state */
-  const bnavMap = {home:'bnavHome',dict:'bnavDict',quiz:'bnavQuiz',mywords:'bnavMywords',news:'bnavProgress',paragraph:'bnavProgress'};
+  const bnavMap = {home:'bnavHome',dict:'bnavDict',quiz:'bnavQuiz',mywords:'bnavMywords',progress:'bnavProgress',news:'bnavProgress',paragraph:null};
   document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active'));
-  const activeBtn = document.getElementById(bnavMap[tab]);
-  if(activeBtn) activeBtn.classList.add('active');
+  const activeBnavId = bnavMap[tab];
+  if(activeBnavId) document.getElementById(activeBnavId)?.classList.add('active');
   const drawerNewsBtn = document.getElementById('drawerNewsBtn');
   if(drawerNewsBtn) drawerNewsBtn.classList.toggle('active', tab==='news');
   updateFabVisibility();
@@ -1553,6 +1575,7 @@ function switchTab(tab){
   if(tab==='quiz')      renderQuizSetup();
   if(tab==='mywords')   renderMyWords();
   if(tab==='paragraph') renderParagraphTab();
+  if(tab==='progress')  renderProgress();
 }
 
 /* ── Streak Tracking ── */
@@ -1583,7 +1606,22 @@ function incrementDailyCount(){
   const d = getDailyData();
   d.count++;
   localStorage.setItem(DAILY_KEY, JSON.stringify(d));
+  /* update heatmap */
+  const today = getTodayKey();
+  const hm = JSON.parse(localStorage.getItem(HEATMAP_KEY) || '{}');
+  hm[today] = (hm[today] || 0) + 1;
+  /* prune entries older than 90 days */
+  const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 90);
+  const cutoffKey = cutoff.toISOString().slice(0, 10);
+  Object.keys(hm).forEach(k => { if(k < cutoffKey) delete hm[k]; });
+  localStorage.setItem(HEATMAP_KEY, JSON.stringify(hm));
   touchStreak();
+}
+function trackAccuracy(correct){
+  const acc = JSON.parse(localStorage.getItem(ACCURACY_KEY) || '{"correct":0,"total":0}');
+  if(correct) acc.correct++;
+  acc.total++;
+  localStorage.setItem(ACCURACY_KEY, JSON.stringify(acc));
 }
 
 /* ── Home Screen Renderer ── */
@@ -1695,8 +1733,6 @@ function openDrawer(){
   document.getElementById('drawerOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
   renderDrawerStats();
-  const activeTab = document.querySelector('.lb-tab.active');
-  showLeaderboard(activeTab?.dataset.mode || 'week', activeTab);
 }
 function closeDrawer(){
   document.getElementById('sideDrawer').classList.remove('open');
@@ -1709,6 +1745,115 @@ function updateFabVisibility(){
   const onDict = document.getElementById('dictSection').style.display !== 'none';
   const onWord = dictMode === 'word';
   fab.classList.toggle('fab-visible', onDict && onWord);
+}
+
+/* ── Heatmap Builder ── */
+function buildHeatmap(){
+  const hmData  = JSON.parse(localStorage.getItem(HEATMAP_KEY) || '{}');
+  const todayKey = getTodayKey();
+  const today   = new Date();
+  /* start from the Sunday 5 weeks ago */
+  const startDate = new Date(today);
+  startDate.setDate(startDate.getDate() - startDate.getDay() - 5*7);
+  const monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  const weeks = [];
+  let cur = new Date(startDate);
+  let lastMonth = -1;
+  while(cur <= today){
+    const cells = [];
+    let monthLabel = '';
+    for(let d=0;d<7;d++){
+      const day = new Date(cur); day.setDate(cur.getDate()+d);
+      const key = day.toISOString().slice(0,10);
+      const isFuture = day > today;
+      if(d===0 && day.getMonth()!==lastMonth && !isFuture){
+        monthLabel = monthNames[day.getMonth()];
+        lastMonth  = day.getMonth();
+      }
+      cells.push({key, count: hmData[key]||0, isFuture, isToday: key===todayKey});
+    }
+    weeks.push({cells, monthLabel});
+    cur.setDate(cur.getDate()+7);
+  }
+  function lvl(c){ return c===0?'':c<4?'lv1':c<8?'lv2':c<14?'lv3':'lv4'; }
+  const dayLabels=['日','一','二','三','四','五','六'];
+  const dayCol = dayLabels.map((l,i)=>
+    `<div class="hm-day-lbl">${[1,3,5].includes(i)?l:''}</div>`).join('');
+  const gridHtml = weeks.map(w=>`<div class="heatmap-col">${
+    w.cells.map(c=>`<div class="heatmap-cell ${c.isFuture?'hm-future':lvl(c.count)}${c.isToday?' hm-today':''}" title="${c.isFuture?'':c.key+': '+c.count+' 題'}"></div>`).join('')
+  }</div>`).join('');
+  const monthRowHtml = weeks.map(w=>`<div style="width:15px;font-size:0.58rem;color:var(--muted);text-align:center;overflow:visible;white-space:nowrap">${w.monthLabel}</div>`).join('<div style="width:2px"></div>');
+  return `
+    <div style="display:flex;gap:2px;margin-bottom:4px;padding-left:22px">${monthRowHtml}</div>
+    <div style="display:flex;gap:4px">
+      <div class="hm-day-col">${dayCol}</div>
+      <div class="heatmap-grid">${gridHtml}</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:3px;margin-top:8px;justify-content:flex-end">
+      <span style="font-size:0.6rem;color:var(--muted)">少</span>
+      <div class="heatmap-cell"></div><div class="heatmap-cell lv1"></div>
+      <div class="heatmap-cell lv2"></div><div class="heatmap-cell lv3"></div>
+      <div class="heatmap-cell lv4"></div>
+      <span style="font-size:0.6rem;color:var(--muted)">多</span>
+    </div>`;
+}
+
+/* ── Progress Section Renderer ── */
+function renderProgress(){
+  const el = document.getElementById('progressSection');
+  if(!el) return;
+  const s       = getStreakData();
+  const acc     = JSON.parse(localStorage.getItem(ACCURACY_KEY)||'{"correct":0,"total":0}');
+  const accPct  = acc.total > 0 ? Math.round(acc.correct/acc.total*100) : 0;
+  const starCount  = markedWords.size;
+  const totalWords = getAllWords().length;
+  el.innerHTML = `
+    <div style="padding:16px 16px 24px">
+      <div class="progress-title">學習進度</div>
+      <div class="stat-cards">
+        <div class="stat-card">
+          <div class="stat-card-icon">📚</div>
+          <div class="stat-card-num">${starCount}<em>/${totalWords.toLocaleString()}</em></div>
+          <div class="stat-card-label">掌握單字</div>
+          <div class="stat-card-sub">已加入複習清單</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon">🔥</div>
+          <div class="stat-card-num">${s.streak}<em>天</em></div>
+          <div class="stat-card-label">連續打卡</div>
+          <div class="stat-card-sub">最高 ${s.best} 天</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon">🎯</div>
+          <div class="stat-card-num">${accPct}<em>%</em></div>
+          <div class="stat-card-label">正確率</div>
+          <div class="stat-card-sub">共 ${acc.total} 題</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon">✏️</div>
+          <div class="stat-card-num">${userStats.weeklyReviews}</div>
+          <div class="stat-card-label">本週答題</div>
+          <div class="stat-card-sub">累計 ${userStats.totalReviews} 題</div>
+        </div>
+      </div>
+      <div class="heatmap-section">
+        <div class="heatmap-section-title">本月學習熱力圖</div>
+        ${buildHeatmap()}
+      </div>
+      <div class="progress-lb-section">
+        <div class="progress-lb-hdr">
+          <span class="progress-lb-title">🏆 排行榜</span>
+        </div>
+        <div class="lb-tabs" style="margin-bottom:12px">
+          <button class="lb-tab active" data-mode="week" onclick="showLeaderboard('week',this)">本週</button>
+          <button class="lb-tab" data-mode="month" onclick="showLeaderboard('month',this)">本月</button>
+          <button class="lb-tab" data-mode="total" onclick="showLeaderboard('total',this)">累積</button>
+          <button class="lb-tab" data-mode="words" onclick="showLeaderboard('words',this)">單字庫</button>
+        </div>
+        <div id="leaderboardList"><div class="lb-empty">載入中…</div></div>
+      </div>
+    </div>`;
+  showLeaderboard('week', el.querySelector('.lb-tab[data-mode="week"]'));
 }
 
 function renderQuizSetup(){
@@ -2055,7 +2200,9 @@ function answerQ(idx){
   if(qSelected!==null)return;
   qSelected=idx;
   const q=qQuestions[qIndex];
-  if(idx===q.answer){
+  const correct = idx===q.answer;
+  trackAccuracy(correct);
+  if(correct){
     qScore++;
     if(q.type==='meaning'||q.type==='sentence') removeMark(q.word);
   } else {
