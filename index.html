@@ -510,6 +510,33 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
 .progress-lb-section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow);}
 .progress-lb-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
 .progress-lb-title{font-size:0.88rem;font-weight:700;color:var(--text);}
+/* ── Daily Checkin Board ── */
+.checkin-section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow);margin-top:14px;}
+.checkin-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.checkin-title{font-size:0.88rem;font-weight:700;color:var(--text);}
+.checkin-reset{font-size:0.65rem;color:var(--muted);}
+.checkin-input-area{margin-bottom:12px;}
+.checkin-textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:0.84rem;font-family:inherit;background:var(--bg);color:var(--text);resize:none;height:70px;box-sizing:border-box;outline:none;transition:border-color .15s;}
+.checkin-textarea:focus{border-color:var(--accent);}
+.checkin-input-footer{display:flex;justify-content:space-between;align-items:center;margin-top:6px;}
+.checkin-char-count{font-size:0.65rem;color:var(--muted);}
+.checkin-submit-btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:6px 16px;font-size:0.78rem;font-weight:600;cursor:pointer;font-family:inherit;}
+.checkin-submit-btn:disabled{opacity:.5;cursor:default;}
+.checkin-login-hint{font-size:0.8rem;color:var(--muted);text-align:center;padding:10px 0 14px;}
+.checkin-login-btn{background:none;border:none;color:var(--accent);font-size:0.8rem;font-weight:600;cursor:pointer;padding:0 2px;font-family:inherit;text-decoration:underline;}
+.checkin-posts{display:flex;flex-direction:column;gap:10px;}
+.checkin-post{background:var(--bg);border-radius:10px;padding:10px 12px;}
+.checkin-post-top{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.checkin-avatar{width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;}
+.checkin-avatar-ph{width:28px;height:28px;border-radius:50%;flex-shrink:0;background:rgba(67,97,238,.18);color:var(--accent);font-size:0.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.checkin-post-info{flex:1;min-width:0;}
+.checkin-name{font-size:0.8rem;font-weight:600;color:var(--text);}
+.checkin-time{font-size:0.63rem;color:var(--muted);margin-left:4px;}
+.checkin-like-btn{background:none;border:none;cursor:pointer;font-size:0.82rem;display:flex;align-items:center;gap:3px;padding:4px 8px;border-radius:20px;transition:background .15s;flex-shrink:0;}
+.checkin-like-btn:hover{background:rgba(247,37,133,.08);}
+.checkin-like-count{font-size:0.76rem;color:var(--muted);font-weight:600;}
+.checkin-like-btn.liked .checkin-like-count{color:var(--accent2);}
+.checkin-msg{font-size:0.84rem;color:var(--text);line-height:1.5;word-break:break-word;}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -1929,8 +1956,142 @@ function renderProgress(){
         </div>
         <div id="leaderboardList"><div class="lb-empty">載入中…</div></div>
       </div>
+      <div id="checkinBoard" class="checkin-section"><div class="lb-empty">載入中…</div></div>
     </div>`;
   showLeaderboard('week', el.querySelector('.lb-tab[data-mode="week"]'));
+  loadCheckins();
+}
+
+/* ── Daily Checkin Board ── */
+function getTodayTW(){
+  const tw = new Date(Date.now() + (new Date().getTimezoneOffset() + 480) * 60000);
+  return tw.toISOString().split('T')[0];
+}
+
+let _checkinUnsub = null;
+
+function loadCheckins(){
+  if(_checkinUnsub){ _checkinUnsub(); _checkinUnsub = null; }
+  const db = window._fbDb;
+  if(!db){ renderCheckinBoard([], window._fbUser); return; }
+  const today = getTodayTW();
+  _checkinUnsub = db.collection('checkins').doc(today).collection('posts')
+    .orderBy('ts', 'asc')
+    .onSnapshot(
+      snap => renderCheckinBoard(snap.docs.map(d => ({id:d.id, ...d.data()})), window._fbUser),
+      ()   => renderCheckinBoard([], window._fbUser)
+    );
+}
+
+function renderCheckinBoard(posts, user){
+  const el = document.getElementById('checkinBoard');
+  if(!el) return;
+  const twNow = new Date(Date.now() + (new Date().getTimezoneOffset() + 480) * 60000);
+  const nextMid = new Date(twNow); nextMid.setHours(24,0,0,0);
+  const diff = nextMid - twNow;
+  const hh = Math.floor(diff / 3600000);
+  const mm = String(Math.floor((diff % 3600000) / 60000)).padStart(2,'0');
+  const myPost = user ? posts.find(p => p.uid === user.uid) : null;
+  let inputHtml = '';
+  if(user){
+    const initVal = myPost ? _escH(myPost.text) : '';
+    inputHtml = `
+      <div class="checkin-input-area">
+        <textarea id="checkinTextarea" class="checkin-textarea" maxlength="80" placeholder="今天的學習目標或心情…">${initVal}</textarea>
+        <div class="checkin-input-footer">
+          <span id="checkinCharCount" class="checkin-char-count">${myPost ? myPost.text.length : 0}/80</span>
+          <button class="checkin-submit-btn" onclick="submitCheckin()">${myPost ? '更新' : '簽到'}</button>
+        </div>
+      </div>`;
+  } else {
+    inputHtml = `<div class="checkin-login-hint">請<button class="checkin-login-btn" onclick="fbGoogleSignIn()">登入 Google 帳號</button>以簽到留言</div>`;
+  }
+  const postsHtml = !posts.length
+    ? `<div class="lb-empty">還沒有人簽到，成為第一個吧！🎉</div>`
+    : posts.map(p => {
+        const likeCount = Object.keys(p.likes || {}).length;
+        const liked     = !!(user && (p.likes || {})[user.uid]);
+        const isMe      = !!(user && p.uid === user.uid);
+        const avatarHtml = p.photo
+          ? `<img class="checkin-avatar" src="${_escH(p.photo)}" onerror="this.style.display='none'">`
+          : `<div class="checkin-avatar-ph">${_escH((p.name||'?')[0].toUpperCase())}</div>`;
+        const timeStr = p.ts ? new Date(p.ts.toMillis()).toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'}) : '';
+        const likeBtnHtml = isMe
+          ? `<div style="width:44px"></div>`
+          : `<button class="checkin-like-btn${liked?' liked':''}" onclick="toggleCheckinLike('${_escH(p.uid)}')">${liked?'❤️':'🤍'}<span class="checkin-like-count">${likeCount||''}</span></button>`;
+        return `<div class="checkin-post">
+          <div class="checkin-post-top">
+            ${avatarHtml}
+            <div class="checkin-post-info">
+              <span class="checkin-name">${_escH(p.name||'匿名')}${isMe?'<span class="lb-you">我</span>':''}</span>
+              <span class="checkin-time">${timeStr}</span>
+            </div>
+            ${likeBtnHtml}
+          </div>
+          <div class="checkin-msg">${_escH(p.text)}</div>
+        </div>`;
+      }).join('');
+  el.innerHTML = `
+    <div class="checkin-hdr">
+      <span class="checkin-title">💬 今日簽到板</span>
+      <span class="checkin-reset">🕛 ${hh}:${mm} 後重置</span>
+    </div>
+    ${inputHtml}
+    <div class="checkin-posts">${postsHtml}</div>`;
+  const ta = el.querySelector('#checkinTextarea');
+  const cc = el.querySelector('#checkinCharCount');
+  if(ta && cc) ta.addEventListener('input', () => { cc.textContent = ta.value.length + '/80'; });
+}
+
+async function submitCheckin(){
+  const db = window._fbDb, user = window._fbUser;
+  if(!db || !user) return;
+  const ta = document.getElementById('checkinTextarea');
+  if(!ta) return;
+  const text = ta.value.trim();
+  if(!text){ ta.focus(); return; }
+  const btn = document.querySelector('.checkin-submit-btn');
+  if(btn) btn.disabled = true;
+  const today = getTodayTW();
+  const ref = db.collection('checkins').doc(today).collection('posts').doc(user.uid);
+  try{
+    const snap = await ref.get();
+    if(snap.exists){
+      await ref.update({
+        name:  user.displayName || userProfile?.name || '匿名',
+        photo: user.photoURL || '',
+        text,
+        ts:    firebase.firestore.FieldValue.serverTimestamp()
+      });
+    } else {
+      await ref.set({
+        uid:   user.uid,
+        name:  user.displayName || userProfile?.name || '匿名',
+        photo: user.photoURL || '',
+        text,
+        ts:    firebase.firestore.FieldValue.serverTimestamp(),
+        likes: {}
+      });
+    }
+  } catch(e){ alert('簽到失敗：'+e.message); }
+  finally{ if(btn) btn.disabled = false; }
+}
+
+async function toggleCheckinLike(authorUid){
+  const db = window._fbDb, user = window._fbUser;
+  if(!db || !user){ alert('請先登入 Google 帳號'); return; }
+  const today = getTodayTW();
+  const ref = db.collection('checkins').doc(today).collection('posts').doc(authorUid);
+  try{
+    const snap = await ref.get();
+    if(!snap.exists) return;
+    const liked = !!((snap.data().likes || {})[user.uid]);
+    await ref.update({
+      [`likes.${user.uid}`]: liked
+        ? firebase.firestore.FieldValue.delete()
+        : true
+    });
+  } catch(e){ console.error('like error', e); }
 }
 
 function renderQuizSetup(){
