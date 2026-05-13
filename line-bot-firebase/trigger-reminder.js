@@ -5,9 +5,16 @@ const { execSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
-const envVars = require("./firebase.json").functions[0].environmentVariables;
-const ICAL_URL = envVars.GOOGLE_CALENDAR_ICAL_URL;
-const LINE_TOKEN = envVars.LINE_CHANNEL_ACCESS_TOKEN_BOT2;
+// In CI (GitHub Actions), firebase.json is gitignored — read from env vars instead
+let ICAL_URL, LINE_TOKEN;
+try {
+  const envVars = require("./firebase.json").functions[0].environmentVariables;
+  ICAL_URL = process.env.GOOGLE_CALENDAR_ICAL_URL || envVars.GOOGLE_CALENDAR_ICAL_URL;
+  LINE_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN_BOT2 || envVars.LINE_CHANNEL_ACCESS_TOKEN_BOT2;
+} catch {
+  ICAL_URL = process.env.GOOGLE_CALENDAR_ICAL_URL;
+  LINE_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN_BOT2;
+}
 const PROJECT = "news-english-ef2e4";
 
 function fbGet(dbPath) {
@@ -29,9 +36,9 @@ function fbSet(dbPath, data) {
 async function fetchIcal(url) {
   return new Promise((resolve, reject) => {
     https.get(url, { headers: { "User-Agent": "Mozilla/5.0" } }, (res) => {
-      let data = "";
-      res.on("data", c => data += c);
-      res.on("end", () => resolve(data));
+      const chunks = [];
+      res.on("data", c => chunks.push(c));
+      res.on("end", () => resolve(chunks.join("")));
     }).on("error", reject);
   });
 }
@@ -66,7 +73,9 @@ function getDateStr(dtstart) {
 // Returns { names: string[] | null, cleanTitle: string }
 // names=null means "everyone" ([全部] or no bracket)
 function parseEventTarget(title) {
-  const m = title.match(/^\[([^\]]+)\]\s*(.*)/);
+  // Normalize full-width brackets (e.g. ［Frank］ or [Frank］) to ASCII
+  const normalized = title.replace(/［/g, "[").replace(/］/g, "]");
+  const m = normalized.match(/^\[([^\]]+)\]\s*(.*)/);
   if (!m) return { names: null, cleanTitle: title };
   const inside = m[1].trim();
   const cleanTitle = m[2].trim() || title;
@@ -114,8 +123,9 @@ async function main() {
   const now = new Date();
   const taiwanNow = new Date(now.getTime() + 8 * 3600000);
   const tY = taiwanNow.getUTCFullYear(), tM = taiwanNow.getUTCMonth(), tD = taiwanNow.getUTCDate();
-  const todayStr = `${tY}-${String(tM + 1).padStart(2, "0")}-${String(tD).padStart(2, "0")}`;
-  const tomorrowStr = `${tY}-${String(tM + 1).padStart(2, "0")}-${String(tD + 1).padStart(2, "0")}`;
+  const tMStr = String(tM + 1).padStart(2, "0");
+  const todayStr = `${tY}-${tMStr}-${String(tD).padStart(2, "0")}`;
+  const tomorrowStr = `${tY}-${tMStr}-${String(tD + 1).padStart(2, "0")}`;
   console.log(`Taiwan today: ${todayStr}`);
   console.log(`Looking for events on: ${todayStr} (today) and ${tomorrowStr} (tomorrow)\n`);
 
@@ -255,6 +265,7 @@ async function main() {
       msg += evt.isToday
         ? `\n\n今天加油！💪`
         : `\n\n請做好準備，加油！💪`;
+      msg += `\n\n若老師尚未完成，請回覆：\n「${cleanTitle}尚未完成，預計[日期]前完成」`;
 
       await sendPush(userId, msg);
       newSentRecords[key] = { sentAt: Date.now(), eventTitle: evt.title, eventStart: evt.start };

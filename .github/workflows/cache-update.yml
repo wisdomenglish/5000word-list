@@ -1,0 +1,32 @@
+name: Weekly Calendar Cache Update
+
+on:
+  schedule:
+    # Every day at 07:00 Taiwan time (UTC 23:00 previous day)
+    - cron: '0 23 * * *'
+  workflow_dispatch:
+
+jobs:
+  update-cache:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+      - name: Update calendar cache
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          GOOGLE_CALENDAR_ICAL_URL: ${{ secrets.GOOGLE_CALENDAR_ICAL_URL }}
+        run: |
+          cd line-bot-firebase
+          node trigger-reminder.js --cache-only
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cache-update-logs
+          path: line-bot-firebase/cache-update-*.log
+          retention-days: 30
