@@ -3132,8 +3132,9 @@ function _runAutoLookup(enId, zhId, posId, statusId, ref){
   const statusEl = document.getElementById(statusId);
   const word = (wordEl?.value || '').trim();
   clearTimeout(ref.t);
+  if(ref.ctrl){ ref.ctrl.abort(); ref.ctrl = null; }
   if(!statusEl) return;
-  if(!word || word.length < 2){ statusEl.textContent = ''; return; }
+  if(!word || word.length < 3){ statusEl.textContent = ''; return; }
 
   const wordLower = word.toLowerCase();
   const match = WORDS.find(w => w.word.toLowerCase() === wordLower) || customWords.find(w => w.word.toLowerCase() === wordLower);
@@ -3148,8 +3149,13 @@ function _runAutoLookup(enId, zhId, posId, statusId, ref){
   ref.t = setTimeout(async () => {
     if((wordEl?.value || '').trim().toLowerCase() !== wordLower) return;
     if(zhEl && !zhEl.value){ zhEl.disabled = true; zhEl.placeholder = 'AI 查詢中…'; }
+    const ctrl = new AbortController();
+    ref.ctrl = ctrl;
     try {
-      const resp = await fetch(DEFINITION_FN_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({word}) });
+      const resp = await fetch(DEFINITION_FN_URL, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({word}), signal: ctrl.signal
+      });
       if(!resp.ok) throw new Error();
       const data = await resp.json();
       if(data.zh){
@@ -3158,11 +3164,12 @@ function _runAutoLookup(enId, zhId, posId, statusId, ref){
         if(statusEl) statusEl.innerHTML = '<span style="color:var(--accent)">✨ AI 已自動填入，可自行修改</span>';
       } else { if(statusEl) statusEl.textContent = ''; }
     } catch(e){
-      if(statusEl) statusEl.textContent = '';
+      if(e.name !== 'AbortError' && statusEl) statusEl.textContent = '';
     } finally {
+      if(ref.ctrl === ctrl) ref.ctrl = null;
       if(zhEl){ zhEl.disabled = false; zhEl.placeholder = '中文解釋 *'; }
     }
-  }, 300);
+  }, 650);
 }
 
 function newWordAutoLookup(){ _runAutoLookup('newWordEn','newWordZh','newWordPos','newWordLookupStatus', _newWordTimerRef); }
