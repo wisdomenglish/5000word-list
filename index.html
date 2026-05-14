@@ -1224,10 +1224,13 @@ async function showLeaderboard(mode, btn){
     docs = docs.filter(d => (d[field] || 0) > 0);
     if(!docs.length){ listEl.innerHTML = '<div class="lb-empty">本期尚無記錄，快去答題搶第一！🎯</div>'; return; }
     const unit = mode === 'words' ? '字' : '題';
-    listEl.innerHTML = docs.map((d, i) => {
-      const isSelf = d.uid === uid;
+    const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+    const top5 = docs.slice(0, 5);
+    const selfRank = uid ? docs.findIndex(d => d.uid === uid) : -1;
+    const selfInTop5 = selfRank >= 0 && selfRank < 5;
+    const mkRow = (d, i, isSelf) => {
       const count  = d[field] || 0;
-      const medal  = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
+      const medal  = medals[i] || `${i + 1}.`;
       const meta   = [d.grade, d.school].filter(Boolean).map(_escH).join(' · ');
       const avatar = d.photoURL
         ? `<img class="lb-avatar" src="${_escH(d.photoURL)}" alt="" onerror="this.style.display='none'">`
@@ -1241,7 +1244,13 @@ async function showLeaderboard(mode, btn){
         </div>
         <div class="lb-count">${count} <span class="lb-unit">${unit}</span></div>
       </div>`;
-    }).join('');
+    };
+    let html = top5.map((d, i) => mkRow(d, i, d.uid === uid)).join('');
+    if(selfRank >= 5){
+      html += `<div style="border-top:1px dashed var(--border);margin:6px 0"></div>`;
+      html += mkRow(docs[selfRank], selfRank, true);
+    }
+    listEl.innerHTML = html;
   }catch(e){
     console.error('排行榜讀取失敗', e);
     listEl.innerHTML = '<div class="lb-empty">載入失敗（請確認 Firestore 規則）</div>';
