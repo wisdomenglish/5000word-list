@@ -55,6 +55,8 @@ input[type=search]::placeholder{color:var(--muted);}
 .page-btn:disabled{opacity:0.3;}
 .page-info{color:var(--muted);font-size:0.82rem;padding:0 6px;}
 .empty{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--muted);}
+.empty-add-btn{margin-top:16px;display:inline-block;background:rgba(67,97,238,.1);border:1.5px solid rgba(67,97,238,.35);border-radius:12px;color:var(--accent);padding:11px 22px;font-size:0.88rem;font-weight:600;cursor:pointer;transition:all .2s;}
+.empty-add-btn:hover{background:rgba(67,97,238,.18);}
 @media(max-width:480px){
   header{padding:16px 16px 12px;}.grid{padding:12px 16px;gap:8px;}
   .stats-bar{padding:8px 16px;}.pagination{padding:14px 16px;}header h1{font-size:1.3rem;}
@@ -1494,7 +1496,10 @@ function update(){
   const page=list.slice((currentPage-1)*PER_PAGE,currentPage*PER_PAGE);
   const grid=document.getElementById('grid');
   if(!page.length){
-    grid.innerHTML='<div class="empty"><h3>找不到符合的單字</h3></div>';
+    const addHint = searchQ
+      ? `<button class="empty-add-btn" onclick="openAddWordModal('${searchQ.replace(/'/g,"\\'")}')">＋ 新增「${searchQ}」到自訂單字庫</button>`
+      : '';
+    grid.innerHTML=`<div class="empty"><h3>找不到符合的單字</h3>${addHint}</div>`;
   }else{
     grid.innerHTML=page.map(w=>`
       <div class="card" onclick="openWordModal('${w.word}')">
