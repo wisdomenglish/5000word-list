@@ -1107,13 +1107,16 @@ function getWeekKey(d){
   const date = new Date(d);
   const day  = date.getDay() || 7;
   date.setDate(date.getDate() - day + 1);
-  return date.toISOString().slice(0, 10);
+  const y  = date.getFullYear();
+  const m  = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${dd}`;
 }
 
 function incrementReviewStat(){
   const now = new Date();
   const wk  = getWeekKey(now);
-  const mk  = now.toISOString().slice(0, 7);
+  const mk  = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
   if(userStats.weekKey  !== wk){ userStats.weeklyReviews  = 0; userStats.weekKey  = wk; }
   if(userStats.monthKey !== mk){ userStats.monthlyReviews = 0; userStats.monthKey = mk; }
   userStats.weeklyReviews++;
@@ -1214,7 +1217,8 @@ async function showLeaderboard(mode, btn){
     const field    = fieldMap[mode] || 'weeklyReviews';
     const snap = await db.collection('leaderboard').orderBy(field, 'desc').limit(20).get();
     const curWeek  = getWeekKey(new Date());
-    const curMonth = new Date().toISOString().slice(0, 7);
+    const n = new Date();
+    const curMonth = `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`;
     const uid = window._fbUser?.uid;
     let docs = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
     if(mode === 'week')  docs.forEach(d => { if(d.weekKey  !== curWeek)  d.weeklyReviews  = 0; });
@@ -1333,6 +1337,8 @@ async function syncFromCloud(uid, db){
       if(markedWords.size  > 0) upload.markedWords  = [...markedWords];
       if(Object.keys(upload).length > 0) await ref.set(upload);
     }
+    // 登入後將本地統計同步到排行榜（不 await，背景執行）
+    saveStatsToCloud();
   }catch(e){ console.error('雲端同步失敗',e); }
 }
 let editingWordKey = null;
