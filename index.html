@@ -318,6 +318,18 @@ header{top:52px!important;}
 .news-list li{color:var(--muted);font-size:0.875rem;line-height:1.65;padding-left:18px;position:relative;}
 .news-list li::before{content:'›';position:absolute;left:0;color:var(--accent);font-weight:700;}
 .news-list li strong{color:var(--text);font-weight:600;}
+/* ── News Index (collapsed entries) ── */
+.news-pinned-label{font-size:0.72rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.news-index-section{margin-top:24px;}
+.news-index-section-title{font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;}
+.news-index-entry{margin-bottom:8px;}
+.news-index-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 14px;cursor:pointer;display:flex;align-items:center;gap:8px;flex-wrap:nowrap;transition:border-color .15s,background .15s;user-select:none;}
+.news-index-item:hover{border-color:var(--accent);background:rgba(67,97,238,.04);}
+.news-index-entry.open .news-index-item{border-radius:12px 12px 0 0;border-bottom-color:transparent;}
+.ni-title{flex:1;font-size:0.85rem;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+.news-arrow{color:var(--muted);font-size:1rem;transition:transform .2s;flex-shrink:0;line-height:1;}
+.news-index-entry.open .news-arrow{transform:rotate(90deg);}
+.news-detail{display:none;background:var(--card);border:1px solid var(--border);border-top:none;border-radius:0 0 12px 12px;padding:14px 16px 16px;}
 /* ── Custom Words ── */
 .custom-badge{display:inline-block;background:rgba(224,108,138,.15);border:1px solid rgba(224,108,138,.3);color:var(--accent2);font-size:0.63rem;padding:1px 5px;border-radius:4px;margin-left:4px;vertical-align:middle;font-weight:600;}
 .mw-section-hdr{display:flex;justify-content:space-between;align-items:center;margin:20px 0 12px;padding-top:16px;border-top:1px solid var(--border);}
@@ -700,134 +712,24 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
     <div class="news-page-title">📢 更新公告</div>
     <div class="news-page-sub">記錄每次功能新增與優化內容</div>
 
-    <!-- ══ 2026-05-14 ══ -->
+    <!-- ══ 置頂使用技巧 ══ -->
+    <div class="news-pinned-label">📌 使用技巧</div>
+
+    <!-- 置頂 1：加入主畫面 -->
     <div class="news-card">
       <div class="news-card-top">
-        <span class="news-date">2026-05-14</span>
-        <span class="news-type feature">新功能</span>
-        <span class="news-type fix">修正</span>
+        <span class="news-date">2025-05-01</span>
+        <span class="news-type improve">使用技巧</span>
       </div>
-      <div class="news-title">📝 自訂單字庫測驗・搜尋快速新增・例句語氣優化</div>
+      <div class="news-title">將 App 加入手機主畫面</div>
       <ul class="news-list">
-        <li><strong>自訂單字庫可加入測驗</strong>：測驗 Tab 出題範圍新增「📝 自訂單字庫」選項，可單獨練習自己新增的單字；原「全部單字」仍包含自訂單字一起出題。</li>
-        <li><strong>搜尋快速新增</strong>：在字典搜尋找不到的單字時，結果區會直接出現「＋ 新增「…」到自訂單字庫」按鈕，點擊即開啟新增表單並自動填入搜尋字。</li>
-        <li><strong>每日一字例句改為鼓勵語氣</strong>：每日一字的 AI 生成例句現在偏向正向激勵風格（如 "Momentum will be your best propeller."），一般單字詳細頁例句不受影響。</li>
-        <li><strong>新增單字自動查詢修正</strong>：修正自動查詢中文意思時偶爾出現幻覺（如把 "avenge" 查成 "avenue" 的意思）的問題，改善方式：延長觸發延遲至 0.65 秒、加入請求取消機制、最短輸入 3 字才觸發、強化 AI 提示避免混淆相似字。</li>
+        <li><strong>✅ iOS（iPhone / iPad）</strong><br>Safari 開啟網址 → 點下方 <strong>分享</strong> 圖示 → 選「<strong>加到主畫面</strong>」→ 點右上角「完成」</li>
+        <li><strong>✅ Android</strong><br>Chrome 開啟網址 → 點右上角 <strong>菜單（⋮）</strong> → 選「<strong>安裝應用程式</strong>」→ 點「安裝」</li>
+        <li><strong>📌 新增 Widget（Android）</strong><br>長按主畫面空白處 → 選「Widget」→ 找到 Chrome → 拖曳至主畫面</li>
       </ul>
     </div>
 
-    <!-- ══ 2026-05-13 (checkin + fix) ══ -->
-    <div class="news-card">
-      <div class="news-card-top">
-        <span class="news-date">2026-05-13</span>
-        <span class="news-type feature">新功能</span>
-        <span class="news-type fix">修正</span>
-      </div>
-      <div class="news-title">💬 今日簽到板・中文解釋顯示修正</div>
-      <ul class="news-list">
-        <li><strong>今日簽到板</strong>：進度 Tab 排行榜下方新增每日簽到留言板，登入 Google 帳號即可留言，每天台灣時間 00:00 自動重置。</li>
-        <li><strong>按讚互動</strong>：可對其他同學的簽到留言按 ❤️，點擊再次取消；自己的留言不能幫自己按讚。</li>
-        <li><strong>編輯留言</strong>：當天已簽到者可隨時修改留言內容（更新不會影響已獲得的讚）。</li>
-        <li><strong>中文解釋分號修正</strong>：修正卡片與詳細頁中文意思因 2 字首段被誤合併導致「化學化學性質」等顯示錯誤，現在正確顯示為「化學；化學性質」。</li>
-        <li><strong>單字詳細頁完整顯示</strong>：點開單字 Modal 後，中文欄位現在顯示完整所有意思，不再截斷。</li>
-        <li><strong>資料清理</strong>：移除 83 筆單字資料中文欄位內誤填的詞性標記（如 <code>v.</code>、<code>adj./v.</code>）。</li>
-      </ul>
-    </div>
-
-    <!-- ══ 2026-05-13 ══ -->
-    <div class="news-card">
-      <div class="news-card-top">
-        <span class="news-date">2026-05-13</span>
-        <span class="news-type feature">新功能</span>
-        <span class="news-type improve">介面升級</span>
-      </div>
-      <div class="news-title">🃏 單字卡模式・全新介面・學習進度・學習資源</div>
-      <ul class="news-list">
-        <li><strong>全新介面設計</strong>：整體改為明亮風格，頂部固定 Logo 列，底部五格導覽列（首頁／單字／測驗／我的單字／進度），首頁新增學測倒數（116 學測 2027/1/16）、今日目標進度、連續打卡天數。</li>
-        <li><strong>學習進度 Tab</strong>：掌握單字數、連續打卡、正確率、本週答題四格統計卡，搭配「本月學習熱力圖」記錄每日答題量，以及排行榜（週／月／累積）。</li>
-        <li><strong>🃏 單字卡模式</strong>：測驗頁新增單字卡互動模式，卡片正面顯示英文與詞性，點擊翻面顯示中文，翻面後選擇「還不熟」「普通」或「會了！」進行評分。</li>
-        <li><strong>熟悉度追蹤</strong>：單字卡評分結果自動記錄於本地端；「還不熟」「普通」的單字自動加入⭐複習清單，並在清單中以紅色／橘色標籤與左側色條標示。複習清單排序：普通在前，還不熟在後。</li>
-        <li><strong>優先複習不熟單字</strong>：測驗設定頁出題按鈕附近新增「☑ 優先複習不熟單字」選項，勾選後出題時優先抽出標記為「還不熟」的單字。</li>
-        <li><strong>漢堡選單學習資源</strong>：側邊選單新增「學習資源」區塊，含學習歷程、面試攻略、新課綱英文六級字彙參考表三個外部連結（Google Drive）。</li>
-      </ul>
-    </div>
-
-    <!-- ══ 2026-05-13 (pronunciation) ══ -->
-    <div class="news-card">
-      <div class="news-card-top">
-        <span class="news-date">2026-05-13</span>
-        <span class="news-type feature">新功能</span>
-      </div>
-      <div class="news-title">🔊 片語發音功能上線</div>
-      <ul class="news-list">
-        <li><strong>片語卡片發音</strong>：英文片語列表每張卡片右上角新增發音按鈕，點擊即可聆聽發音。</li>
-        <li><strong>片語詳細頁發音</strong>：點開片語 Modal 後，標題旁同樣有發音按鈕。</li>
-        <li>發音邏輯與單字相同：自動略去 <code>=</code> 同義補充、括號內語法說明及 <code>+V/N</code> 等標記，只唸出核心片語。</li>
-      </ul>
-    </div>
-
-    <!-- ══ 2026-05-12 ══ -->
-    <div class="news-card">
-      <div class="news-card-top">
-        <span class="news-date">2026-05-12</span>
-        <span class="news-type feature">新功能</span>
-      </div>
-      <div class="news-title">🏆 新增班級排行榜功能</div>
-      <ul class="news-list">
-        <li><strong>週 / 月 / 累計答題排行榜</strong>：登入 Google 帳號並設定姓名後，即可出現在班級排行榜。每次在測驗 Tab 回答一道題目算 1 次，每週一自動重新計算週排名。</li>
-        <li><strong>自訂單字庫排行</strong>：另有「單字庫」排行，顯示各同學新增的自訂單字總數量。</li>
-        <li><strong>設定個人資料</strong>：點擊右上角 ☰ 選單 → 「設定 / 編輯資料」輸入姓名、年級、學校，即可出現在排行榜中。</li>
-        <li><strong>個人答題統計</strong>：登入後在 ☰ 選單可看到本週 / 本月 / 累計答題數。</li>
-      </ul>
-    </div>
-
-    <!-- ══ 2026-05-10 ══ -->
-    <div class="news-card">
-      <div class="news-card-top">
-        <span class="news-date">2026-05-10</span>
-        <span class="news-type feature">新功能</span>
-        <span class="news-type improve">優化</span>
-        <span class="news-type fix">修正</span>
-      </div>
-      <div class="news-title">✨ 新增單字自動查詢・雲端同步升級・片語測驗新題型</div>
-      <ul class="news-list">
-        <li><strong>新增單字自動查詢中文</strong>：在「＋ 新增單字」表單輸入英文時，系統會自動查詢中文意思與詞性。若字典中已有該字，即時自動填入；若為新單字，停止輸入 0.6 秒後由 Claude AI 自動生成繁體中文意思，可自行修改後儲存。</li>
-        <li><strong>⭐ 星號單字納入雲端同步</strong>：在字典點擊 ⭐ 加入複習清單的單字，現在也會同步至 Google 雲端。登入後在不同裝置開啟 App，複習清單會自動還原，不再只限自訂單字庫。</li>
-        <li><strong>片語測驗新增「📝 句子填空選擇」</strong>：片語測驗現在支援兩種題型——原有的「片語選義」（看片語選中文，本地生成）以及新的「句子填空選擇」（看含空格的英文句子，從 4 個英文片語中選出正確答案，由 Claude AI 出題）。</li>
-        <li><strong>每日一字隨機化修正</strong>：修正連續多天出現同字母單字的問題，改用分散演算法，確保每天的單字字母分布更均勻多元。</li>
-        <li><strong>片語填空題目品質修正</strong>：修正片語句子填空題偶爾出現「題目句子中已包含答案片語」的問題（如句子中同時看到片語本身又有填空格），現在 AI 生成的句子不再洩露答案。</li>
-      </ul>
-    </div>
-
-    <!-- ══ 2026-05-08 ══ -->
-    <div class="news-card">
-      <div class="news-card-top">
-        <span class="news-date">2026-05-08</span>
-        <span class="news-type fix">修正</span>
-      </div>
-      <div class="news-title">🎯 測驗選項優化：字母篩選防洩題</div>
-      <ul class="news-list">
-        <li><strong>句子填空測驗防洩題</strong>：使用字母篩選（如 A 字母）出題時，系統現在會確保 4 個選項中至少有 2 個以相同字母開頭，避免因「只有一個選項以 A 開頭就是答案」而使題目過於容易。</li>
-      </ul>
-    </div>
-
-    <!-- ══ 2026-05-07 ══ -->
-    <div class="news-card">
-      <div class="news-card-top">
-        <span class="news-date">2026-05-07</span>
-        <span class="news-type feature">新功能</span>
-        <span class="news-type improve">介面優化</span>
-      </div>
-      <div class="news-title">✨ 每日一字・介面全面優化</div>
-      <ul class="news-list">
-        <li><strong>每日一字（Word of the Day）</strong>：每天開啟 App 後自動彈出今日單字卡，包含台灣時區日期、單字、詞性、中文解釋、🔊 發音、Claude AI 生成例句。看完可直接「⭐ 加入我的單字」或「✕ 今天不用了」關閉，當天不再重複出現。</li>
-        <li><strong>詞性標籤分色</strong>：單字卡片的詞性標籤依詞性顯示不同顏色（名詞綠、動詞藍、形容詞橘、副詞淡紫），一眼即可辨識。</li>
-        <li><strong>A–Z 篩選列改為橫向滾動</strong>：字母篩選不再換行佔空間，改為左右滑動的橫排列，按鈕放大至 40×40px，手機操作更順手。</li>
-        <li><strong>「新增單字」改為懸浮按鈕（FAB）</strong>：「＋ 新增自訂單字」按鈕移至畫面右下角固定懸浮，隨時可點，不佔搜尋列空間。</li>
-      </ul>
-    </div>
-
-    <!-- ══ 2026-05-06 v2 ══ -->
+    <!-- 置頂 2：雲端同步使用技巧 -->
     <div class="news-card">
       <div class="news-card-top">
         <span class="news-date">2026-05-06</span>
@@ -851,83 +753,237 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
       </div>
     </div>
 
-    <!-- ══ 2026-05-06 ══ -->
-    <div class="news-card">
-      <div class="news-card-top">
-        <span class="news-date">2026-05-06</span>
-        <span class="news-type feature">新功能</span>
-      </div>
-      <div class="news-title">英文片語查詢・片語 AI 例句生成</div>
-      <ul class="news-list">
-        <li><strong>新 Tab：🚀 片語</strong>：字典頁面新增單字／片語切換列，點選「片語」即可瀏覽 1,125 個英文片語，支援全文搜尋、A–Z 字母篩選與排序。</li>
-        <li><strong>片語 AI 例句</strong>：點擊任一片語卡片，彈出詳細頁面並自動由 Claude AI 生成例句（含繁體中文翻譯），目標片語以粗體標示，結果存入本地快取，下次點擊立即顯示。</li>
-        <li><strong>片語測驗</strong>：測驗頁面新增「出題科目」選項，可選擇以片語出題（片語選義），學生需從四個中文選項中選出正確意思。</li>
-      </ul>
-    </div>
+    <!-- ══ 更新紀錄索引 ══ -->
+    <div class="news-index-section">
+      <div class="news-index-section-title">📋 更新紀錄</div>
 
-    <!-- ══ 2026-05-05 ══ -->
-    <div class="news-card">
-      <div class="news-card-top">
-        <span class="news-date">2026-05-05</span>
-        <span class="news-type feature">新功能</span>
-        <span class="news-type improve">資料優化</span>
+      <!-- 2026-05-14 -->
+      <div class="news-index-entry">
+        <div class="news-index-item" onclick="toggleNewsDetail(this.parentElement)">
+          <span class="news-date">2026-05-14</span>
+          <span class="news-type feature">新功能</span>
+          <span class="news-type fix">修正</span>
+          <span class="ni-title">📝 自訂單字庫測驗・搜尋快速新增・例句語氣優化</span>
+          <span class="news-arrow">›</span>
+        </div>
+        <div class="news-detail">
+          <ul class="news-list">
+            <li><strong>自訂單字庫可加入測驗</strong>：測驗 Tab 出題範圍新增「📝 自訂單字庫」選項，可單獨練習自己新增的單字；原「全部單字」仍包含自訂單字一起出題。</li>
+            <li><strong>搜尋快速新增</strong>：在字典搜尋找不到的單字時，結果區會直接出現「＋ 新增「…」到自訂單字庫」按鈕，點擊即開啟新增表單並自動填入搜尋字。</li>
+            <li><strong>每日一字例句改為鼓勵語氣</strong>：每日一字的 AI 生成例句現在偏向正向激勵風格（如 "Momentum will be your best propeller."），一般單字詳細頁例句不受影響。</li>
+            <li><strong>新增單字自動查詢修正</strong>：修正自動查詢中文意思時偶爾出現幻覺（如把 "avenge" 查成 "avenue" 的意思）的問題，改善方式：延長觸發延遲至 0.65 秒、加入請求取消機制、最短輸入 3 字才觸發、強化 AI 提示避免混淆相似字。</li>
+          </ul>
+        </div>
       </div>
-      <div class="news-title">自訂單字編輯・段落理解・測驗多模式・詞性合併修正</div>
-      <ul class="news-list">
-        <li><strong>自訂單字編輯功能</strong>：自訂單字庫每筆單字新增「✏️ 編輯」按鈕，可隨時修改英文拼寫、詞性或中文解釋，不需刪掉重新輸入。</li>
-        <li><strong>新 Tab：📖 段落理解</strong>：輸入任意單字（逗號或換行分隔），AI 自動生成英文段落包含這些單字，目標詞加粗標記方便快速定位。支援「故事情境」與「自訂主題」兩種模式，搭配繁體中文翻譯，在真實語境中加深理解。</li>
-        <li><strong>測驗新模式：單字選義</strong>：在「✏️ 單字測驗」新增「🔤 單字選義（基礎）」模式，適合程度基礎的學生。選擇題形式：英文單字配對正確的中文意思，比句子填空更直接、更易上手。學生可自選「基礎」或「句子填空選擇」題型。</li>
-        <li><strong>詞性合併優化</strong>：修正單字庫中 115 筆「同中文、不同詞性」的衍生形重複問題。例如 <em>fail</em>（名詞）與 <em>fails</em>（動詞）現合併為 <em>fail</em>（n./v.），單字總數從 4,506 調整至 4,391 筆。</li>
-      </ul>
-    </div>
 
-    <!-- ══ 2026-05-04 ══ -->
-    <div class="news-card">
-      <div class="news-card-top">
-        <span class="news-date">2026-05-04</span>
-        <span class="news-type improve">資料優化</span>
+      <!-- 2026-05-13 簽到板 -->
+      <div class="news-index-entry">
+        <div class="news-index-item" onclick="toggleNewsDetail(this.parentElement)">
+          <span class="news-date">2026-05-13</span>
+          <span class="news-type feature">新功能</span>
+          <span class="news-type fix">修正</span>
+          <span class="ni-title">💬 今日簽到板・中文解釋顯示修正</span>
+          <span class="news-arrow">›</span>
+        </div>
+        <div class="news-detail">
+          <ul class="news-list">
+            <li><strong>今日簽到板</strong>：進度 Tab 排行榜下方新增每日簽到留言板，登入 Google 帳號即可留言，每天台灣時間 00:00 自動重置。</li>
+            <li><strong>按讚互動</strong>：可對其他同學的簽到留言按 ❤️，點擊再次取消；自己的留言不能幫自己按讚。</li>
+            <li><strong>編輯留言</strong>：當天已簽到者可隨時修改留言內容（更新不會影響已獲得的讚）。</li>
+            <li><strong>中文解釋分號修正</strong>：修正卡片與詳細頁中文意思因 2 字首段被誤合併導致「化學化學性質」等顯示錯誤，現在正確顯示為「化學；化學性質」。</li>
+            <li><strong>單字詳細頁完整顯示</strong>：點開單字 Modal 後，中文欄位現在顯示完整所有意思，不再截斷。</li>
+            <li><strong>資料清理</strong>：移除 83 筆單字資料中文欄位內誤填的詞性標記（如 <code>v.</code>、<code>adj./v.</code>）。</li>
+          </ul>
+        </div>
       </div>
-      <div class="news-title">單字庫全面升級</div>
-      <ul class="news-list">
-        <li><strong>單字數量調整</strong>：從原本 2,778 字擴充至 4,506 字，移除重複的動詞變化形（如 yearns、abolished 等）與名詞複數，保留最有學習價值的原形與獨立詞彙</li>
-        <li><strong>詞性全面補齊</strong>：所有 4,506 個單字皆標註詞性（n. / v. / adj. / adv. 等），包含新增的單字</li>
-        <li><strong>衍生字形容詞修正</strong>：absorbed、blurred、addicted 等 65 個 -ed 形容詞，中文解釋從動詞義（如「吸收」）修正為正確的形容詞義（如「全神貫注的」）</li>
-        <li><strong>中文顯示邏輯修正</strong>：修正部分單字卡片只顯示一個字（如「飛機」）的問題，現在會正確顯示完整解釋（如「飛機突然上升」）</li>
-      </ul>
-    </div>
 
-    <!-- ══ 2025-05-01 ══ -->
-    <div class="news-card">
-      <div class="news-card-top">
-        <span class="news-date">2025-05-01</span>
-        <span class="news-type improve">使用技巧</span>
+      <!-- 2026-05-13 單字卡 -->
+      <div class="news-index-entry">
+        <div class="news-index-item" onclick="toggleNewsDetail(this.parentElement)">
+          <span class="news-date">2026-05-13</span>
+          <span class="news-type feature">新功能</span>
+          <span class="news-type improve">介面升級</span>
+          <span class="ni-title">🃏 單字卡模式・全新介面・學習進度・學習資源</span>
+          <span class="news-arrow">›</span>
+        </div>
+        <div class="news-detail">
+          <ul class="news-list">
+            <li><strong>全新介面設計</strong>：整體改為明亮風格，頂部固定 Logo 列，底部五格導覽列（首頁／單字／測驗／我的單字／進度），首頁新增學測倒數（116 學測 2027/1/16）、今日目標進度、連續打卡天數。</li>
+            <li><strong>學習進度 Tab</strong>：掌握單字數、連續打卡、正確率、本週答題四格統計卡，搭配「本月學習熱力圖」記錄每日答題量，以及排行榜（週／月／累積）。</li>
+            <li><strong>🃏 單字卡模式</strong>：測驗頁新增單字卡互動模式，卡片正面顯示英文與詞性，點擊翻面顯示中文，翻面後選擇「還不熟」「普通」或「會了！」進行評分。</li>
+            <li><strong>熟悉度追蹤</strong>：單字卡評分結果自動記錄於本地端；「還不熟」「普通」的單字自動加入⭐複習清單，並在清單中以紅色／橘色標籤與左側色條標示。複習清單排序：普通在前，還不熟在後。</li>
+            <li><strong>優先複習不熟單字</strong>：測驗設定頁出題按鈕附近新增「☑ 優先複習不熟單字」選項，勾選後出題時優先抽出標記為「還不熟」的單字。</li>
+            <li><strong>漢堡選單學習資源</strong>：側邊選單新增「學習資源」區塊，含學習歷程、面試攻略、新課綱英文六級字彙參考表三個外部連結（Google Drive）。</li>
+          </ul>
+        </div>
       </div>
-      <div class="news-title">將 App 加入手機主畫面</div>
-      <ul class="news-list">
-        <li><strong>✅ iOS（iPhone / iPad）</strong><br>Safari 開啟網址 → 點下方 <strong>分享</strong> 圖示 → 選「<strong>加到主畫面</strong>」→ 點右上角「完成」</li>
-        <li><strong>✅ Android</strong><br>Chrome 開啟網址 → 點右上角 <strong>菜單（⋮）</strong> → 選「<strong>安裝應用程式</strong>」→ 點「安裝」</li>
-        <li><strong>📌 新增 Widget（Android）</strong><br>長按主畫面空白處 → 選「Widget」→ 找到 Chrome → 拖曳至主畫面</li>
-      </ul>
-    </div>
 
-    <!-- ══ 2025-04-30 ══ -->
-    <div class="news-card">
-      <div class="news-card-top">
-        <span class="news-date">2025-04-30</span>
-        <span class="news-type feature">新功能</span>
+      <!-- 2026-05-13 片語發音 -->
+      <div class="news-index-entry">
+        <div class="news-index-item" onclick="toggleNewsDetail(this.parentElement)">
+          <span class="news-date">2026-05-13</span>
+          <span class="news-type feature">新功能</span>
+          <span class="ni-title">🔊 片語發音功能上線</span>
+          <span class="news-arrow">›</span>
+        </div>
+        <div class="news-detail">
+          <ul class="news-list">
+            <li><strong>片語卡片發音</strong>：英文片語列表每張卡片右上角新增發音按鈕，點擊即可聆聽發音。</li>
+            <li><strong>片語詳細頁發音</strong>：點開片語 Modal 後，標題旁同樣有發音按鈕。</li>
+            <li>發音邏輯與單字相同：自動略去 <code>=</code> 同義補充、括號內語法說明及 <code>+V/N</code> 等標記，只唸出核心片語。</li>
+          </ul>
+        </div>
       </div>
-      <div class="news-title">自訂單字庫</div>
-      <ul class="news-list">
-        <li>在 <strong>字典</strong> 頁面點右上角 <strong>＋ 新增</strong> 按鈕，輸入英文單字、詞性（選填）與中文解釋即可加入</li>
-        <li>系統會檢查是否與現有 5000 字或已自訂單字重複，避免重複新增</li>
-        <li>自訂單字會同步出現在<strong>字典主頁</strong>，帶有粉色「自訂」徽章，可正常搜尋與發音</li>
-        <li>支援點擊開啟詳細頁面，可讓 AI 生成<strong>例句</strong>與<strong>字根分析</strong></li>
-        <li>可加 ⭐ 放入複習清單，並納入 <strong>AI 測驗</strong>出題範圍</li>
-        <li>在 <strong>⭐ 我的單字</strong> tab 可統一管理自訂單字，點「✕ 刪除」移除</li>
-        <li>所有自訂單字儲存於裝置本地，不會消失</li>
-      </ul>
-    </div>
 
+      <!-- 2026-05-12 排行榜 -->
+      <div class="news-index-entry">
+        <div class="news-index-item" onclick="toggleNewsDetail(this.parentElement)">
+          <span class="news-date">2026-05-12</span>
+          <span class="news-type feature">新功能</span>
+          <span class="ni-title">🏆 新增班級排行榜功能</span>
+          <span class="news-arrow">›</span>
+        </div>
+        <div class="news-detail">
+          <ul class="news-list">
+            <li><strong>週 / 月 / 累計答題排行榜</strong>：登入 Google 帳號並設定姓名後，即可出現在班級排行榜。每次在測驗 Tab 回答一道題目算 1 次，每週一自動重新計算週排名。</li>
+            <li><strong>自訂單字庫排行</strong>：另有「單字庫」排行，顯示各同學新增的自訂單字總數量。</li>
+            <li><strong>設定個人資料</strong>：點擊右上角 ☰ 選單 → 「設定 / 編輯資料」輸入姓名、年級、學校，即可出現在排行榜中。</li>
+            <li><strong>個人答題統計</strong>：登入後在 ☰ 選單可看到本週 / 本月 / 累計答題數。</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 2026-05-10 -->
+      <div class="news-index-entry">
+        <div class="news-index-item" onclick="toggleNewsDetail(this.parentElement)">
+          <span class="news-date">2026-05-10</span>
+          <span class="news-type feature">新功能</span>
+          <span class="news-type improve">優化</span>
+          <span class="news-type fix">修正</span>
+          <span class="ni-title">✨ 新增單字自動查詢・雲端同步升級・片語測驗新題型</span>
+          <span class="news-arrow">›</span>
+        </div>
+        <div class="news-detail">
+          <ul class="news-list">
+            <li><strong>新增單字自動查詢中文</strong>：在「＋ 新增單字」表單輸入英文時，系統會自動查詢中文意思與詞性。若字典中已有該字，即時自動填入；若為新單字，停止輸入 0.6 秒後由 Claude AI 自動生成繁體中文意思，可自行修改後儲存。</li>
+            <li><strong>⭐ 星號單字納入雲端同步</strong>：在字典點擊 ⭐ 加入複習清單的單字，現在也會同步至 Google 雲端。登入後在不同裝置開啟 App，複習清單會自動還原，不再只限自訂單字庫。</li>
+            <li><strong>片語測驗新增「📝 句子填空選擇」</strong>：片語測驗現在支援兩種題型——原有的「片語選義」（看片語選中文，本地生成）以及新的「句子填空選擇」（看含空格的英文句子，從 4 個英文片語中選出正確答案，由 Claude AI 出題）。</li>
+            <li><strong>每日一字隨機化修正</strong>：修正連續多天出現同字母單字的問題，改用分散演算法，確保每天的單字字母分布更均勻多元。</li>
+            <li><strong>片語填空題目品質修正</strong>：修正片語句子填空題偶爾出現「題目句子中已包含答案片語」的問題（如句子中同時看到片語本身又有填空格），現在 AI 生成的句子不再洩露答案。</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 2026-05-08 -->
+      <div class="news-index-entry">
+        <div class="news-index-item" onclick="toggleNewsDetail(this.parentElement)">
+          <span class="news-date">2026-05-08</span>
+          <span class="news-type fix">修正</span>
+          <span class="ni-title">🎯 測驗選項優化：字母篩選防洩題</span>
+          <span class="news-arrow">›</span>
+        </div>
+        <div class="news-detail">
+          <ul class="news-list">
+            <li><strong>句子填空測驗防洩題</strong>：使用字母篩選（如 A 字母）出題時，系統現在會確保 4 個選項中至少有 2 個以相同字母開頭，避免因「只有一個選項以 A 開頭就是答案」而使題目過於容易。</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 2026-05-07 -->
+      <div class="news-index-entry">
+        <div class="news-index-item" onclick="toggleNewsDetail(this.parentElement)">
+          <span class="news-date">2026-05-07</span>
+          <span class="news-type feature">新功能</span>
+          <span class="news-type improve">介面優化</span>
+          <span class="ni-title">✨ 每日一字・介面全面優化</span>
+          <span class="news-arrow">›</span>
+        </div>
+        <div class="news-detail">
+          <ul class="news-list">
+            <li><strong>每日一字（Word of the Day）</strong>：每天開啟 App 後自動彈出今日單字卡，包含台灣時區日期、單字、詞性、中文解釋、🔊 發音、Claude AI 生成例句。看完可直接「⭐ 加入我的單字」或「✕ 今天不用了」關閉，當天不再重複出現。</li>
+            <li><strong>詞性標籤分色</strong>：單字卡片的詞性標籤依詞性顯示不同顏色（名詞綠、動詞藍、形容詞橘、副詞淡紫），一眼即可辨識。</li>
+            <li><strong>A–Z 篩選列改為橫向滾動</strong>：字母篩選不再換行佔空間，改為左右滑動的橫排列，按鈕放大至 40×40px，手機操作更順手。</li>
+            <li><strong>「新增單字」改為懸浮按鈕（FAB）</strong>：「＋ 新增自訂單字」按鈕移至畫面右下角固定懸浮，隨時可點，不佔搜尋列空間。</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 2026-05-06 片語 -->
+      <div class="news-index-entry">
+        <div class="news-index-item" onclick="toggleNewsDetail(this.parentElement)">
+          <span class="news-date">2026-05-06</span>
+          <span class="news-type feature">新功能</span>
+          <span class="ni-title">英文片語查詢・片語 AI 例句生成</span>
+          <span class="news-arrow">›</span>
+        </div>
+        <div class="news-detail">
+          <ul class="news-list">
+            <li><strong>新 Tab：🚀 片語</strong>：字典頁面新增單字／片語切換列，點選「片語」即可瀏覽 1,125 個英文片語，支援全文搜尋、A–Z 字母篩選與排序。</li>
+            <li><strong>片語 AI 例句</strong>：點擊任一片語卡片，彈出詳細頁面並自動由 Claude AI 生成例句（含繁體中文翻譯），目標片語以粗體標示，結果存入本地快取，下次點擊立即顯示。</li>
+            <li><strong>片語測驗</strong>：測驗頁面新增「出題科目」選項，可選擇以片語出題（片語選義），學生需從四個中文選項中選出正確意思。</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 2026-05-05 -->
+      <div class="news-index-entry">
+        <div class="news-index-item" onclick="toggleNewsDetail(this.parentElement)">
+          <span class="news-date">2026-05-05</span>
+          <span class="news-type feature">新功能</span>
+          <span class="news-type improve">資料優化</span>
+          <span class="ni-title">自訂單字編輯・段落理解・測驗多模式・詞性合併修正</span>
+          <span class="news-arrow">›</span>
+        </div>
+        <div class="news-detail">
+          <ul class="news-list">
+            <li><strong>自訂單字編輯功能</strong>：自訂單字庫每筆單字新增「✏️ 編輯」按鈕，可隨時修改英文拼寫、詞性或中文解釋，不需刪掉重新輸入。</li>
+            <li><strong>新 Tab：📖 段落理解</strong>：輸入任意單字（逗號或換行分隔），AI 自動生成英文段落包含這些單字，目標詞加粗標記方便快速定位。支援「故事情境」與「自訂主題」兩種模式，搭配繁體中文翻譯，在真實語境中加深理解。</li>
+            <li><strong>測驗新模式：單字選義</strong>：在「✏️ 單字測驗」新增「🔤 單字選義（基礎）」模式，適合程度基礎的學生。選擇題形式：英文單字配對正確的中文意思，比句子填空更直接、更易上手。學生可自選「基礎」或「句子填空選擇」題型。</li>
+            <li><strong>詞性合併優化</strong>：修正單字庫中 115 筆「同中文、不同詞性」的衍生形重複問題。例如 <em>fail</em>（名詞）與 <em>fails</em>（動詞）現合併為 <em>fail</em>（n./v.），單字總數從 4,506 調整至 4,391 筆。</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 2026-05-04 -->
+      <div class="news-index-entry">
+        <div class="news-index-item" onclick="toggleNewsDetail(this.parentElement)">
+          <span class="news-date">2026-05-04</span>
+          <span class="news-type improve">資料優化</span>
+          <span class="ni-title">單字庫全面升級</span>
+          <span class="news-arrow">›</span>
+        </div>
+        <div class="news-detail">
+          <ul class="news-list">
+            <li><strong>單字數量調整</strong>：從原本 2,778 字擴充至 4,506 字，移除重複的動詞變化形（如 yearns、abolished 等）與名詞複數，保留最有學習價值的原形與獨立詞彙</li>
+            <li><strong>詞性全面補齊</strong>：所有 4,506 個單字皆標註詞性（n. / v. / adj. / adv. 等），包含新增的單字</li>
+            <li><strong>衍生字形容詞修正</strong>：absorbed、blurred、addicted 等 65 個 -ed 形容詞，中文解釋從動詞義（如「吸收」）修正為正確的形容詞義（如「全神貫注的」）</li>
+            <li><strong>中文顯示邏輯修正</strong>：修正部分單字卡片只顯示一個字（如「飛機」）的問題，現在會正確顯示完整解釋（如「飛機突然上升」）</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 2025-04-30 -->
+      <div class="news-index-entry">
+        <div class="news-index-item" onclick="toggleNewsDetail(this.parentElement)">
+          <span class="news-date">2025-04-30</span>
+          <span class="news-type feature">新功能</span>
+          <span class="ni-title">自訂單字庫</span>
+          <span class="news-arrow">›</span>
+        </div>
+        <div class="news-detail">
+          <ul class="news-list">
+            <li>在 <strong>字典</strong> 頁面點右上角 <strong>＋ 新增</strong> 按鈕，輸入英文單字、詞性（選填）與中文解釋即可加入</li>
+            <li>系統會檢查是否與現有 5000 字或已自訂單字重複，避免重複新增</li>
+            <li>自訂單字會同步出現在<strong>字典主頁</strong>，帶有粉色「自訂」徽章，可正常搜尋與發音</li>
+            <li>支援點擊開啟詳細頁面，可讓 AI 生成<strong>例句</strong>與<strong>字根分析</strong></li>
+            <li>可加 ⭐ 放入複習清單，並納入 <strong>AI 測驗</strong>出題範圍</li>
+            <li>在 <strong>⭐ 我的單字</strong> tab 可統一管理自訂單字，點「✕ 刪除」移除</li>
+            <li>所有自訂單字儲存於裝置本地，不會消失</li>
+          </ul>
+        </div>
+      </div>
+
+    </div><!-- /news-index-section -->
   </div>
 </div>
 
@@ -1713,6 +1769,11 @@ function getMastery(){ return JSON.parse(localStorage.getItem(MASTERY_KEY)||'{}'
 function setMastery(word,level){ const m=getMastery(); if(level===null) delete m[word]; else m[word]=level; localStorage.setItem(MASTERY_KEY,JSON.stringify(m)); }
 function _masteryBadge(level){ return level==='unfamiliar'?`<span class="mastery-badge mastery-unfamiliar">還不熟</span>`:level==='moderate'?`<span class="mastery-badge mastery-moderate">普通</span>`:''; }
 function _sortByMastery(pool, mastery){ const unf=pool.filter(w=>mastery[w.word]==='unfamiliar').sort(()=>Math.random()-.5); const mod=pool.filter(w=>mastery[w.word]==='moderate').sort(()=>Math.random()-.5); const rest=pool.filter(w=>!mastery[w.word]).sort(()=>Math.random()-.5); return [...unf,...mod,...rest]; }
+
+function toggleNewsDetail(entry){
+  const open = entry.classList.toggle('open');
+  entry.querySelector('.news-detail').style.display = open ? 'block' : 'none';
+}
 
 function switchTab(tab){
   document.getElementById('homeSection').style.display       = tab==='home'      ? '' : 'none';
