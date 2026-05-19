@@ -240,6 +240,23 @@ header{top:52px!important;}
   .quiz-panel,.quiz-setup,.mw-wrap{padding-left:14px;padding-right:14px;}
   .quiz-card-wrap{padding:18px 14px;}
 }
+/* ── Spelling Quiz ── */
+.spell-prompt{text-align:center;padding:20px 16px 8px;}
+.spell-play-btn{width:72px;height:72px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 4px 18px rgba(67,97,238,.38);transition:transform .1s,box-shadow .1s;}
+.spell-play-btn:active{transform:scale(.94);}
+.spell-play-btn svg{fill:white;width:34px;height:34px;}
+.spell-play-btn.playing{background:var(--accent2);box-shadow:0 4px 18px rgba(247,37,133,.35);}
+.spell-blanks{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin:4px 0 10px;}
+.spell-cell{width:30px;height:42px;border-bottom:2.5px solid var(--border);display:flex;align-items:flex-end;justify-content:center;padding-bottom:3px;font-size:1.15rem;font-weight:700;font-family:'Playfair Display',serif;color:var(--text);transition:border-color .2s;}
+.spell-cell.hint{color:var(--accent);border-bottom-color:var(--accent);}
+.spell-hint-label{font-size:0.73rem;color:var(--muted);text-align:center;margin-bottom:16px;}
+.spell-input-row{display:flex;gap:8px;margin-top:4px;}
+.spell-input{flex:1;padding:13px 14px;border:2px solid var(--border);border-radius:12px;font-size:1rem;font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--text);outline:none;transition:border-color .2s;}
+.spell-input:focus{border-color:var(--accent);}
+.spell-input.correct{border-color:#22c55e;background:#f0fdf4;color:#16a34a;}
+.spell-input.wrong{border-color:#ef4444;background:#fef2f2;color:#dc2626;}
+.spell-submit{padding:13px 18px;border-radius:12px;background:var(--accent);color:#fff;border:none;font-size:0.88rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity .2s;}
+.spell-submit:hover{opacity:.88;}
 /* ── Word Detail Modal ── */
 #wordModal,#phraseModal{position:fixed;inset:0;z-index:500;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);}
 @media(min-width:600px){#wordModal,#phraseModal{align-items:center;}}
@@ -2231,6 +2248,7 @@ function renderQuizSetup(){
       <div class="quiz-opt-group">
         <button class="quiz-type-opt quiz-opt ${qMode==='flashcard'?'selected':''}" onclick="setQMode('flashcard',this)">🃏 單字卡模式</button>
         <button class="quiz-type-opt quiz-opt ${qMode==='meaning'?'selected':''}" onclick="setQMode('meaning',this)">🔤 單字選義（基礎）</button>
+        <button class="quiz-type-opt quiz-opt ${qMode==='spelling'?'selected':''}" onclick="setQMode('spelling',this)">🔊 發音拼字</button>
         <button class="quiz-type-opt quiz-opt ${qMode==='sentence'?'selected':''}" onclick="setQMode('sentence',this)">📝 句子填空選擇</button>
       </div>
       <div class="quiz-opt-label">出題範圍</div>
@@ -2244,8 +2262,8 @@ function renderQuizSetup(){
         <input type="checkbox" ${qPrioritizeUnfamiliar?'checked':''} onchange="qPrioritizeUnfamiliar=this.checked">
         <span class="quiz-priority-label">優先複習不熟單字（出題時排序「還不熟」標記的單字）</span>
       </label>
-      <button class="quiz-start-btn" style="margin-top:14px" onclick="startQuiz()">${qMode==='flashcard'?'開始單字卡 →':'開始 AI 出題 →'}</button>
-      ${qMode!=='flashcard'?'<div class="quiz-note">由 Claude Haiku AI 生成 · 需要網路連線</div>':''}`;
+      <button class="quiz-start-btn" style="margin-top:14px" onclick="startQuiz()">${qMode==='flashcard'?'開始單字卡 →':qMode==='spelling'?'開始發音拼字 →':qMode==='meaning'?'開始測驗 →':'開始 AI 出題 →'}</button>
+      ${qMode==='sentence'?'<div class="quiz-note">由 Claude Haiku AI 生成 · 需要網路連線</div>':''}`;
   } else {
     html += `
       <div class="quiz-setup-title">🔖 片語測驗</div>
@@ -2342,6 +2360,16 @@ async function startQuiz(){
   if(!pool.length){ alert('此範圍沒有單字，請選擇其他範圍'); return; }
 
   if(qMode==='flashcard'){ startFlashcard(pool); return; }
+
+  if(qMode==='spelling'){
+    let sp;
+    if(qPrioritizeUnfamiliar) sp=_sortByMastery(pool,getMastery()).slice(0,10);
+    else sp=[...pool].sort(()=>Math.random()-.5).slice(0,10);
+    qQuestions=generateSpellingQuestions(sp);
+    qIndex=0; qScore=0; qSelected=null;
+    renderQuestion();
+    return;
+  }
 
   let selected;
   if(qPrioritizeUnfamiliar){
@@ -2489,6 +2517,108 @@ function rateFc(level){
   renderFlashcard();
 }
 
+/* ── Spelling Quiz helpers ── */
+function _countSyllables(word){
+  const s=word.toLowerCase().replace(/[^a-z]/g,'').replace(/e$/,'');
+  const m=s.match(/[aeiou]+/g);
+  return Math.max(1,m?m.length:1);
+}
+
+function _hintIndices(word,count){
+  const len=word.length;
+  const vowels='aeiouAEIOU';
+  if(count===1){
+    const s=Math.max(1,Math.floor(len*.28)), e=Math.min(len-1,Math.floor(len*.72));
+    for(let i=s;i<=e;i++) if(vowels.includes(word[i])) return [i];
+    return [Math.max(1,Math.floor(len/2))];
+  }
+  const half=Math.floor(len/2);
+  let h1=-1,h2=-1;
+  for(let i=Math.max(1,Math.floor(len*.15));i<half;i++) if(vowels.includes(word[i])){h1=i;break;}
+  if(h1<0) h1=Math.max(1,Math.floor(len*.25));
+  for(let i=half;i<Math.min(len-1,Math.floor(len*.82));i++) if(vowels.includes(word[i])){h2=i;break;}
+  if(h2<0||h2===h1) h2=Math.min(len-1,Math.floor(len*.65));
+  return [h1,h2].sort((a,b)=>a-b);
+}
+
+function generateSpellingQuestions(selected){
+  return selected.map(w=>{
+    const syls=_countSyllables(w.word);
+    const hintCount=syls>3?2:1;
+    const hintIdx=_hintIndices(w.word,hintCount);
+    return{type:'spelling',word:w.word,pos:w.pos||'',zh:w.zh||'',hintIdx};
+  });
+}
+
+function renderSpellingQuestion(){
+  const q=qQuestions[qIndex];
+  const pct=((qIndex+1)/qQuestions.length)*100;
+  const answered=qSelected!==null;
+  const userAns=typeof qSelected==='string'?qSelected:'';
+  const correct=answered&&userAns.trim().toLowerCase()===q.word.toLowerCase();
+  const blanks=q.word.split('').map((ch,i)=>
+    q.hintIdx.includes(i)
+      ?`<span class="spell-cell hint">${ch}</span>`
+      :`<span class="spell-cell">_</span>`
+  ).join('');
+  const speakIcon=`<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>`;
+  document.getElementById('quizSection').innerHTML=`
+    <div class="quiz-panel">
+      <div class="quiz-hdr">
+        <span style="color:var(--muted);font-size:0.83rem">題目 ${qIndex+1} / ${qQuestions.length}</span>
+        <span style="color:var(--accent);font-size:0.83rem;font-weight:700">得分: ${qScore}</span>
+      </div>
+      <div class="quiz-pbar-wrap"><div class="quiz-pbar" style="width:${pct}%"></div></div>
+      <div class="quiz-card-wrap">
+        <div class="spell-prompt">
+          <div style="color:var(--muted);font-size:0.82rem;margin-bottom:16px">🎧 聆聽發音，拼出這個單字</div>
+          <button class="spell-play-btn" id="spellSpeakBtn" onclick="speak(qQuestions[qIndex].word,this)">${speakIcon}</button>
+          <div class="spell-blanks">${blanks}</div>
+          <div class="spell-hint-label">共 ${q.word.length} 個字母 · ${q.hintIdx.length > 1 ? '2 個' : '1 個'}字母提示（藍色）</div>
+        </div>
+        ${!answered?`
+        <div class="spell-input-row">
+          <input class="spell-input" id="spellInput" type="text" placeholder="輸入英文拼字…" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"
+            onkeydown="if(event.key==='Enter')submitSpelling()">
+          <button class="spell-submit" onclick="submitSpelling()">確認</button>
+        </div>`:`
+        <div class="spell-input-row">
+          <input class="spell-input ${correct?'correct':'wrong'}" value="${_escH(userAns)}" readonly>
+        </div>
+        <div class="quiz-explain">
+          <div class="quiz-explain-lbl">${correct?'✅ 拼對了！':`❌ 正確拼法：<strong style="font-size:1rem;letter-spacing:.04em">${_escH(q.word)}</strong>`}</div>
+          <div class="quiz-explain-zh" style="margin-top:6px">「${_escH(q.zh)}」${q.pos?`<span style="color:var(--muted);font-size:0.8rem;margin-left:6px">${_escH(q.pos)}</span>`:''}</div>
+        </div>
+        <button class="quiz-next" onclick="nextQ()">${qIndex<qQuestions.length-1?'下一題 →':'完成測驗並結算'}</button>`}
+      </div>
+    </div>`;
+  if(!answered){
+    setTimeout(()=>{
+      const btn=document.getElementById('spellSpeakBtn');
+      if(btn) speak(q.word,btn);
+      const inp=document.getElementById('spellInput');
+      if(inp) inp.focus();
+    },250);
+  }
+}
+
+function submitSpelling(){
+  if(qSelected!==null)return;
+  const inp=document.getElementById('spellInput');
+  if(!inp)return;
+  const val=inp.value.trim();
+  if(!val)return;
+  qSelected=val;
+  const q=qQuestions[qIndex];
+  const correct=val.toLowerCase()===q.word.toLowerCase();
+  trackAccuracy(correct);
+  if(correct){qScore++;removeMark(q.word);}
+  else addMark(q.word);
+  incrementReviewStat();
+  incrementDailyCount();
+  renderQuestion();
+}
+
 function generateMeaningQuestions(selected){
   const allW=getAllWords();
   return selected.map(w=>{
@@ -2540,6 +2670,7 @@ function renderQuestion(){
   const q=qQuestions[qIndex];
   if(q.type==='meaning') renderMeaningQuestion();
   else if(q.type==='phrase') renderPhraseQuestion();
+  else if(q.type==='spelling') renderSpellingQuestion();
   else renderSentenceQuestion();
 }
 
