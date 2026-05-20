@@ -40,7 +40,7 @@
 - **雲端同步**：登入 Google 帳號後自訂單字庫與 ⭐ 星號複習清單自動同步至 Firebase Firestore
 - **🃏 單字卡模式**：翻卡互動練習，自評還不熟／普通／會了，結果自動加入複習清單並標色
 - **學習進度 Tab**：統計卡（掌握字數、連續打卡、正確率、本週答題）+ 本月熱力圖 + 排行榜
-- **首頁**：學測倒數（116 學測 2027-01-16）、今日目標進度、連續打卡、快速操作卡
+- **首頁**：學測倒數（116 學測 2027-01-22）、今日目標進度、連續打卡、快速操作卡
 - **更新公告**：側邊欄 ☰ 可開啟，記錄功能更新歷史
 - **學習資源**：側邊欄 ☰ 含三個 Google Drive 外部連結（學習歷程、面試攻略、字彙表）
 - PWA：可加入主畫面、離線字典
@@ -158,7 +158,7 @@
 - `buildHeatmap()`：讀 `vocab_heatmap`，生成 6 週日曆格，依 count 分 lv1–lv4（`rgba(67,97,238,...)` 透明度）
 - `touchStreak()`：每次 `incrementDailyCount()` 呼叫時更新 `vocab_streak`（連續打卡）
 - `trackAccuracy(correct)`：在 `answerQ()` 內呼叫，更新 `vocab_accuracy`
-- `renderHome()`：學測倒數固定 `new Date(2027,0,16)`，讀 streak / daily goal / heatmap 渲染首頁
+- `renderHome()`：學測倒數固定 `new Date(2027,0,22)`，讀 streak / daily goal / heatmap 渲染首頁
 
 ### 更新公告頁
 
@@ -536,3 +536,5 @@ python3 -m notebooklm login
 - **Cloud Run 無法抓 Google Calendar iCal**：Cloud Run IP 被 Google 封鎖，返回「Sorry...」HTML（1KB）而非 iCal 內容。已加 `BEGIN:VCALENDAR` 有效性檢查，無效時拋錯而非靜默回傳 0 筆
 - **全角括號（2026-05-07 修復）**：Google 日曆事件標題若含全角括號 `［` `］`（U+FF3B/FF3D），`parseEventTarget` 的正規表達式無法匹配，導致整個標題被視為「發給所有人」。`parseEventTarget` 函式（`index.js` 和 `trigger-reminder.js`）現已在 regex 前先正規化：`title.replace(/［/g, "[").replace(/］/g, "]")`
 - **行程提醒回覆指示**：提醒訊息結尾加入「若老師尚未完成，請回覆：\n「xxx尚未完成，預計[日期]前完成」」，引導老師回報進度，讓 `eveningFollowUp` 能正確判斷未回報者
+- **calendar-sent key 必須含日期（2026-05-16 修復）**：`/calendar-sent/` 的 key 格式為 `{eventUID}_{evt.start}_{userId}`，不可省略日期。舊格式 `{eventUID}_{userId}` 會導致：(1) 同一事件以「明天」發出後，隔天以「今天」重送時被判斷為已送出而跳過；(2) 循環事件（RRULE）首次寄出後，往後每週永遠跳過。`index.js` 和 `trigger-reminder.js` 兩處 key 格式需保持一致
+- **RECURRENCE-ID 循環例外事件去重錯誤（2026-05-16 修復）**：`trigger-reminder.js` 的 `byUid` Map 去重邏輯會讓同一 UID 的多個循環例外事件互相覆蓋，最後只剩最後一筆。修法：有 `RECURRENCE-ID` 的例外事件一律放入獨立 `exceptions[]` 陣列（不做 UID 去重），最後與非循環事件合併處理。無此修復時，Google 日曆中有多個修改過日期/標題的循環事件（如每週師訓）只有一次能被偵測到

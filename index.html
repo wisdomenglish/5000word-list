@@ -825,7 +825,7 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
         </div>
         <div class="news-detail">
           <ul class="news-list">
-            <li><strong>全新介面設計</strong>：整體改為明亮風格，頂部固定 Logo 列，底部五格導覽列（首頁／單字／測驗／我的單字／進度），首頁新增學測倒數（116 學測 2027/1/16）、今日目標進度、連續打卡天數。</li>
+            <li><strong>全新介面設計</strong>：整體改為明亮風格，頂部固定 Logo 列，底部五格導覽列（首頁／單字／測驗／我的單字／進度），首頁新增學測倒數（116 學測 2027/1/22）、今日目標進度、連續打卡天數。</li>
             <li><strong>學習進度 Tab</strong>：掌握單字數、連續打卡、正確率、本週答題四格統計卡，搭配「本月學習熱力圖」記錄每日答題量，以及排行榜（週／月／累積）。</li>
             <li><strong>🃏 單字卡模式</strong>：測驗頁新增單字卡互動模式，卡片正面顯示英文與詞性，點擊翻面顯示中文，翻面後選擇「還不熟」「普通」或「會了！」進行評分。</li>
             <li><strong>熟悉度追蹤</strong>：單字卡評分結果自動記錄於本地端；「還不熟」「普通」的單字自動加入⭐複習清單，並在清單中以紅色／橘色標籤與左側色條標示。複習清單排序：普通在前，還不熟在後。</li>
@@ -1865,9 +1865,9 @@ function trackAccuracy(correct){
 function renderHome(){
   const container = document.getElementById('homeContent');
   if(!container) return;
-  /* Countdown to 116學測 2027-01-16 */
+  /* Countdown to 116學測 2027-01-22 */
   const today = new Date();
-  const gsatDate = new Date(2027, 0, 16);
+  const gsatDate = new Date(2027, 0, 22);
   const daysLeft = Math.max(0, Math.ceil((gsatDate - today) / 86400000));
   /* Streak */
   const s = getStreakData();
