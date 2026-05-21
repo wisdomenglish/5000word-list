@@ -1,0 +1,12 @@
+{
+  "projects": {
+    "default": "news-english-ef2e4"
+  },
+  "targets": {
+    "news-english-ef2e4": {
+      "hosting": {
+        "hero-english": ["hero-english-ef2e4"]
+      }
+    }
+  }
+}

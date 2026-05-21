@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hero English — Logo Concepts</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #f4f4f8; font-family: 'Inter', sans-serif; padding: 40px 20px; }
+  h1 { text-align: center; font-family: 'Cinzel', serif; color: #1a1a2e; margin-bottom: 8px; font-size: 24px; }
+  .subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 48px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 32px; max-width: 1100px; margin: 0 auto; }
+
+  .concept { background: #fff; border-radius: 16px; padding: 32px; box-shadow: 0 2px 20px rgba(0,0,0,0.08); }
+  .concept-label { font-size: 12px; font-weight: 600; color: #888; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+  .concept-name { font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 24px; }
+
+  .logo-area { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+
+  /* Dark background variant */
+  .dark-bg { background: #0D0D1A; border-radius: 12px; padding: 32px 40px; width: 100%; display: flex; justify-content: center; align-items: center; }
+
+  .note { font-size: 12px; color: #999; text-align: center; margin-top: 16px; line-height: 1.6; }
+</style>
+</head>
+<body>
+<h1>Hero English</h1>
+<div class="subtitle">Logo Design Concepts · 英雄英語品牌識別</div>
+
+<div class="grid">
+
+  <!-- CONCEPT A: Shield Emblem + Wordmark -->
+  <div class="concept">
+    <div class="concept-label">Concept A</div>
+    <div class="concept-name">盾徽 + 文字標誌</div>
+    <div class="logo-area">
+
+      <!-- White BG version -->
+      <svg width="280" height="140" viewBox="0 0 280 140" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="shieldGradA" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#7C3AED"/>
+            <stop offset="100%" stop-color="#4F46E5"/>
+          </linearGradient>
+          <linearGradient id="starGradA" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#F59E0B"/>
+            <stop offset="100%" stop-color="#EF4444"/>
+          </linearGradient>
+          <filter id="glowA">
+            <feGaussianBlur stdDeviation="2" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <!-- Shield shape -->
+        <path d="M50,15 L90,15 L90,65 Q90,90 70,100 Q50,90 50,65 Z"
+              fill="url(#shieldGradA)" stroke="#6D28D9" stroke-width="1.5"/>
+
+        <!-- Inner shield highlight -->
+        <path d="M55,20 L85,20 L85,63 Q85,83 70,92 Q55,83 55,63 Z"
+              fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+
+        <!-- "H" letterform -->
+        <text x="70" y="70" font-family="Cinzel, serif" font-size="28" font-weight="900"
+              fill="white" text-anchor="middle" dominant-baseline="middle" opacity="0.95">H</text>
+
+        <!-- Star accent top -->
+        <text x="70" y="10" font-size="10" text-anchor="middle" fill="url(#starGradA)">★</text>
+
+        <!-- Stars flanking -->
+        <text x="44" y="28" font-size="7" fill="#F59E0B" opacity="0.8">✦</text>
+        <text x="94" y="28" font-size="7" fill="#F59E0B" opacity="0.8">✦</text>
+
+        <!-- Wordmark: HERO ENGLISH -->
+        <text x="175" y="50" font-family="Cinzel, serif" font-size="22" font-weight="900"
+              fill="#1a1a2e" text-anchor="middle" letter-spacing="3">HERO</text>
+        <line x1="115" y1="62" x2="235" y2="62" stroke="#7C3AED" stroke-width="1" opacity="0.4"/>
+        <text x="175" y="80" font-family="Cinzel, serif" font-size="11" font-weight="400"
+              fill="#4F46E5" text-anchor="middle" letter-spacing="5">ENGLISH</text>
+        <text x="175" y="98" font-family="Inter, sans-serif" font-size="9" font-weight="400"
+              fill="#888" text-anchor="middle" letter-spacing="2">英雄英語 · 學習冒險</text>
+      </svg>
+
+      <!-- Dark BG version -->
+      <div class="dark-bg">
+        <svg width="280" height="140" viewBox="0 0 280 140" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="shieldGradAD" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#A78BFA"/>
+              <stop offset="100%" stop-color="#7C3AED"/>
+            </linearGradient>
+            <filter id="glowAD">
+              <feGaussianBlur stdDeviation="3" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+
+          <path d="M50,15 L90,15 L90,65 Q90,90 70,100 Q50,90 50,65 Z"
+                fill="url(#shieldGradAD)" filter="url(#glowAD)"/>
+          <path d="M55,20 L85,20 L85,63 Q85,83 70,92 Q55,83 55,63 Z"
+                fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+          <text x="70" y="70" font-family="Cinzel, serif" font-size="28" font-weight="900"
+                fill="white" text-anchor="middle" dominant-baseline="middle">H</text>
+          <text x="70" y="10" font-size="10" text-anchor="middle" fill="#F59E0B">★</text>
+          <text x="44" y="28" font-size="7" fill="#F59E0B" opacity="0.6">✦</text>
+          <text x="94" y="28" font-size="7" fill="#F59E0B" opacity="0.6">✦</text>
+
+          <text x="175" y="50" font-family="Cinzel, serif" font-size="22" font-weight="900"
+                fill="#E8E8F0" text-anchor="middle" letter-spacing="3">HERO</text>
+          <line x1="115" y1="62" x2="235" y2="62" stroke="#A78BFA" stroke-width="1" opacity="0.4"/>
+          <text x="175" y="80" font-family="Cinzel, serif" font-size="11" font-weight="400"
+                fill="#A78BFA" text-anchor="middle" letter-spacing="5">ENGLISH</text>
+          <text x="175" y="98" font-family="Inter, sans-serif" font-size="9"
+                fill="rgba(232,232,240,0.4)" text-anchor="middle" letter-spacing="2">英雄英語 · 學習冒險</text>
+        </svg>
+      </div>
+    </div>
+    <p class="note">盾形徽章象徵守護與力量；Cinzel 字型強化 RPG 史詩感<br>主色：深紫 #7C3AED + 靛藍 #4F46E5 · 金色強調</p>
+  </div>
+
+  <!-- CONCEPT B: Sword + Crown Emblem -->
+  <div class="concept">
+    <div class="concept-label">Concept B</div>
+    <div class="concept-name">王冠劍徽 + 漸層文字</div>
+    <div class="logo-area">
+
+      <svg width="260" height="160" viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="heroGradB" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#7C3AED"/>
+            <stop offset="40%" stop-color="#6366F1"/>
+            <stop offset="100%" stop-color="#EF4444"/>
+          </linearGradient>
+          <linearGradient id="crownGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#F59E0B"/>
+            <stop offset="100%" stop-color="#D97706"/>
+          </linearGradient>
+          <linearGradient id="swordGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#E8E8F0"/>
+            <stop offset="100%" stop-color="#A78BFA"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Crown shape (centered) -->
+        <!-- Base bar -->
+        <rect x="90" y="55" width="80" height="8" rx="2" fill="url(#crownGrad)"/>
+        <!-- Crown points -->
+        <polygon points="93,55 98,35 106,55" fill="url(#crownGrad)"/>
+        <polygon points="126,55 130,28 134,55" fill="url(#crownGrad)"/>
+        <polygon points="154,55 162,35 167,55" fill="url(#crownGrad)"/>
+        <!-- Crown gems -->
+        <circle cx="130" cy="32" r="4" fill="#EF4444"/>
+        <circle cx="98" cy="40" r="3" fill="#A78BFA"/>
+        <circle cx="162" cy="40" r="3" fill="#A78BFA"/>
+
+        <!-- Sword (centered, vertical) -->
+        <!-- Blade -->
+        <rect x="128" y="62" width="4" height="48" rx="1" fill="url(#swordGrad)"/>
+        <!-- Guard (crossguard) -->
+        <rect x="114" y="88" width="32" height="5" rx="2" fill="#D97706"/>
+        <!-- Pommel -->
+        <ellipse cx="130" cy="115" rx="7" ry="5" fill="#D97706"/>
+        <!-- Blade shimmer -->
+        <rect x="129.5" y="65" width="1" height="20" rx="0.5" fill="white" opacity="0.5"/>
+
+        <!-- Stars -->
+        <text x="82" y="45" font-size="10" fill="#F59E0B" opacity="0.7">✦</text>
+        <text x="175" y="45" font-size="10" fill="#F59E0B" opacity="0.7">✦</text>
+
+        <!-- HERO text -->
+        <text x="130" y="140" font-family="Cinzel, serif" font-size="24" font-weight="900"
+              fill="url(#heroGradB)" text-anchor="middle" letter-spacing="6">HERO</text>
+        <text x="130" y="156" font-family="Cinzel, serif" font-size="9"
+              fill="#6366F1" text-anchor="middle" letter-spacing="7">ENGLISH</text>
+      </svg>
+
+      <div class="dark-bg">
+        <svg width="260" height="160" viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="heroGradBD" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#A78BFA"/>
+              <stop offset="40%" stop-color="#818CF8"/>
+              <stop offset="100%" stop-color="#F87171"/>
+            </linearGradient>
+            <linearGradient id="crownGradD" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#FCD34D"/>
+              <stop offset="100%" stop-color="#F59E0B"/>
+            </linearGradient>
+            <filter id="glowB">
+              <feGaussianBlur stdDeviation="2.5" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+
+          <rect x="90" y="55" width="80" height="8" rx="2" fill="url(#crownGradD)" filter="url(#glowB)"/>
+          <polygon points="93,55 98,35 106,55" fill="url(#crownGradD)"/>
+          <polygon points="126,55 130,28 134,55" fill="url(#crownGradD)"/>
+          <polygon points="154,55 162,35 167,55" fill="url(#crownGradD)"/>
+          <circle cx="130" cy="32" r="4" fill="#F87171" filter="url(#glowB)"/>
+          <circle cx="98" cy="40" r="3" fill="#A78BFA"/>
+          <circle cx="162" cy="40" r="3" fill="#A78BFA"/>
+
+          <rect x="128" y="62" width="4" height="48" rx="1" fill="white" opacity="0.9"/>
+          <rect x="114" y="88" width="32" height="5" rx="2" fill="#FCD34D"/>
+          <ellipse cx="130" cy="115" rx="7" ry="5" fill="#FCD34D"/>
+          <rect x="129.5" y="65" width="1" height="20" rx="0.5" fill="white" opacity="0.7"/>
+
+          <text x="82" y="45" font-size="10" fill="#FCD34D" opacity="0.8">✦</text>
+          <text x="175" y="45" font-size="10" fill="#FCD34D" opacity="0.8">✦</text>
+
+          <text x="130" y="140" font-family="Cinzel, serif" font-size="24" font-weight="900"
+                fill="url(#heroGradBD)" text-anchor="middle" letter-spacing="6" filter="url(#glowB)">HERO</text>
+          <text x="130" y="156" font-family="Cinzel, serif" font-size="9"
+                fill="#818CF8" text-anchor="middle" letter-spacing="7">ENGLISH</text>
+        </svg>
+      </div>
+    </div>
+    <p class="note">王冠 + 劍象徵「英雄征服學習」；漸層文字融合四職業配色<br>王冠：金 #F59E0B · 寶石：紅/紫 · 劍身：銀白</p>
+  </div>
+
+  <!-- CONCEPT C: Pixel Art Shield -->
+  <div class="concept">
+    <div class="concept-label">Concept C</div>
+    <div class="concept-name">像素盾牌 · 復古遊戲風</div>
+    <div class="logo-area">
+
+      <svg width="260" height="140" viewBox="0 0 260 140" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="wordGradC" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#22C55E"/>
+            <stop offset="50%" stop-color="#A855F7"/>
+            <stop offset="100%" stop-color="#EF4444"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Pixel Shield (8x8 grid pattern) -->
+        <!-- Using pixel squares to form a shield shape -->
+        <g transform="translate(24, 8)">
+          <!-- Row 1 (top) -->
+          <rect x="8"  y="0"  width="6" height="6" fill="#7C3AED"/>
+          <rect x="14" y="0"  width="6" height="6" fill="#7C3AED"/>
+          <rect x="20" y="0"  width="6" height="6" fill="#7C3AED"/>
+          <rect x="26" y="0"  width="6" height="6" fill="#7C3AED"/>
+          <rect x="32" y="0"  width="6" height="6" fill="#7C3AED"/>
+          <rect x="38" y="0"  width="6" height="6" fill="#7C3AED"/>
+          <rect x="44" y="0"  width="6" height="6" fill="#7C3AED"/>
+          <rect x="50" y="0"  width="6" height="6" fill="#7C3AED"/>
+
+          <!-- Row 2 -->
+          <rect x="2"  y="7"  width="6" height="6" fill="#6D28D9"/>
+          <rect x="8"  y="7"  width="6" height="6" fill="#A78BFA"/>
+          <rect x="14" y="7"  width="6" height="6" fill="#A78BFA"/>
+          <rect x="20" y="7"  width="6" height="6" fill="#A78BFA"/>
+          <rect x="26" y="7"  width="6" height="6" fill="#A78BFA"/>
+          <rect x="32" y="7"  width="6" height="6" fill="#A78BFA"/>
+          <rect x="38" y="7"  width="6" height="6" fill="#A78BFA"/>
+          <rect x="44" y="7"  width="6" height="6" fill="#A78BFA"/>
+          <rect x="50" y="7"  width="6" height="6" fill="#A78BFA"/>
+          <rect x="56" y="7"  width="6" height="6" fill="#6D28D9"/>
+
+          <!-- Row 3 -->
+          <rect x="2"  y="14" width="6" height="6" fill="#6D28D9"/>
+          <rect x="8"  y="14" width="6" height="6" fill="#7C3AED"/>
+          <rect x="14" y="14" width="6" height="6" fill="#EDE9FE"/>
+          <rect x="20" y="14" width="6" height="6" fill="#EDE9FE"/>
+          <rect x="26" y="14" width="6" height="6" fill="#EDE9FE"/>
+          <rect x="32" y="14" width="6" height="6" fill="#F59E0B"/> <!-- H cross -->
+          <rect x="38" y="14" width="6" height="6" fill="#EDE9FE"/>
+          <rect x="44" y="14" width="6" height="6" fill="#EDE9FE"/>
+          <rect x="50" y="14" width="6" height="6" fill="#7C3AED"/>
+          <rect x="56" y="14" width="6" height="6" fill="#6D28D9"/>
+
+          <!-- Row 4 (H crossbar) -->
+          <rect x="2"  y="21" width="6" height="6" fill="#6D28D9"/>
+          <rect x="8"  y="21" width="6" height="6" fill="#7C3AED"/>
+          <rect x="14" y="21" width="6" height="6" fill="#EDE9FE"/>
+          <rect x="20" y="21" width="6" height="6" fill="#F59E0B"/>
+          <rect x="26" y="21" width="6" height="6" fill="#F59E0B"/>
+          <rect x="32" y="21" width="6" height="6" fill="#F59E0B"/>
+          <rect x="38" y="21" width="6" height="6" fill="#F59E0B"/>
+          <rect x="44" y="21" width="6" height="6" fill="#F59E0B"/>
+          <rect x="50" y="21" width="6" height="6" fill="#7C3AED"/>
+          <rect x="56" y="21" width="6" height="6" fill="#6D28D9"/>
+
+          <!-- Row 5 -->
+          <rect x="2"  y="28" width="6" height="6" fill="#6D28D9"/>
+          <rect x="8"  y="28" width="6" height="6" fill="#7C3AED"/>
+          <rect x="14" y="28" width="6" height="6" fill="#EDE9FE"/>
+          <rect x="20" y="28" width="6" height="6" fill="#EDE9FE"/>
+          <rect x="26" y="28" width="6" height="6" fill="#EDE9FE"/>
+          <rect x="32" y="28" width="6" height="6" fill="#F59E0B"/>
+          <rect x="38" y="28" width="6" height="6" fill="#EDE9FE"/>
+          <rect x="44" y="28" width="6" height="6" fill="#EDE9FE"/>
+          <rect x="50" y="28" width="6" height="6" fill="#7C3AED"/>
+          <rect x="56" y="28" width="6" height="6" fill="#6D28D9"/>
+
+          <!-- Row 6 (narrowing) -->
+          <rect x="8"  y="35" width="6" height="6" fill="#7C3AED"/>
+          <rect x="14" y="35" width="6" height="6" fill="#7C3AED"/>
+          <rect x="20" y="35" width="6" height="6" fill="#7C3AED"/>
+          <rect x="26" y="35" width="6" height="6" fill="#7C3AED"/>
+          <rect x="32" y="35" width="6" height="6" fill="#7C3AED"/>
+          <rect x="38" y="35" width="6" height="6" fill="#7C3AED"/>
+          <rect x="44" y="35" width="6" height="6" fill="#7C3AED"/>
+          <rect x="50" y="35" width="6" height="6" fill="#7C3AED"/>
+
+          <!-- Row 7 -->
+          <rect x="14" y="42" width="6" height="6" fill="#7C3AED"/>
+          <rect x="20" y="42" width="6" height="6" fill="#6D28D9"/>
+          <rect x="26" y="42" width="6" height="6" fill="#6D28D9"/>
+          <rect x="32" y="42" width="6" height="6" fill="#6D28D9"/>
+          <rect x="38" y="42" width="6" height="6" fill="#6D28D9"/>
+          <rect x="44" y="42" width="6" height="6" fill="#7C3AED"/>
+
+          <!-- Row 8 (tip) -->
+          <rect x="26" y="49" width="6" height="6" fill="#7C3AED"/>
+          <rect x="32" y="49" width="6" height="6" fill="#6D28D9"/>
+        </g>
+
+        <!-- Wordmark -->
+        <text x="170" y="40" font-family="Cinzel, serif" font-size="20" font-weight="900"
+              fill="#1a1a2e" text-anchor="middle" letter-spacing="4">HERO</text>
+        <text x="170" y="56" font-family="Cinzel, serif" font-size="9"
+              fill="#7C3AED" text-anchor="middle" letter-spacing="6">ENGLISH</text>
+        <line x1="110" y1="64" x2="230" y2="64" stroke="#ddd" stroke-width="1"/>
+        <text x="170" y="76" font-family="Inter, sans-serif" font-size="8" font-weight="600"
+              fill="url(#wordGradC)" text-anchor="middle" letter-spacing="1">⚔️ SWORD  🔮 MAGIC  🐉 TAME  👊 FIGHT</text>
+        <text x="170" y="92" font-family="Inter, sans-serif" font-size="9"
+              fill="#aaa" text-anchor="middle">英語冒險，由此展開</text>
+      </svg>
+
+      <div class="dark-bg">
+        <svg width="260" height="100" viewBox="0 0 260 100" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="wordGradCD" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#22C55E"/>
+              <stop offset="50%" stop-color="#A855F7"/>
+              <stop offset="100%" stop-color="#EF4444"/>
+            </linearGradient>
+            <filter id="glowC">
+              <feGaussianBlur stdDeviation="1.5" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+
+          <!-- Compact pixel icon -->
+          <g transform="translate(14, 10) scale(0.65)">
+            <rect x="8" y="0" width="6" height="6" fill="#A78BFA"/>
+            <rect x="14" y="0" width="6" height="6" fill="#A78BFA"/>
+            <rect x="20" y="0" width="6" height="6" fill="#A78BFA"/>
+            <rect x="26" y="0" width="6" height="6" fill="#A78BFA"/>
+            <rect x="32" y="0" width="6" height="6" fill="#A78BFA"/>
+            <rect x="38" y="0" width="6" height="6" fill="#A78BFA"/>
+            <rect x="44" y="0" width="6" height="6" fill="#A78BFA"/>
+            <rect x="50" y="0" width="6" height="6" fill="#A78BFA"/>
+            <rect x="2" y="7" width="6" height="6" fill="#7C3AED"/>
+            <rect x="8" y="7" width="6" height="6" fill="#C4B5FD"/>
+            <rect x="56" y="7" width="6" height="6" fill="#7C3AED"/>
+            <rect x="2" y="14" width="6" height="6" fill="#7C3AED"/>
+            <rect x="14" y="14" width="6" height="6" fill="rgba(255,255,255,0.7)"/>
+            <rect x="32" y="14" width="6" height="6" fill="#FCD34D"/>
+            <rect x="50" y="14" width="6" height="6" fill="#7C3AED"/>
+            <rect x="56" y="14" width="6" height="6" fill="#7C3AED"/>
+            <rect x="2" y="21" width="6" height="6" fill="#7C3AED"/>
+            <rect x="20" y="21" width="6" height="6" fill="#FCD34D"/>
+            <rect x="26" y="21" width="6" height="6" fill="#FCD34D"/>
+            <rect x="32" y="21" width="6" height="6" fill="#FCD34D"/>
+            <rect x="38" y="21" width="6" height="6" fill="#FCD34D"/>
+            <rect x="44" y="21" width="6" height="6" fill="#FCD34D"/>
+            <rect x="56" y="21" width="6" height="6" fill="#7C3AED"/>
+            <rect x="2" y="28" width="6" height="6" fill="#7C3AED"/>
+            <rect x="32" y="28" width="6" height="6" fill="#FCD34D"/>
+            <rect x="56" y="28" width="6" height="6" fill="#7C3AED"/>
+            <rect x="8" y="35" width="6" height="6" fill="#7C3AED"/>
+            <rect x="50" y="35" width="6" height="6" fill="#7C3AED"/>
+            <rect x="14" y="42" width="6" height="6" fill="#7C3AED"/>
+            <rect x="44" y="42" width="6" height="6" fill="#7C3AED"/>
+            <rect x="26" y="49" width="6" height="6" fill="#7C3AED"/>
+            <rect x="32" y="49" width="6" height="6" fill="#6D28D9"/>
+          </g>
+
+          <text x="160" y="32" font-family="Cinzel, serif" font-size="20" font-weight="900"
+                fill="#E8E8F0" text-anchor="middle" letter-spacing="4" filter="url(#glowC)">HERO</text>
+          <text x="160" y="48" font-family="Cinzel, serif" font-size="9"
+                fill="#A78BFA" text-anchor="middle" letter-spacing="6">ENGLISH</text>
+          <line x1="100" y1="57" x2="220" y2="57" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+          <text x="160" y="70" font-family="Inter, sans-serif" font-size="8"
+                fill="url(#wordGradCD)" text-anchor="middle" letter-spacing="1">⚔️ SWORD  🔮 MAGIC  🐉 TAME  👊 FIGHT</text>
+          <text x="160" y="86" font-family="Inter, sans-serif" font-size="8"
+                fill="rgba(255,255,255,0.35)" text-anchor="middle">英語冒險，由此展開</text>
+        </svg>
+      </div>
+    </div>
+    <p class="note">像素盾牌呼應 App 的像素角色風格；「H」字以金色像素嵌入<br>四職業配色作為副標彩帶：綠/紫/紅/金</p>
+  </div>
+
+  <!-- CONCEPT D: Minimal Monogram -->
+  <div class="concept">
+    <div class="concept-label">Concept D</div>
+    <div class="concept-name">極簡字母徽章 · 現代版</div>
+    <div class="logo-area">
+
+      <svg width="260" height="130" viewBox="0 0 260 130" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="hexGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7C3AED"/>
+            <stop offset="100%" stop-color="#4F46E5"/>
+          </linearGradient>
+          <linearGradient id="accentLine" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#EF4444"/>
+            <stop offset="33%" stop-color="#A855F7"/>
+            <stop offset="66%" stop-color="#22C55E"/>
+            <stop offset="100%" stop-color="#F59E0B"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Hexagon badge -->
+        <polygon points="65,10 90,10 100,28 90,46 65,46 55,28"
+                 fill="url(#hexGrad)" stroke="#6D28D9" stroke-width="1.5"/>
+        <!-- Inner hex outline -->
+        <polygon points="67,14 88,14 97,28 88,42 67,42 58,28"
+                 fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+
+        <!-- HE monogram -->
+        <text x="77" y="33" font-family="Cinzel, serif" font-size="18" font-weight="900"
+              fill="white" text-anchor="middle" dominant-baseline="middle">HE</text>
+
+        <!-- Brand name -->
+        <text x="175" y="22" font-family="Cinzel, serif" font-size="20" font-weight="900"
+              fill="#1a1a2e" text-anchor="middle" letter-spacing="2">HERO</text>
+        <text x="175" y="38" font-family="Cinzel, serif" font-size="20" font-weight="900"
+              fill="#1a1a2e" text-anchor="middle" letter-spacing="2">ENGLISH</text>
+
+        <!-- Rainbow accent line -->
+        <rect x="115" y="46" width="120" height="2.5" rx="1.25" fill="url(#accentLine)"/>
+
+        <!-- Tagline -->
+        <text x="175" y="62" font-family="Inter, sans-serif" font-size="9" font-weight="600"
+              fill="#7C3AED" text-anchor="middle" letter-spacing="3">LEARN · QUEST · MASTER</text>
+
+        <!-- Class dots -->
+        <circle cx="145" cy="75" r="4" fill="#EF4444" opacity="0.8"/>
+        <circle cx="158" cy="75" r="4" fill="#A855F7" opacity="0.8"/>
+        <circle cx="171" cy="75" r="4" fill="#22C55E" opacity="0.8"/>
+        <circle cx="184" cy="75" r="4" fill="#F59E0B" opacity="0.8"/>
+        <text x="197" y="79" font-family="Inter, sans-serif" font-size="8" fill="#aaa">× 4 Classes</text>
+      </svg>
+
+      <div class="dark-bg">
+        <svg width="260" height="110" viewBox="0 0 260 110" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="hexGradD" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#A78BFA"/>
+              <stop offset="100%" stop-color="#818CF8"/>
+            </linearGradient>
+            <linearGradient id="accentLineD" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#F87171"/>
+              <stop offset="33%" stop-color="#A855F7"/>
+              <stop offset="66%" stop-color="#4ADE80"/>
+              <stop offset="100%" stop-color="#FCD34D"/>
+            </linearGradient>
+            <filter id="glowD">
+              <feGaussianBlur stdDeviation="2" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+
+          <polygon points="65,8 90,8 100,26 90,44 65,44 55,26"
+                   fill="url(#hexGradD)" filter="url(#glowD)"/>
+          <polygon points="67,12 88,12 97,26 88,40 67,40 58,26"
+                   fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+          <text x="77" y="31" font-family="Cinzel, serif" font-size="18" font-weight="900"
+                fill="white" text-anchor="middle" dominant-baseline="middle">HE</text>
+
+          <text x="175" y="22" font-family="Cinzel, serif" font-size="20" font-weight="900"
+                fill="#E8E8F0" text-anchor="middle" letter-spacing="2">HERO</text>
+          <text x="175" y="38" font-family="Cinzel, serif" font-size="20" font-weight="900"
+                fill="#E8E8F0" text-anchor="middle" letter-spacing="2">ENGLISH</text>
+
+          <rect x="115" y="46" width="120" height="2.5" rx="1.25" fill="url(#accentLineD)" filter="url(#glowD)"/>
+
+          <text x="175" y="62" font-family="Inter, sans-serif" font-size="9" font-weight="600"
+                fill="#A78BFA" text-anchor="middle" letter-spacing="3">LEARN · QUEST · MASTER</text>
+
+          <circle cx="145" cy="78" r="4" fill="#F87171" opacity="0.9"/>
+          <circle cx="158" cy="78" r="4" fill="#A855F7" opacity="0.9"/>
+          <circle cx="171" cy="78" r="4" fill="#4ADE80" opacity="0.9"/>
+          <circle cx="184" cy="78" r="4" fill="#FCD34D" opacity="0.9"/>
+          <text x="198" y="82" font-family="Inter, sans-serif" font-size="8" fill="rgba(255,255,255,0.4)">× 4 Classes</text>
+        </svg>
+      </div>
+    </div>
+    <p class="note">六邊形（Hexagon）= 遊戲技能盤 / 科幻感；HE 字母縮寫極具辨識度<br>四職業彩點強化多元性；漸層橫條呼應四職業</p>
+  </div>
+
+</div>
+
+<!-- Summary -->
+<div style="max-width:1100px;margin:40px auto;background:#fff;border-radius:16px;padding:32px;box-shadow:0 2px 20px rgba(0,0,0,0.08);">
+  <h2 style="font-family:'Cinzel',serif;color:#1a1a2e;margin-bottom:16px;font-size:18px;">設計說明 · Design Rationale</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;">
+    <div>
+      <div style="font-weight:700;color:#7C3AED;margin-bottom:6px;">方案 A · 盾徽</div>
+      <div style="font-size:13px;color:#555;line-height:1.7;">最傳統 RPG 感，適合 App Store Icon 及主頁面 Logo。Cinzel 字型與盾徽組合最具「英雄」氛圍。</div>
+    </div>
+    <div>
+      <div style="font-weight:700;color:#6366F1;margin-bottom:6px;">方案 B · 王冠劍</div>
+      <div style="font-size:13px;color:#555;line-height:1.7;">最「故事感」，適合 Loading 畫面、Onboarding 頁、社群貼文。漸層文字在深色背景上非常搶眼。</div>
+    </div>
+    <div>
+      <div style="font-weight:700;color:#22C55E;margin-bottom:6px;">方案 C · 像素盾</div>
+      <div style="font-size:13px;color:#555;line-height:1.7;">與 App 的像素角色高度一致，最具「遊戲感」。適合 PWA 圖示、社群媒體頭貼。</div>
+    </div>
+    <div>
+      <div style="font-weight:700;color:#F59E0B;margin-bottom:6px;">方案 D · 六邊形</div>
+      <div style="font-size:13px;color:#555;line-height:1.7;">最現代簡潔，四色彩點串聯四職業，適合用在名片、橫幅廣告、Favicon。</div>
+    </div>
+  </div>
+  <div style="margin-top:20px;padding:16px;background:#F5F3FF;border-radius:8px;border-left:3px solid #7C3AED;">
+    <div style="font-size:13px;color:#555;line-height:1.8;">
+      <strong>字型：</strong>Cinzel（已與 App 一致）· <strong>主色：</strong>#7C3AED 深紫 · <strong>輔色：</strong>#4F46E5 靛藍 · <strong>強調：</strong>#F59E0B 金 · <strong>職業色：</strong>紅/紫/綠/金<br>
+      <strong>背景：</strong>白色版（印刷/淺色 UI）+ 深色版（App 深色背景） · <strong>建議優先：</strong>方案 A 或 C 最符合 App 視覺風格
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
