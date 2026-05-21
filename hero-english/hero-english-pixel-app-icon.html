@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hero English Pixel App Icon</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  gap: 28px;
+  padding: 48px;
+  background: #0d0d1a;
+  color: #fff7d6;
+  font-family: "Trebuchet MS", Verdana, sans-serif;
+}
+.stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+.preview {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+}
+.icon {
+  width: var(--size);
+  height: var(--size);
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  border-radius: 22%;
+  box-shadow:
+    0 22px 70px rgba(124, 58, 237, 0.34),
+    0 0 0 1px rgba(252, 211, 77, 0.22);
+}
+.label {
+  color: rgba(255, 247, 214, 0.72);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+</style>
+</head>
+<body>
+  <main class="stage">
+    <section class="preview">
+      <img class="icon" style="--size: 256px" src="public/pwa-512x512.png" alt="Hero English pixel app icon large preview">
+      <div class="label">Desktop</div>
+    </section>
+    <section class="preview">
+      <img class="icon" style="--size: 96px" src="public/pwa-192x192.png" alt="Hero English pixel app icon medium preview">
+      <div class="label">PWA 192</div>
+    </section>
+    <section class="preview">
+      <img class="icon" style="--size: 64px" src="public/apple-touch-icon.png" alt="Hero English pixel app icon small preview">
+      <div class="label">Touch</div>
+    </section>
+  </main>
+</body>
+</html>
