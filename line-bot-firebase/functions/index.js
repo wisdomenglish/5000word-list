@@ -1471,7 +1471,7 @@ exports.calendarReminder = onSchedule({
         }
         for (const userId of targetIds) {
           const safeEventId = String(evt.id).replace(/[.#$\[\]/@]/g, "_");
-          const key = `${safeEventId}_${userId}`;
+          const key = `${safeEventId}_${evt.start}_${userId}`;
           const sentRef = dbRef.ref(`/calendar-sent/${key}`);
           const snap = await sentRef.get();
           if (snap.exists()) {
@@ -1535,7 +1535,7 @@ exports.eveningFollowUp = onSchedule({
     const sentToday = new Set();
     sentSnap.forEach(child => {
       const data = child.val();
-      if (data.sentAt >= todayStart && data.sentAt < todayEnd) {
+      if (data.sentAt >= todayStart && data.sentAt < todayEnd && data.eventStart === dateStr) {
         const match = child.key.match(/U[0-9a-fA-F]{32}$/);
         if (match) sentToday.add(match[0]);
       }
@@ -1638,7 +1638,7 @@ const { Anthropic: AnthropicEx } = require("@anthropic-ai/sdk");
 
 exports.generateWordExample = onRequest({ cors: true }, async (req, res) => {
   if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
-  const { word, pos, zh } = req.body || {};
+  const { word, pos, zh, style } = req.body || {};
   if (!word) return res.status(400).json({ error: "Missing word" });
 
   try {
@@ -1646,7 +1646,24 @@ exports.generateWordExample = onRequest({ cors: true }, async (req, res) => {
     if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY");
     const client = new AnthropicEx({ apiKey });
 
-    const prompt = `Generate one natural English example sentence for the word "${word}" (${pos || "unknown"}, meaning: ${zh || "unknown"}).
+    const motivational = style === 'motivational';
+    const prompt = motivational
+      ? `Generate one short, uplifting English example sentence for the word "${word}" (${pos || "unknown"}, meaning: ${zh || "unknown"}).
+
+The sentence should feel encouraging and motivational — something that inspires the reader to keep going, believe in themselves, or pursue their goals. Write as if cheering on a student. The word "${word}" must appear naturally in the sentence.
+
+Respond ONLY with valid JSON, no markdown, no extra text:
+{
+  "sentence": "One uplifting English sentence using the word naturally.",
+  "translation": "整句話的繁體中文翻譯"
+}
+
+Rules:
+- Tone: positive, empowering, forward-looking
+- The sentence should clearly demonstrate the meaning of "${word}"
+- ALL Chinese text must be in Traditional Chinese (繁體中文), NOT Simplified Chinese (簡體中文)
+- Output ONLY the JSON object, nothing else`
+      : `Generate one natural English example sentence for the word "${word}" (${pos || "unknown"}, meaning: ${zh || "unknown"}).
 
 Respond ONLY with valid JSON, no markdown, no extra text:
 {
@@ -1690,7 +1707,9 @@ exports.generateWordDefinition = onRequest({ cors: true, invoker: "public" }, as
     if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY");
     const client = new AnthropicDef({ apiKey });
 
-    const prompt = `Look up the English word "${word}" and provide its primary Traditional Chinese definition and part of speech.
+    const prompt = `Define the English word "${word}" in Traditional Chinese.
+
+CRITICAL: You must define EXACTLY the word "${word}" — letter by letter, exactly as written. Do NOT define a different word even if it looks or sounds similar (e.g. if the word is "avenge", define "avenge" (復仇), NOT "avenue" (林蔭大道); if the word is "fence", define "fence" (籬笆), NOT "iron").
 
 Respond ONLY with valid JSON, no markdown, no extra text:
 {
@@ -1725,9 +1744,9 @@ Rules:
 // ========== Vocab Quiz API ==========
 const { Anthropic: AnthropicQuiz } = require("@anthropic-ai/sdk");
 
-exports.generateVocabQuiz = onRequest({ cors: true }, async (req, res) => {
+exports.generateVocabQuiz = onRequest({ cors: true, invoker: "public" }, async (req, res) => {
   if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
-  const { words } = req.body || {};
+  const { words, cefrLevel } = req.body || {};
   if (!words || !words.length) return res.status(400).json({ error: "Missing words" });
 
   try {
@@ -1737,6 +1756,9 @@ exports.generateVocabQuiz = onRequest({ cors: true }, async (req, res) => {
 
     const wordList = words.slice(0, 10).map(w => `${w.word} (${w.pos || "?"}, ${w.zh || ""})`).join("\n");
     const count = Math.min(words.length, 10);
+    const cefrRule = cefrLevel
+      ? `- Sentences must be at ${cefrLevel} reading level: short (under 15 words), simple vocabulary, clear everyday context`
+      : "";
 
     const prompt = `Create ${count} fill-in-the-blank vocabulary quiz questions for these English words:
 ${wordList}
@@ -1745,19 +1767,23 @@ Respond ONLY with a valid JSON array, no markdown, no extra text:
 [
   {
     "word": "the tested word",
-    "sentence": "English sentence with ______ as the blank.",
+    "sentence": "First sentence with ______ as the blank. Second sentence that adds context and makes the answer unambiguous.",
     "options": ["correct_word", "distractor1", "distractor2", "distractor3"],
     "answer": 0,
-    "translation": "整句話的繁體中文翻譯",
+    "translation": "兩句話合在一起的繁體中文翻譯",
     "explanation": "一句繁體中文解釋這個單字的用法或意思"
   }
 ]
 
 Rules:
-- Each sentence must use ______ (6 underscores) as the blank
+- EVERY question MUST contain exactly two sentences. The blank (______) appears in the FIRST sentence. The SECOND sentence adds a specific context clue that rules out all distractors and makes only one answer correct.
+- Each sentence must use ______ (6 underscores) as the blank — only in the first sentence
 - "answer" is the index (0-3) of the correct option in "options"
 - Shuffle so the correct answer is NOT always index 0
-- Distractors should be plausible words of similar part of speech
+- Distractors should be clearly wrong when the second sentence is read — mentally insert each distractor and verify the two-sentence combination sounds wrong or contradicts the second sentence
+- CRITICAL: Only ONE option must work across both sentences combined. The second sentence must eliminate all three distractors, not just hint at the answer
+- Do NOT repeat the target word or its direct synonym in the second sentence
+${cefrRule}
 - ALL Chinese text must be in Traditional Chinese (繁體中文), NOT Simplified Chinese (簡體中文)
 - Output ONLY the JSON array, nothing else`;
 
@@ -1891,3 +1917,155 @@ Rules:
     res.status(500).json({ error: e.message });
   }
 });
+
+// ========== Conversation Practice API (Hero English) ==========
+const { Anthropic: AnthropicConv } = require("@anthropic-ai/sdk");
+
+// ========== Reading Quiz API (Hero English) ==========
+const { Anthropic: AnthropicRQ } = require("@anthropic-ai/sdk");
+
+const READING_SOURCES = [
+  { name: "BBC News", style: "British news broadcaster BBC News", topic_hint: "technology, science, culture, environment, or society" },
+  { name: "TIME Magazine", style: "American news magazine TIME", topic_hint: "global affairs, innovation, people, or health" },
+  { name: "Focus Taiwan", style: "Taiwan's Central News Agency English service Focus Taiwan", topic_hint: "Taiwan society, culture, education, or business" },
+  { name: "The Guardian", style: "British newspaper The Guardian", topic_hint: "environment, arts, sport, or world news" },
+  { name: "Scientific American", style: "science magazine Scientific American", topic_hint: "science, technology, nature, or medicine" },
+];
+
+exports.generateReadingQuiz = onRequest({ cors: true, invoker: "public" }, async (req, res) => {
+  if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
+
+  try {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY");
+    const client = new AnthropicRQ({ apiKey });
+
+    const src = READING_SOURCES[Math.floor(Math.random() * READING_SOURCES.length)];
+
+    const prompt = `You are an English reading comprehension quiz generator for Taiwanese junior high school students (A2 level, CEFR).
+
+Write a short English news-style passage (120–160 words) in the style of ${src.style}. Choose an engaging topic related to ${src.topic_hint}.
+
+Passage difficulty rules for A2:
+- Use only common, everyday vocabulary (top 2000 most frequent English words)
+- Short sentences (8–12 words each), simple subject-verb-object structure
+- Avoid idioms, phrasal verbs, complex clauses, or passive voice
+- Present tense preferred; past simple is fine; avoid perfect or conditional tenses
+
+Then create exactly 3 multiple-choice comprehension questions based on the passage.
+
+Question types to cover (one each):
+1. Main idea / purpose of the passage
+2. Specific detail stated in the passage
+3. Vocabulary in context (what a word/phrase means as used in the passage)
+
+Rules:
+- All 4 choices must be plausible; only ONE is clearly correct based on the passage
+- Do NOT make the answer obvious from the question wording alone
+- The passage, title, questions, and all choices MUST be written in English only
+- Only the "explanation" field should be in Traditional Chinese (繁體中文), NOT Simplified Chinese
+- Questions and choices must also use simple A2 vocabulary
+
+Return ONLY valid JSON, no markdown:
+{
+  "source": "${src.name}",
+  "title": "Short engaging headline (under 12 words)",
+  "passage": "Full passage text here...",
+  "questions": [
+    {
+      "prompt": "Question text?",
+      "choices": ["Choice A text", "Choice B text", "Choice C text", "Choice D text"],
+      "answer": "Exact text of the correct choice",
+      "explanation": "一句繁體中文解釋為什麼這個選項正確"
+    }
+  ]
+}`;
+
+    const message = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 2048,
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    let raw = message.content[0].text.trim();
+    if (raw.startsWith("```"))
+      raw = raw.replace(/^```json?\s*/, "").replace(/\s*```$/, "").trim();
+
+    const data = JSON.parse(raw);
+    if (!data.passage || !Array.isArray(data.questions) || data.questions.length < 1) {
+      throw new Error("Invalid response structure");
+    }
+    res.json(data);
+  } catch (e) {
+    console.error("[ERROR] generateReadingQuiz:", e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+exports.generateConversation = onRequest({ cors: true, invoker: "public" }, async (req, res) => {
+  if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
+
+  const TOPICS = [
+    "放學後的計劃", "週末安排", "最喜歡的食物",
+    "最喜歡的科目", "運動與健身", "喜歡的音樂",
+    "最近看的電影或影集", "假期計劃", "天氣閒聊",
+    "購物經驗", "朋友聚會", "生日慶祝",
+    "家庭生活", "寵物", "課外活動與社團"
+  ];
+
+  const topic = TOPICS[Math.floor(Math.random() * TOPICS.length)];
+
+  try {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY");
+    const client = new AnthropicConv({ apiKey });
+
+    const prompt = `You are creating an English conversation exercise for Taiwanese junior high school students (ages 12-15, A2-B1 level).
+
+Create a natural 4-turn conversation about: "${topic}"
+The scenario is a casual chat between two students or a student and a friend.
+
+Return ONLY valid JSON, no markdown:
+{
+  "topic": "${topic}",
+  "scenario": "一句繁體中文場景說明（15字以內）",
+  "turns": [
+    {
+      "ai": "AI's line in English (friendly, 1-2 short sentences, under 20 words)",
+      "aiZh": "AI那句話的繁體中文翻譯",
+      "choices": [
+        { "en": "Natural, contextually fitting response (1-2 sentences)", "isNatural": true },
+        { "en": "Grammatically OK but clearly off-topic response", "isNatural": false },
+        { "en": "Another irrelevant or awkward response", "isNatural": false }
+      ]
+    }
+  ]
+}
+
+Rules:
+- Exactly 4 turns
+- Simple everyday vocabulary (A2-B1)
+- Natural choice must genuinely continue the topic
+- Wrong choices are plausible English but clearly miss the context
+- Shuffle choices so correct is NOT always first
+- All Chinese must be Traditional Chinese (繁體中文)
+- Output ONLY the JSON object, nothing else`;
+
+    const message = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 1200,
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    let raw = message.content[0].text.trim();
+    if (raw.startsWith("```"))
+      raw = raw.replace(/^```json?\s*/, "").replace(/\s*```$/, "").trim();
+
+    const data = JSON.parse(raw);
+    res.json(data);
+  } catch (e) {
+    console.error("[ERROR] generateConversation:", e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
