@@ -406,6 +406,13 @@ async function fetchCalendarWithRetry(icalUrl, maxRetries = 3) {
             currentEvent.description = line.substring(12)
               .replace(/\\n/g, "\n").replace(/\\,/g, ",").replace(/\\\\/g, "\\");
           }
+          if (line.startsWith("RRULE:")) currentEvent.rrule = line.substring(6).trim();
+          if (line.startsWith("RECURRENCE-ID")) currentEvent.isException = true;
+          if (line.startsWith("EXDATE")) {
+            const val = line.substring(line.indexOf(":") + 1).trim();
+            if (!currentEvent.exdates) currentEvent.exdates = [];
+            val.split(",").forEach(d => currentEvent.exdates.push(d.trim()));
+          }
         }
       }
       return events;
@@ -494,31 +501,70 @@ async function getOrFetchCalendarEvents() {
       return null;
     }
 
+    // Separate base recurring events vs. exceptions
+    const byUid = new Map();
+    const rruleExceptions = [];
+    for (const event of events) {
+      if (event.isException) {
+        rruleExceptions.push(event);
+      } else {
+        const uid = event.uid || event.summary || "";
+        if (!byUid.has(uid)) byUid.set(uid, event);
+      }
+    }
+    const exceptionDatesByUid = new Map();
+    for (const e of rruleExceptions) {
+      const uid = e.uid || e.summary || "";
+      const parsed = e.start ? parseICalDate(e.start) : null;
+      if (parsed) {
+        if (!exceptionDatesByUid.has(uid)) exceptionDatesByUid.set(uid, new Set());
+        exceptionDatesByUid.get(uid).add(parsed.dateStr);
+      }
+    }
+    // Expand RRULE events for today through today+90 (Taiwan time)
+    const nowTw = new Date(now + 8 * 3600000);
+    const twY = nowTw.getUTCFullYear(), twM = nowTw.getUTCMonth(), twD = nowTw.getUTCDate();
+    const expandEnd = new Date(Date.UTC(twY, twM, twD + 90));
+
     console.log(`[DEBUG] ===== Processing ${events.length} events =====`);
     const result = [];
-    for (let i = 0; i < events.length; i++) {
-      const event = events[i];
-      if (!event.start) {
-        console.log(`[RAW-ALL] Event ${i}: NO DTSTART`);
-        continue;
+    for (const [, event] of [...byUid, ...rruleExceptions.map(e => [null, e])]) {
+      if (!event.start) continue;
+      const safeId = (event.uid || event.summary || "").replace(/[.#$\[\]/@]/g, "_");
+      if (event.rrule && !event.isException) {
+        const uid = event.uid || event.summary || "";
+        const covered = exceptionDatesByUid.get(uid) || new Set();
+        const cursor = new Date(Date.UTC(twY, twM, twD));
+        while (cursor <= expandEnd) {
+          const dStr = cursor.toISOString().substring(0, 10);
+          if (!covered.has(dStr) && rruleOccursOn(event.start, event.rrule, event.exdates, dStr)) {
+            result.push({
+              id: `${safeId}_RRULE${dStr.replace(/-/g, "")}`,
+              title: event.summary || "無標題",
+              start: dStr,
+              startObj: new Date(dStr + "T00:00:00Z").getTime(),
+              end: event.end || "",
+              location: event.location || "",
+              description: event.description || "",
+              isAllDay: true
+            });
+          }
+          cursor.setUTCDate(cursor.getUTCDate() + 1);
+        }
+      } else {
+        const parsed = parseICalDate(event.start);
+        if (!parsed) continue;
+        result.push({
+          id: event.isException ? `${safeId}` : (event.uid || event.summary),
+          title: event.summary || "無標題",
+          start: parsed.dateStr,
+          startObj: parsed.dateObj.getTime(),
+          end: event.end,
+          location: event.location || "",
+          description: event.description || "",
+          isAllDay: parsed.isAllDay
+        });
       }
-      console.log(`[RAW-ALL] Event ${i}: "${event.summary}" | DTSTART: "${event.start}"`);
-      const parsed = parseICalDate(event.start);
-      if (!parsed) {
-        console.log(`[PARSE-FAIL] Event ${i}: Could not parse "${event.start}"`);
-        continue;
-      }
-      console.log(`[PARSED] Event ${i}: "${event.summary}" | Date: ${parsed.dateStr}`);
-      result.push({
-        id: event.uid || event.summary,
-        title: event.summary || "無標題",
-        start: parsed.dateStr,
-        startObj: parsed.dateObj.getTime(),
-        end: event.end,
-        location: event.location || "",
-        description: event.description || "",
-        isAllDay: parsed.isAllDay
-      });
     }
     result.sort((a, b) => a.startObj - b.startObj);
     await cacheRef.set({ timestamp: now, events: result });
@@ -537,6 +583,92 @@ async function getOrFetchCalendarEvents() {
       console.error("[ERROR] Failed to retrieve cache fallback:", cacheError.message);
     }
     return [];
+  }
+}
+
+function parseRrule(rruleStr) {
+  const r = {};
+  rruleStr.split(";").forEach(part => {
+    const eq = part.indexOf("=");
+    if (eq > 0) r[part.slice(0, eq)] = part.slice(eq + 1);
+  });
+  return r;
+}
+
+function rruleOccursOn(rawDtstart, rruleStr, exdates, targetDateStr) {
+  if (!rruleStr) return false;
+  const rr = parseRrule(rruleStr);
+  if (!rr.FREQ) return false;
+  const sm = rawDtstart.match(/(\d{4})(\d{2})(\d{2})/);
+  if (!sm) return false;
+  const startDate = new Date(Date.UTC(+sm[1], +sm[2] - 1, +sm[3]));
+  const tm = targetDateStr.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (!tm) return false;
+  const targetDate = new Date(Date.UTC(+tm[1], +tm[2] - 1, +tm[3]));
+  if (targetDate < startDate) return false;
+  if (rr.UNTIL) {
+    const um = rr.UNTIL.match(/(\d{4})(\d{2})(\d{2})/);
+    if (um && targetDate > new Date(Date.UTC(+um[1], +um[2] - 1, +um[3]))) return false;
+  }
+  if (exdates && exdates.length) {
+    const tFlat = `${tm[1]}${tm[2]}${tm[3]}`;
+    for (const ex of exdates) {
+      const xm = ex.match(/(\d{4})(\d{2})(\d{2})/);
+      if (xm && `${xm[1]}${xm[2]}${xm[3]}` === tFlat) return false;
+    }
+  }
+  const interval = parseInt(rr.INTERVAL || "1");
+  const tY = +tm[1], tM0 = +tm[2] - 1, tD = +tm[3];
+  const sY = +sm[1], sM0 = +sm[2] - 1, sD = +sm[3];
+  const DOW = ["SU","MO","TU","WE","TH","FR","SA"];
+  switch (rr.FREQ) {
+    case "DAILY":
+      return Math.round((targetDate - startDate) / 86400000) % interval === 0;
+    case "WEEKLY": {
+      const byDays = rr.BYDAY
+        ? rr.BYDAY.split(",").map(d => d.replace(/^[+-]?\d+/, "").trim())
+        : [DOW[startDate.getUTCDay()]];
+      if (!byDays.includes(DOW[targetDate.getUTCDay()])) return false;
+      if (interval === 1) return true;
+      return Math.floor((targetDate - startDate) / (7 * 86400000)) % interval === 0;
+    }
+    case "MONTHLY": {
+      const md = (tY - sY) * 12 + (tM0 - sM0);
+      if (md < 0 || md % interval !== 0) return false;
+      if (rr.BYMONTHDAY) {
+        const n = parseInt(rr.BYMONTHDAY);
+        if (n > 0) return tD === n;
+        return tD === new Date(Date.UTC(tY, tM0 + 1, 0)).getUTCDate() + n + 1;
+      }
+      if (rr.BYDAY) {
+        const bm = rr.BYDAY.match(/^([+-]?\d*)([A-Z]{2})$/);
+        if (!bm) return false;
+        const nth = bm[1] ? parseInt(bm[1]) : null;
+        const dn = bm[2];
+        if (DOW[targetDate.getUTCDay()] !== dn) return false;
+        if (nth === null) return true;
+        const di = DOW.indexOf(dn);
+        if (nth > 0) {
+          const firstDow = new Date(Date.UTC(tY, tM0, 1)).getUTCDay();
+          const firstOcc = ((di - firstDow + 7) % 7) + 1;
+          return tD === firstOcc + (nth - 1) * 7;
+        } else {
+          const lastDay = new Date(Date.UTC(tY, tM0 + 1, 0)).getUTCDate();
+          const lastDow = new Date(Date.UTC(tY, tM0, lastDay)).getUTCDay();
+          const lastOcc = lastDay - ((lastDow - di + 7) % 7);
+          return tD === lastOcc - (Math.abs(nth) - 1) * 7;
+        }
+      }
+      return tD === sD;
+    }
+    case "YEARLY": {
+      const yr = tY - sY;
+      if (yr < 0 || yr % interval !== 0) return false;
+      if (rr.BYMONTH && parseInt(rr.BYMONTH) - 1 !== tM0) return false;
+      if (rr.BYMONTHDAY) return tD === parseInt(rr.BYMONTHDAY);
+      return tM0 === sM0 && tD === sD;
+    }
+    default: return false;
   }
 }
 
