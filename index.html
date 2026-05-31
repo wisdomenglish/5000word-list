@@ -513,6 +513,33 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
 .modal-box{box-shadow:0 -4px 30px rgba(0,0,0,.12);}
 .etym-morph{color:var(--accent);}
 .etym-desc{background:var(--bg);}
+/* ── Quiz Count / Folders ── */
+.quiz-count-group{display:flex;gap:6px;flex-wrap:wrap;}
+.quiz-count-btn{background:var(--tag-bg);border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-size:0.85rem;color:var(--muted);cursor:pointer;font-weight:500;transition:all .15s;}
+.quiz-count-btn.selected{background:rgba(67,97,238,.12);border-color:var(--accent);color:var(--accent);}
+.modal-folder-btn{background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--muted);padding:13px 16px;font-size:0.88rem;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.modal-folder-btn.in-folder{border-color:#d97706;color:#d97706;background:rgba(217,119,6,.08);}
+.card-folder-icon{position:absolute;bottom:8px;left:10px;font-size:0.75rem;color:var(--muted);line-height:1;pointer-events:none;}
+.folder-list{display:flex;flex-direction:column;gap:8px;margin-bottom:8px;}
+.folder-row{display:flex;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;gap:10px;}
+.folder-row-info{flex:1;min-width:0;cursor:pointer;}
+.folder-row-name{font-weight:600;font-size:0.92rem;color:var(--text);}
+.folder-row-count{font-size:0.78rem;color:var(--muted);}
+.folder-row-acts{display:flex;gap:6px;flex-shrink:0;}
+.folder-sm-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:4px 10px;font-size:0.75rem;color:var(--muted);cursor:pointer;transition:all .15s;}
+.folder-sm-btn.danger{color:var(--accent2);border-color:rgba(247,37,133,.3);}
+#folderSheet{position:fixed;inset:0;z-index:3000;display:none;}
+.fs-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45);}
+.fs-box{position:absolute;bottom:0;left:0;right:0;background:var(--surface);border-radius:20px 20px 0 0;padding:20px;max-height:70vh;overflow-y:auto;}
+.fs-title{font-weight:700;font-size:1rem;margin-bottom:14px;color:var(--text);}
+.fs-empty{color:var(--muted);font-size:0.85rem;padding:8px 0;}
+.fs-item{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer;}
+.fs-item:last-child{border-bottom:none;}
+.fs-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:0.75rem;flex-shrink:0;color:#fff;}
+.fs-check.on{background:var(--accent);border-color:var(--accent);}
+.fs-new{display:flex;gap:8px;margin-top:14px;}
+.fs-input{flex:1;border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:0.9rem;background:var(--bg);color:var(--text);}
+.fs-add-btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-size:0.85rem;cursor:pointer;white-space:nowrap;}
 /* ── Progress Section ── */
 #progressSection{padding:16px 16px 24px;min-height:70vh;}
 .progress-title{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--text);margin-bottom:16px;}
@@ -773,6 +800,24 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
     <!-- ══ 更新紀錄索引 ══ -->
     <div class="news-index-section">
       <div class="news-index-section-title">📋 更新紀錄</div>
+
+      <!-- 2026-05-30 -->
+      <div class="news-index-entry">
+        <div class="news-index-item" onclick="toggleNewsDetail(this.parentElement)">
+          <span class="news-date">2026-05-30</span>
+          <span class="news-type feature">新功能</span>
+          <span class="ni-title">📁 單字資料夾・題數自訂・語音優化</span>
+          <span class="news-arrow">›</span>
+        </div>
+        <div class="news-detail">
+          <ul class="news-list">
+            <li><strong>單字資料夾</strong>：在「我的單字」Tab 可建立、改名、刪除資料夾（如「6/1單字」）；在單字 Modal 點 📁 按鈕即可將單字加入資料夾；測驗出題範圍可直接選擇特定資料夾，方便針對性練習。資料夾會與 Google 帳號同步。</li>
+            <li><strong>字典卡片資料夾標示</strong>：已加入任一資料夾的單字，卡片右下角會顯示 📁 小圖示，一眼識別。</li>
+            <li><strong>測驗題數自訂</strong>：測驗設定頁新增「題目數量」選項，可選 5 / 10 / 20 / 30 / 40 / 50 題（AI 句子填空因 API 限制最多 10 題）。</li>
+            <li><strong>語音發音優化</strong>：修正 Chrome / Edge 第一次點擊發音可能無聲的問題（getVoices 非同步等待）。</li>
+          </ul>
+        </div>
+      </div>
 
       <!-- 2026-05-14 -->
       <div class="news-index-entry">
@@ -1050,6 +1095,7 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
     <div id="modalEtym" style="display:none"></div>
     <div class="modal-footer">
       <button class="modal-mark-btn" id="modalMarkBtn" onclick="toggleModalMark()"></button>
+      <button class="modal-folder-btn" id="modalFolderBtn" onclick="openFolderSheet(document.getElementById('modalWord').textContent)">📁 資料夾</button>
     </div>
   </div>
 </div>
@@ -1393,6 +1439,14 @@ async function syncFromCloud(uid, db){
       } else if(markedWords.size > 0){
         await ref.set({ markedWords: [...markedWords] }, { merge: true });
       }
+      // 資料夾
+      if(data.folders !== undefined){
+        wordFolders = data.folders || [];
+        localStorage.setItem('vocab_folders', JSON.stringify(wordFolders));
+        rebuildFolderWordSet();
+      } else if(wordFolders.length > 0){
+        await ref.set({ folders: wordFolders }, { merge: true });
+      }
       // 答題統計 & 個人資料
       if(data.stats){
         userStats = { ...userStats, ...data.stats };
@@ -1407,6 +1461,7 @@ async function syncFromCloud(uid, db){
       const upload = {};
       if(customWords.length > 0) upload.customWords = customWords;
       if(markedWords.size  > 0) upload.markedWords  = [...markedWords];
+      if(wordFolders.length > 0) upload.folders     = wordFolders;
       if(Object.keys(upload).length > 0) await ref.set(upload);
     }
     // 登入後將本地統計同步到排行榜（不 await，背景執行）
@@ -1470,15 +1525,24 @@ function speak(word, btn){
 
 function tts(word, btn){
   if(!('speechSynthesis' in window)){btn.classList.remove('playing');currentBtn=null;return;}
-  speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(word);
-  u.lang='en-US'; u.rate=0.85;
-  const vs=speechSynthesis.getVoices();
-  const v=vs.find(v=>v.lang==='en-US')||vs.find(v=>v.lang.startsWith('en'));
-  if(v) u.voice=v;
-  u.onend=()=>{btn.classList.remove('playing');if(currentBtn===btn)currentBtn=null;};
-  u.onerror=()=>{btn.classList.remove('playing');if(currentBtn===btn)currentBtn=null;};
-  speechSynthesis.speak(u);
+  const doSpeak=()=>{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(word);
+    u.lang='en-US'; u.rate=0.85;
+    const vs=speechSynthesis.getVoices();
+    const v=vs.find(v=>v.lang==='en-US')||vs.find(v=>v.lang.startsWith('en'));
+    if(v) u.voice=v;
+    u.onend=()=>{btn.classList.remove('playing');if(currentBtn===btn)currentBtn=null;};
+    u.onerror=()=>{btn.classList.remove('playing');if(currentBtn===btn)currentBtn=null;};
+    speechSynthesis.speak(u);
+  };
+  /* Chrome 首次 getVoices() 回空陣列，需等 voiceschanged 事件才有英文 voice */
+  if(speechSynthesis.getVoices().length>0){
+    doSpeak();
+  } else {
+    speechSynthesis.addEventListener('voiceschanged',doSpeak,{once:true});
+    setTimeout(doSpeak,600); /* fallback：若 voiceschanged 未觸發 */
+  }
 }
 
 async function fetchMP3(word){
@@ -1619,6 +1683,7 @@ function update(){
         ${w.pos?`<span class="pos-tag ${getPosClass(w.pos)}">${w.pos}</span>`:''}
         ${w.zh?`<div class="zh-def">${getZhDef(w.zh)}</div>`:''}
         <button class="mark-btn ${markedWords&&markedWords.has(w.word)?'marked':''}" onclick="event.stopPropagation();toggleMark('${w.word}',this)" title="加入複習清單">⭐</button>
+        ${folderWordSet&&folderWordSet.has(w.word)?'<span class="card-folder-icon">📁</span>':''}
       </div>`).join('');
   }
   renderPagination(pages);
@@ -1760,6 +1825,10 @@ let qPhraseMode = 'meaning';
 const MASTERY_KEY = 'vocab_mastery';
 let qPrioritizeUnfamiliar = false;
 let fcCards = [], fcPool = [], fcIndex = 0, fcFlipped = false;
+let qCount = 10;
+let wordFolders = JSON.parse(localStorage.getItem('vocab_folders') || '[]');
+let qFolderId = null;
+let folderWordSet = new Set(wordFolders.flatMap(f => f.words));
 
 function saveMark(){
   localStorage.setItem('vocab_marked', JSON.stringify([...markedWords]));
@@ -2257,7 +2326,13 @@ function renderQuizSetup(){
         <button class="quiz-opt ${qSource==='filtered'?'selected':''}" onclick="setQSource('filtered',this)">🔍 目前篩選 (${filtCount})</button>
         <button class="quiz-opt ${qSource==='all'?'selected':''}" onclick="setQSource('all',this)">📚 全部單字 (${getAllWords().length})</button>
         ${customWords.length>0?`<button class="quiz-opt ${qSource==='custom'?'selected':''}" onclick="setQSource('custom',this)">📝 自訂單字庫 (${customWords.length})</button>`:''}
+        ${wordFolders.map(f=>`<button class="quiz-opt ${qSource==='folder'&&qFolderId===f.id?'selected':''}" onclick="setQFolderSource('${f.id}',this)">📁 ${f.name} (${f.words.length})</button>`).join('')}
       </div>
+      <div class="quiz-opt-label">題目數量</div>
+      <div class="quiz-count-group">
+        ${[5,10,20,30,40,50].map(n=>`<button class="quiz-count-btn ${qCount===n?'selected':''}" onclick="setQCount(${n},this)">${n} 題</button>`).join('')}
+      </div>
+      ${qMode==='sentence'?'<p style="color:var(--muted);font-size:0.78rem;margin-top:4px">⚠️ AI 句子填空單次最多 10 題（API 限制）</p>':''}
       <label class="quiz-priority-row">
         <input type="checkbox" ${qPrioritizeUnfamiliar?'checked':''} onchange="qPrioritizeUnfamiliar=this.checked">
         <span class="quiz-priority-label">優先複習不熟單字（出題時排序「還不熟」標記的單字）</span>
@@ -2267,7 +2342,7 @@ function renderQuizSetup(){
   } else {
     html += `
       <div class="quiz-setup-title">🔖 片語測驗</div>
-      <p>選擇片語進行選義或句子填空練習，每次 10 題。</p>
+      <p>選擇片語進行選義或句子填空練習。</p>
       <div class="quiz-opt-label">題目類型</div>
       <div class="quiz-opt-group">
         <button class="quiz-pmode-opt quiz-opt ${qPhraseMode==='meaning'?'selected':''}" onclick="setQPhraseMode('meaning',this)">🔤 片語選義（基礎）</button>
@@ -2278,7 +2353,12 @@ function renderQuizSetup(){
         <button class="quiz-opt ${qSource==='filtered'?'selected':''}" onclick="setQSource('filtered',this)">🔍 目前篩選 (${phraseFilteredCount})</button>
         <button class="quiz-opt ${qSource==='all'?'selected':''}" onclick="setQSource('all',this)">📚 全部片語 (${PHRASES.length})</button>
       </div>
-      <button class="quiz-start-btn" onclick="startQuiz()">${qPhraseMode==='sentence'?'開始 AI 出題 →':'開始片語測驗 →'}</button>
+      <div class="quiz-opt-label">題目數量</div>
+      <div class="quiz-count-group">
+        ${[5,10,20,30,40,50].map(n=>`<button class="quiz-count-btn ${qCount===n?'selected':''}" onclick="setQCount(${n},this)">${n} 題</button>`).join('')}
+      </div>
+      ${qPhraseMode==='sentence'?'<p style="color:var(--muted);font-size:0.78rem;margin-top:4px">⚠️ AI 句子填空單次最多 10 題（API 限制）</p>':''}
+      <button class="quiz-start-btn" style="margin-top:14px" onclick="startQuiz()">${qPhraseMode==='sentence'?'開始 AI 出題 →':'開始片語測驗 →'}</button>
       ${qPhraseMode==='sentence'?'<div class="quiz-note">由 Claude Haiku AI 生成 · 需要網路連線</div>':''}`;
   }
 
@@ -2295,6 +2375,17 @@ function setQSource(src, btn){
 function setQMode(mode, btn){
   qMode=mode;
   document.querySelectorAll('.quiz-type-opt').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+function setQCount(n, btn){
+  qCount=n;
+  document.querySelectorAll('.quiz-count-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+function setQFolderSource(folderId, btn){
+  qSource='folder';
+  qFolderId=folderId;
+  document.querySelectorAll('.quiz-opt').forEach(b=>b.classList.remove('selected'));
   btn.classList.add('selected');
 }
 
@@ -2314,7 +2405,8 @@ function setQPhraseMode(mode, btn){
 async function startQuiz(){
   if(qSubject === 'phrase'){
     let pool = (qSource === 'filtered' && phraseFiltered.length) ? phraseFiltered : PHRASES;
-    const selected = [...pool].sort(() => Math.random() - .5).slice(0, 10);
+    const phraseCount = (qPhraseMode === 'sentence') ? Math.min(qCount, 10) : qCount;
+    const selected = [...pool].sort(() => Math.random() - .5).slice(0, phraseCount);
 
     if(qPhraseMode === 'meaning'){
       qQuestions = generatePhraseQuestions(selected);
@@ -2356,6 +2448,7 @@ async function startQuiz(){
   if(qSource==='unfamiliar') pool=getAllWords().filter(w=>markedWords.has(w.word));
   else if(qSource==='filtered') pool=[...filtered];
   else if(qSource==='custom') pool=[...customWords];
+  else if(qSource==='folder') pool=getFolderWords(qFolderId);
   else pool=getAllWords();
   if(!pool.length){ alert('此範圍沒有單字，請選擇其他範圍'); return; }
 
@@ -2363,21 +2456,22 @@ async function startQuiz(){
 
   if(qMode==='spelling'){
     let sp;
-    if(qPrioritizeUnfamiliar) sp=_sortByMastery(pool,getMastery()).slice(0,10);
-    else sp=[...pool].sort(()=>Math.random()-.5).slice(0,10);
+    if(qPrioritizeUnfamiliar) sp=_sortByMastery(pool,getMastery()).slice(0,qCount);
+    else sp=[...pool].sort(()=>Math.random()-.5).slice(0,qCount);
     qQuestions=generateSpellingQuestions(sp);
     qIndex=0; qScore=0; qSelected=null;
     renderQuestion();
     return;
   }
 
+  const aiCap = (qMode==='sentence') ? Math.min(qCount, 10) : qCount;
   let selected;
   if(qPrioritizeUnfamiliar){
-    selected=_sortByMastery(pool, getMastery()).slice(0,10);
+    selected=_sortByMastery(pool, getMastery()).slice(0,aiCap);
   } else {
     const unfPart=pool.filter(w=>markedWords.has(w.word)).sort(()=>Math.random()-.5);
     const othPart=pool.filter(w=>!markedWords.has(w.word)).sort(()=>Math.random()-.5);
-    selected=[...unfPart,...othPart].slice(0,10);
+    selected=[...unfPart,...othPart].slice(0,aiCap);
   }
 
   if(qMode==='meaning'){
@@ -2446,8 +2540,8 @@ function startFlashcard(pool){
   fcPool=pool;
   const mastery=getMastery();
   const cards=qPrioritizeUnfamiliar
-    ? _sortByMastery(pool, mastery).slice(0,20)
-    : [...pool].sort(()=>Math.random()-.5).slice(0,20);
+    ? _sortByMastery(pool, mastery).slice(0,qCount)
+    : [...pool].sort(()=>Math.random()-.5).slice(0,qCount);
   fcCards=cards; fcIndex=0; fcFlipped=false;
   renderFlashcard();
 }
@@ -2973,8 +3067,31 @@ function renderMyWords(){
     </div>
     ${_addWordFormHtml()}`;
 
+  html += `<div class="mw-section-hdr first">
+    <span class="mw-section-title">📁 單字資料夾</span>
+    <button class="folder-sm-btn" onclick="promptCreateFolder()">＋ 新增資料夾</button>
+  </div>`;
+  if(wordFolders.length > 0){
+    html += `<div class="folder-list">
+      ${wordFolders.map(f=>`
+        <div class="folder-row">
+          <div class="folder-row-info" onclick="openFolderDetail('${f.id}')">
+            <div class="folder-row-name">📁 ${f.name}</div>
+            <div class="folder-row-count">${f.words.length} 個單字</div>
+          </div>
+          <div class="folder-row-acts">
+            <button class="folder-sm-btn" onclick="qFolderId='${f.id}';qSource='folder';switchTab('quiz')">測驗</button>
+            <button class="folder-sm-btn" onclick="renameFolder('${f.id}')">改名</button>
+            <button class="folder-sm-btn danger" onclick="deleteFolder('${f.id}')">刪除</button>
+          </div>
+        </div>`).join('')}
+    </div>`;
+  } else {
+    html += `<div class="mw-empty" style="padding:12px 0 4px"><p>建立資料夾後，可在單字 Modal 裡點 📁 加入分類測驗。</p></div>`;
+  }
+
   if(customWords.length > 0){
-    html += `<div class="mw-section-hdr first">
+    html += `<div class="mw-section-hdr">
       <span class="mw-section-title">📝 自訂單字庫 (${customWords.length})</span>
     </div>
     <div class="mw-grid">
@@ -2994,7 +3111,7 @@ function renderMyWords(){
     </div>`;
   }
 
-  const reviewHeaderClass = customWords.length > 0 ? 'mw-section-hdr' : 'mw-section-hdr first';
+  const reviewHeaderClass = 'mw-section-hdr';
   if(markedList.length > 0){
     html += `<div class="${reviewHeaderClass}">
       <span class="mw-section-title">⭐ 複習清單 (${markedList.length})</span>
@@ -3026,22 +3143,7 @@ function renderMyWords(){
     <div class="mw-empty" style="padding:24px 0 8px"><p>在字典中點擊 ⭐ 加入，或透過測驗自動加入。</p></div>`;
   }
 
-  if(!customWords.length && !markedList.length){
-    sec.innerHTML = `<div class="mw-wrap">
-      <div class="mw-hdr">
-        <span class="mw-title">⭐ 我的單字</span>
-        <div class="mw-actions"><button class="add-word-btn" onclick="toggleAddWordForm()">＋ 新增單字</button></div>
-      </div>
-      ${_addWordFormHtml()}
-      <div class="mw-empty">
-        <div class="mw-empty-icon">📝</div>
-        <h3 style="color:var(--text);margin-bottom:8px">還沒有任何單字</h3>
-        <p>點「＋ 新增單字」自訂單字，或在字典中點 ⭐ 加入複習清單。</p>
-      </div>
-    </div>`;
-  } else {
-    sec.innerHTML = html + '</div>';
-  }
+  sec.innerHTML = html + '</div>';
   ['newWordEn','newWordPos','newWordZh'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.addEventListener('keydown',e=>{if(e.key==='Enter')saveNewWord();});
@@ -3051,6 +3153,150 @@ function renderMyWords(){
 function clearAllMarks(){
   if(!confirm('確定要清空所有複習清單？')) return;
   markedWords.clear(); saveMark(); syncMarkCount(); renderMyWords();
+}
+
+/* ── 資料夾功能 ── */
+function rebuildFolderWordSet(){
+  folderWordSet = new Set(wordFolders.flatMap(f => f.words));
+}
+function saveFolders(){
+  localStorage.setItem('vocab_folders', JSON.stringify(wordFolders));
+  rebuildFolderWordSet();
+  if(window._fbUser && window._fbDb){
+    window._fbDb.collection('users').doc(window._fbUser.uid)
+      .set({ folders: wordFolders }, { merge: true }).catch(()=>{});
+  }
+}
+function getFolderWords(folderId){
+  const f = wordFolders.find(f => f.id === folderId);
+  if(!f) return [];
+  return getAllWords().filter(w => f.words.includes(w.word));
+}
+function promptCreateFolder(){
+  const name = prompt('資料夾名稱（如：6/1單字）', '');
+  if(!name || !name.trim()) return;
+  wordFolders.push({ id: Date.now().toString(), name: name.trim(), words: [] });
+  saveFolders(); renderMyWords();
+}
+function deleteFolder(id){
+  if(!confirm('確定要刪除這個資料夾？單字本身不會刪除。')) return;
+  wordFolders = wordFolders.filter(f => f.id !== id);
+  if(qFolderId === id){ qFolderId = null; qSource = 'all'; }
+  saveFolders(); renderMyWords();
+}
+function renameFolder(id){
+  const f = wordFolders.find(f => f.id === id);
+  if(!f) return;
+  const name = prompt('資料夾名稱', f.name);
+  if(name && name.trim()){ f.name = name.trim(); saveFolders(); renderMyWords(); }
+}
+function openFolderDetail(id){
+  const f = wordFolders.find(f => f.id === id);
+  if(!f) return;
+  const words = getFolderWords(id);
+  const sec = document.getElementById('myWordsSection');
+  sec.innerHTML = `<div class="mw-wrap">
+    <div class="mw-hdr">
+      <span class="mw-title">📁 ${f.name}</span>
+      <div class="mw-actions">
+        <button class="mw-quiz-btn" onclick="qFolderId='${id}';qSource='folder';switchTab('quiz')">開始測驗</button>
+        <button class="add-word-btn" style="background:var(--muted)" onclick="renderMyWords()">← 返回</button>
+      </div>
+    </div>
+    ${words.length ? `<div class="mw-grid">
+      ${words.map(w=>`
+        <div class="mw-item">
+          <div style="flex:1;min-width:0;cursor:pointer" onclick="openWordModal('${w.word}')">
+            <div class="mw-word">${w.word}${w.custom?'<span class="custom-badge">自訂</span>':''}</div>
+            ${w.pos?`<div class="mw-pos">${w.pos}</div>`:''}
+            ${w.zh?`<div class="mw-zh">${getZhDef(w.zh)}</div>`:''}
+          </div>
+          <div class="mw-actions-col">
+            <button class="speak-btn" style="width:30px;height:30px" onclick="speak('${w.word}',this)">${_speakBtnSvg()}</button>
+            <button class="folder-sm-btn danger" onclick="removeWordFromFolderAndRefresh('${id}','${w.word}')">移除</button>
+          </div>
+        </div>`).join('')}
+    </div>` : `<div class="mw-empty" style="padding:32px 0"><p>這個資料夾還沒有單字。<br>在單字 Modal 裡點擊 📁 按鈕加入。</p></div>`}
+  </div>`;
+}
+function removeWordFromFolderAndRefresh(folderId, word){
+  const f = wordFolders.find(f => f.id === folderId);
+  if(!f) return;
+  f.words = f.words.filter(w => w !== word);
+  saveFolders(); openFolderDetail(folderId);
+}
+function updateModalFolderBtn(word){
+  const btn = document.getElementById('modalFolderBtn');
+  if(!btn) return;
+  const inAny = wordFolders.some(f => f.words.includes(word));
+  btn.classList.toggle('in-folder', inAny);
+  btn.textContent = inAny ? '📁 資料夾 ✓' : '📁 資料夾';
+}
+function openFolderSheet(word){
+  function listHtml(){
+    if(!wordFolders.length) return `<div class="fs-empty">尚未建立任何資料夾</div>`;
+    return wordFolders.map(f=>{
+      const on = f.words.includes(word);
+      return `<div class="fs-item" onclick="toggleWordInFolder('${f.id}','${word}')">
+        <div class="fs-check ${on?'on':''}">${on?'✓':''}</div>
+        <span style="flex:1">${f.name}</span>
+        <span style="color:var(--muted);font-size:0.8rem">${f.words.length} 個單字</span>
+      </div>`;
+    }).join('');
+  }
+  const sheet = document.getElementById('folderSheet');
+  sheet.innerHTML = `
+    <div class="fs-backdrop" onclick="closeFolderSheet()"></div>
+    <div class="fs-box">
+      <div class="fs-title">📁 加入資料夾 — ${word}</div>
+      <div id="fsItemList">${listHtml()}</div>
+      <div class="fs-new">
+        <input class="fs-input" id="fsNewInput" placeholder="新資料夾名稱（如：6/1單字）">
+        <button class="fs-add-btn" onclick="createFolderAndAdd('${word}')">＋ 建立</button>
+      </div>
+    </div>`;
+  sheet.style.display = 'block';
+}
+function closeFolderSheet(){
+  document.getElementById('folderSheet').style.display = 'none';
+  update();
+}
+function toggleWordInFolder(folderId, word){
+  const f = wordFolders.find(f => f.id === folderId);
+  if(!f) return;
+  if(f.words.includes(word)) f.words = f.words.filter(w => w !== word);
+  else f.words.push(word);
+  saveFolders();
+  updateModalFolderBtn(word);
+  document.getElementById('fsItemList').innerHTML = (function listHtml(){
+    if(!wordFolders.length) return `<div class="fs-empty">尚未建立任何資料夾</div>`;
+    return wordFolders.map(f=>{
+      const on = f.words.includes(word);
+      return `<div class="fs-item" onclick="toggleWordInFolder('${f.id}','${word}')">
+        <div class="fs-check ${on?'on':''}">${on?'✓':''}</div>
+        <span style="flex:1">${f.name}</span>
+        <span style="color:var(--muted);font-size:0.8rem">${f.words.length} 個單字</span>
+      </div>`;
+    }).join('');
+  })();
+}
+function createFolderAndAdd(word){
+  const input = document.getElementById('fsNewInput');
+  const name = input.value.trim();
+  if(!name){ input.focus(); return; }
+  const folder = { id: Date.now().toString(), name, words: [word] };
+  wordFolders.push(folder);
+  saveFolders();
+  updateModalFolderBtn(word);
+  input.value = '';
+  document.getElementById('fsItemList').innerHTML = wordFolders.map(f=>{
+    const on = f.words.includes(word);
+    return `<div class="fs-item" onclick="toggleWordInFolder('${f.id}','${word}')">
+      <div class="fs-check ${on?'on':''}">${on?'✓':''}</div>
+      <span style="flex:1">${f.name}</span>
+      <span style="color:var(--muted);font-size:0.8rem">${f.words.length} 個單字</span>
+    </div>`;
+  }).join('');
 }
 
 function toggleAddWordForm(){
@@ -3183,6 +3429,7 @@ function openWordModal(word) {
   document.getElementById('modalPos').textContent  = w.pos || '';
   document.getElementById('modalZh').textContent   = w.zh || '';
   updateModalMarkBtn();
+  updateModalFolderBtn(w.word);
 
   // reset tabs to 例句
   document.getElementById('tabBtnEx').classList.add('active');
@@ -3581,5 +3828,6 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+<div id="folderSheet"></div>
 </body>
 </html>
