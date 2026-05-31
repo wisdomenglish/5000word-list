@@ -813,7 +813,7 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
           <ul class="news-list">
             <li><strong>單字資料夾</strong>：在「我的單字」Tab 可建立、改名、刪除資料夾（如「6/1單字」）；在單字 Modal 點 📁 按鈕即可將單字加入資料夾；測驗出題範圍可直接選擇特定資料夾，方便針對性練習。資料夾會與 Google 帳號同步。</li>
             <li><strong>字典卡片資料夾標示</strong>：已加入任一資料夾的單字，卡片右下角會顯示 📁 小圖示，一眼識別。</li>
-            <li><strong>測驗題數自訂</strong>：測驗設定頁新增「題目數量」選項，可選 5 / 10 / 20 / 30 / 40 / 50 題（AI 句子填空因 API 限制最多 10 題）。</li>
+            <li><strong>測驗題數自訂</strong>：測驗設定頁新增「題目數量」選項，可選 5 / 10 / 20 / 30 / 40 / 50 題（AI 句子填空最多 40 題）。</li>
             <li><strong>語音發音優化</strong>：修正 Chrome / Edge 第一次點擊發音可能無聲的問題（getVoices 非同步等待）。</li>
           </ul>
         </div>
@@ -2332,7 +2332,7 @@ function renderQuizSetup(){
       <div class="quiz-count-group">
         ${[5,10,20,30,40,50].map(n=>`<button class="quiz-count-btn ${qCount===n?'selected':''}" onclick="setQCount(${n},this)">${n} 題</button>`).join('')}
       </div>
-      ${qMode==='sentence'?'<p style="color:var(--muted);font-size:0.78rem;margin-top:4px">⚠️ AI 句子填空單次最多 10 題（API 限制）</p>':''}
+      ${qMode==='sentence'?'<p style="color:var(--muted);font-size:0.78rem;margin-top:4px">⚠️ AI 句子填空單次最多 40 題</p>':''}
       <label class="quiz-priority-row">
         <input type="checkbox" ${qPrioritizeUnfamiliar?'checked':''} onchange="qPrioritizeUnfamiliar=this.checked">
         <span class="quiz-priority-label">優先複習不熟單字（出題時排序「還不熟」標記的單字）</span>
@@ -2357,7 +2357,7 @@ function renderQuizSetup(){
       <div class="quiz-count-group">
         ${[5,10,20,30,40,50].map(n=>`<button class="quiz-count-btn ${qCount===n?'selected':''}" onclick="setQCount(${n},this)">${n} 題</button>`).join('')}
       </div>
-      ${qPhraseMode==='sentence'?'<p style="color:var(--muted);font-size:0.78rem;margin-top:4px">⚠️ AI 句子填空單次最多 10 題（API 限制）</p>':''}
+      ${qPhraseMode==='sentence'?'<p style="color:var(--muted);font-size:0.78rem;margin-top:4px">⚠️ AI 句子填空單次最多 40 題</p>':''}
       <button class="quiz-start-btn" style="margin-top:14px" onclick="startQuiz()">${qPhraseMode==='sentence'?'開始 AI 出題 →':'開始片語測驗 →'}</button>
       ${qPhraseMode==='sentence'?'<div class="quiz-note">由 Claude Haiku AI 生成 · 需要網路連線</div>':''}`;
   }
@@ -2405,7 +2405,7 @@ function setQPhraseMode(mode, btn){
 async function startQuiz(){
   if(qSubject === 'phrase'){
     let pool = (qSource === 'filtered' && phraseFiltered.length) ? phraseFiltered : PHRASES;
-    const phraseCount = (qPhraseMode === 'sentence') ? Math.min(qCount, 10) : qCount;
+    const phraseCount = (qPhraseMode === 'sentence') ? Math.min(qCount, 40) : qCount;
     const selected = [...pool].sort(() => Math.random() - .5).slice(0, phraseCount);
 
     if(qPhraseMode === 'meaning'){
@@ -2464,7 +2464,7 @@ async function startQuiz(){
     return;
   }
 
-  const aiCap = (qMode==='sentence') ? Math.min(qCount, 10) : qCount;
+  const aiCap = (qMode==='sentence') ? Math.min(qCount, 40) : qCount;
   let selected;
   if(qPrioritizeUnfamiliar){
     selected=_sortByMastery(pool, getMastery()).slice(0,aiCap);
