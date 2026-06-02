@@ -7,6 +7,7 @@
 | 子專案 | 路徑 | 技術 | 部署 |
 |--------|------|------|------|
 | 5000英文單字學習 PWA | `/`（根目錄） | 純 HTML/CSS/JS | GitHub Pages |
+| hero-english React RPG PWA | `hero-english/` | React + Vite + Firebase Hosting | https://hero-english-ef2e4.web.app |
 | LINE Bot 英文教學助手 | `line-bot-firebase/` | Firebase Functions + Claude API | Firebase / GCP |
 
 ---
@@ -173,7 +174,139 @@
 
 ---
 
-## 2. LINE Bot 英文教學助手
+## 2. hero-english React RPG PWA
+
+### 部署資訊
+
+- **Firebase Hosting URL**：`https://hero-english-ef2e4.web.app`
+- **Firebase 專案**：`news-english-ef2e4`（與 LINE Bot 共用）
+- **技術棧**：React 18 + Vite + Tailwind CSS + Lucide React + Firebase SDK v10
+
+### 部署指令
+
+```powershell
+cd hero-english
+npm run build
+$env:NODE_OPTIONS="--use-system-ca"
+firebase deploy --only hosting
+```
+
+### 目錄結構
+
+```
+hero-english/src/
+├── App.jsx                          # 主應用（SplashScreen → AuthGate → 新手流程 → 主畫面）
+├── components/
+│   ├── SplashScreen.jsx             # 像素 RPG 進場畫面（sessionStorage 控制每次開啟顯示一次）
+│   ├── Onboarding.jsx               # 新手引導
+│   ├── ClassSelect.jsx              # 職業選擇（劍士/法師/馴獸師/鬥士）
+│   ├── GlobalTopBar.jsx             # 頂部 HUD（🔥連續 + Lv 徽章 + XP 微進度條）
+│   ├── BottomNav.jsx                # 底部導覽（4 tabs，frosted glass pill active 指示器）
+│   ├── SideDrawer.jsx               # 右側抽屜（雲端同步 + 個人資料）
+│   ├── CharacterTab.jsx             # 角色頁（圖鑑 + 地圖 + StudyCta + 能力值 + 成就）
+│   ├── QuestBoardTab.jsx            # 任務板
+│   ├── LearningTab.jsx              # 學習 tab（答題/測驗）
+│   ├── VocabBookTab.jsx             # 詞彙本
+│   ├── TaiwanMapWorld.jsx           # 角色走動場景（台灣地圖世界）
+│   ├── PixelCharacter.jsx           # 像素角色（Tier CSS 特效）
+│   ├── LevelUpModal.jsx             # 升級彈窗
+│   ├── CharacterUnboxingModal.jsx   # Tier 里程碑進化演出（Lv.10/20/30）
+│   ├── AchievementToast.jsx         # 成就解鎖浮動通知
+│   ├── HungerBanner.jsx             # 體力過低警告橫幅
+│   ├── ProfileSetupModal.jsx        # 暱稱設定
+│   └── WelcomeGuideModal.jsx        # 新手歡迎導覽
+├── hooks/
+│   ├── useHeroState.js              # 核心狀態管理（hero/XP/成就/統計）
+│   └── useAuth.js                   # Firebase Auth 狀態
+├── data/
+│   └── achievements.js              # 25 個成就定義（ACHIEVEMENTS / ACHIEVEMENT_TYPES / RARITY_META）
+├── utils/
+│   ├── characterTier.js             # Tier 計算（getSkinTier / isTierMilestone / TIER_META）
+│   ├── achievementChecker.js        # 成就觸發邏輯
+│   ├── achievementProgress.js       # 成就進度計算 + 限時成就狀態
+│   ├── soundFX.js                   # 音效工具
+│   └── storage.js                   # localStorage 封裝
+└── lib/
+    ├── cloudSync.js                 # Firestore 讀寫
+    └── leaderboard.js               # 排行榜更新
+```
+
+### 功能架構
+
+**啟動流程**：SplashScreen → AuthGate（授權密碼，key: `hero_auth_v1`）→ Onboarding → ClassSelect → ProfileSetupModal → 主畫面
+
+**底部 4 tabs**：角色（CharacterTab）/ 任務（QuestBoardTab）/ 學習（LearningTab）/ 詞彙本（VocabBookTab）
+
+**CharacterTab 元件順序**：
+1. `ActionPill`：最優先行動提示（體力危急🔴 / 限時成就⏰ / 快升級⚡ / 打卡提醒🔥）
+2. `CollectionCard`：英雄圖鑑（Tier 進度 + 成就解鎖數 + 限時成就警示）
+3. `TaiwanMapWorld`：角色走動場景
+4. `StudyCta`：大型 CTA 按鈕（橘色「今日練習」→ 低體力變紅、近升級變職業色）
+5. Hero 資訊卡：名稱 + XP 進度條 + 彩色資源格（📘英語等級 / ⭐已掌握 / 🔥天連續）
+6. `StaminaBar`：體力 HP 條
+7. `AbilityBar`：四項能力值（閱讀/聽力/口說/寫作）
+8. `EvolutionRoadmap`：四階段進化路線圖
+9. `AchievementSection`：可折疊分類的成就牆
+10. `LeaderboardSection`：排行榜
+
+### 角色 Tier 系統
+
+| Tier | 等級 | 稱號 | CSS 特效 |
+|------|------|------|---------|
+| 1 | Lv.1–9 | 🌱 學徒 | `saturate(0.5) brightness(0.85)` 略灰 |
+| 2 | Lv.10–19 | ⚔️ 初學者 | 正常（現有 `-hd.png`）|
+| 3 | Lv.20–29 | ✨ 精英 | `drop-shadow(0 0 8px #F59E0B)` 金光 |
+| 4 | Lv.30+ | 👑 大師 | 彩虹 glow 動畫 |
+
+- Tier 里程碑（Lv.10/20/30）→ `isTierMilestone(level)` 為 `true` → 渲染 `CharacterUnboxingModal`（進化演出），否則渲染 `LevelUpModal`
+- **自訂 Tier 圖**：命名 `{classId}-t{1-4}.png`（如 `swordsman-t3.png`）放至 `hero-english/` 根目錄即自動套用
+
+### 成就系統
+
+- **25 個成就**，分 5 類（`ACHIEVEMENT_TYPES`）：學習里程碑 / 連續打卡 / 詞彙精通 / 探索冒險 / 限時挑戰
+- **稀有度**（`RARITY_META`）：common / rare / epic / legendary（各有顏色 + glow）
+- **限時成就**：`timeWindow` 欄位定義開放週期（寒假/暑假/月考季等），`getTimeWindowStatus()` 回傳 `{ isOpen, urgency, label }`
+- `triggerAchievementCheck(hero, stats, masteredCount, profile)` 在每次答題後觸發
+- `newAchievementIds[]` 佇列 → `AchievementToast` 逐一彈出通知
+
+### SplashScreen 架構
+
+- 像素 RPG 風格：深紫 → 深黑綠漸層天空 + 像素草地 + 閃爍星星 + 四職業角色浮動展示
+- `sessionStorage['hej_splash_v1']`：每次關閉瀏覽器後重新顯示；無痕視窗每次都顯示
+- 自動 2.9s 後淡出（opacity transition 0.38s），點擊立即跳過
+- CSS 動畫：`ss-twinkle` / `ss-float` / `ss-fadeup` / `ss-pop` / `ss-blink` / `ss-sparkle` / `ss-sway` / `ss-scan`
+
+### GlobalTopBar HUD 樣式
+
+- 左側：🔥連續天數（琥珀膠囊 pill）+ Lv.X（紫色膠囊 pill）
+- 中：App icon（Wisdom logo，紫色 glow）
+- 右：☰ 選單按鈕
+- 底部：2px XP 微進度條（`#7C3AED → #A78BFA` 漸層，實時反映當前 XP%）
+- Props：`streak` / `level` / `xpProgress` / `onOpenDrawer`
+
+### 雲端同步（Firestore）
+
+- **路徑**：`users/{uid}` — 欄位：`{ hero, stats, mastery, customWords, profile }`
+- **排行榜**：`leaderboard/{uid}` — 3s debounce 更新（需設定 `profile.nickname`）
+- 登入後自動載入雲端資料（雲端優先覆蓋本地）
+- 2s debounce 自動儲存（任何 state 變化觸發）
+
+### 授權密碼（hero-english）
+
+- `App.jsx` 的 `AUTH_HASH` 常數（SHA-256 hash），localStorage key: `hero_auth_v1`
+- 密碼詳見 memory（`project_pwa_auth.md`）
+
+### UI 設計規範（hero-english）
+
+- **色彩主題**：深色（`#0F0F14` 背景），主色 `#7C3AED`（紫）/ `#A78BFA`（淺紫），行動色 `#F59E0B`（琥珀）/ `#F97316`（橘）
+- **字體**：標題 Playfair Display，內文 DM Sans + Tailwind CSS utility classes
+- **StudyCta 按鈕**：happiness < 30 → 紅色；xpProgress.percent ≥ 75 → 職業主色；其他 → 橘黃漸層
+- **最小字體**：game UI 標籤最小 `0.65rem`（0.5rem 以下不可用）
+- **BottomNav active 指示**：frosted glass pill 背景（`rgba(255,255,255,0.09)`）+ icon glow `drop-shadow`
+
+---
+
+## 3. LINE Bot 英文教學助手
 
 ### Firebase 專案
 
