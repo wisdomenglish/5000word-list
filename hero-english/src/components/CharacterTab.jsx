@@ -159,6 +159,8 @@ const CLASS_SUBTITLE = {
   fighter: 'Grammar Fighter',
 };
 
+const CLASS_EMOJI = { swordsman: '⚔️', mage: '🔮', beastTamer: '🐾', fighter: '🥊' };
+
 const TIER_UNLOCK_LEVEL = { 1: 1, 2: 10, 3: 20, 4: 30 };
 
 const COLLECTION_CSS = `
@@ -584,6 +586,142 @@ function StudyCta({ happiness, xpProgress, classData, onNavigate }) {
   );
 }
 
+function MentorTip({ happiness, hero, xpProgress }) {
+  let tip;
+  if (happiness < 20)            tip = '體力危急！快去答題補血，別讓英雄倒下！';
+  else if (happiness < 40)       tip = '英雄有點餓了… 答題可以補充體力喔！';
+  else if (hero.streak >= 7)     tip = `連續 ${hero.streak} 天！你真的太強了，繼續衝！🏆`;
+  else if (xpProgress?.percent >= 80) tip = `再一點就升到 Lv.${xpProgress.level + 1} 了！加油！⚡`;
+  else if (hero.streak > 1)      tip = `連續 ${hero.streak} 天打卡，今天也繼續吧！💪`;
+  else                           tip = '今天要一起練英文嗎？每天一點，積少成多！📚';
+
+  return (
+    <div style={{ margin: '10px 16px 0', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+      <div style={{
+        width: 38, height: 38, borderRadius: 12, flexShrink: 0,
+        background: 'linear-gradient(135deg,#5B21B6,#7C3AED)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: '1.25rem', boxShadow: '0 0 10px rgba(124,58,237,0.45)',
+      }}>🧙</div>
+      <div style={{
+        flex: 1, background: '#1E1B3A',
+        border: '1px solid rgba(167,139,250,0.22)',
+        borderRadius: '3px 14px 14px 14px',
+        padding: '8px 12px',
+      }}>
+        <div style={{ color: '#A78BFA', fontSize: '0.62rem', fontWeight: 700, marginBottom: 3 }}>智慧法師</div>
+        <div style={{ color: '#D1D5DB', fontSize: '0.78rem', lineHeight: 1.55 }}>{tip}</div>
+      </div>
+    </div>
+  );
+}
+
+const HERO_SHEET_CSS = `
+@keyframes charFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes staminaBlink{0%,100%{opacity:1}50%{opacity:0.45}}
+`;
+
+function HeroSheet({ hero, classData, xpProgress, happiness, cefr, subtitle, masteredCount }) {
+  const stLv       = STAMINA_LEVELS.find(l => happiness >= l.min) ?? STAMINA_LEVELS[3];
+  const classEmoji = CLASS_EMOJI[classData.id] ?? '⚔️';
+  const isCritical = happiness < 20;
+
+  return (
+    <div className="mx-4 mt-3 rounded-2xl overflow-hidden"
+      style={{ background: '#1A1B2E', border: `1px solid ${classData.primaryColor}20` }}>
+      <style>{HERO_SHEET_CSS}</style>
+
+      <div style={{ display: 'flex' }}>
+        {/* Portrait column */}
+        <div style={{
+          width: 84, flexShrink: 0,
+          background: `linear-gradient(180deg,${classData.gradientFrom}45,${classData.gradientTo}25)`,
+          borderRight: '1px solid rgba(255,255,255,0.06)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          padding: '16px 6px 12px', gap: 6,
+        }}>
+          <div style={{
+            fontSize: '2.3rem', lineHeight: 1,
+            filter: `drop-shadow(0 0 12px ${classData.primaryColor}80)`,
+            animation: 'charFloat 3s ease-in-out infinite',
+          }}>{classEmoji}</div>
+          <div style={{
+            color: classData.primaryColor, fontWeight: 800, fontSize: '0.6rem',
+            textAlign: 'center', lineHeight: 1.3, maxWidth: 70,
+          }}>{hero.name}</div>
+        </div>
+
+        {/* Stats column */}
+        <div style={{ flex: 1, padding: '14px 14px 12px' }}>
+          {/* Level + CEFR */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
+              <span style={{ color: '#fff', fontWeight: 900, fontSize: '1.1rem', lineHeight: 1 }}>Lv.{xpProgress.level}</span>
+              <span style={{ color: '#6B7280', fontSize: '0.68rem' }}>{subtitle}</span>
+            </div>
+            <div style={{
+              fontSize: '0.68rem', fontWeight: 800, padding: '2px 8px', borderRadius: 20,
+              background: `${CEFR_COLOR[cefr] ?? '#60A5FA'}15`,
+              border: `1px solid ${CEFR_COLOR[cefr] ?? '#60A5FA'}50`,
+              color: CEFR_COLOR[cefr] ?? '#60A5FA',
+            }}>{cefr}</div>
+          </div>
+
+          {/* HP bar */}
+          <div style={{ marginBottom: 8 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+              <span style={{ color: stLv.color, fontSize: '0.6rem', fontWeight: 700 }}>HP</span>
+              <span style={{ color: stLv.color, fontSize: '0.6rem' }}>{happiness}% {stLv.icon}</span>
+            </div>
+            <div style={{ height: 6, background: 'rgba(255,255,255,0.07)', borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{
+                height: '100%', borderRadius: 3, width: `${happiness}%`,
+                background: `linear-gradient(90deg,${stLv.color}80,${stLv.color})`,
+                transition: 'width 0.8s ease',
+                animation: isCritical ? 'staminaBlink 1.4s ease-in-out infinite' : undefined,
+              }} />
+            </div>
+          </div>
+
+          {/* XP bar */}
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+              <span style={{ color: '#A78BFA', fontSize: '0.6rem', fontWeight: 700 }}>XP</span>
+              <span style={{ color: '#6B7280', fontSize: '0.6rem' }}>{xpProgress.xpIntoLevel}/{xpProgress.xpNeeded} → Lv.{xpProgress.level + 1}</span>
+            </div>
+            <div style={{ height: 6, background: 'rgba(255,255,255,0.07)', borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{
+                height: '100%', borderRadius: 3, width: `${xpProgress.percent}%`,
+                background: `linear-gradient(90deg,${classData.gradientFrom},${classData.primaryColor})`,
+                transition: 'width 0.8s ease',
+              }} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom resource strip */}
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)' }}>
+        {[
+          { icon: '⭐', value: masteredCount, label: '已掌握', color: '#F59E0B' },
+          { icon: '🔥', value: hero.streak,  label: '天連續', color: '#F97316' },
+          { icon: '📘', value: cefr,         label: '英語等級', color: CEFR_COLOR[cefr] ?? '#60A5FA' },
+        ].map((r, i) => (
+          <div key={r.label} style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            padding: '9px 4px 7px',
+            borderRight: i < 2 ? '1px solid rgba(255,255,255,0.05)' : undefined,
+          }}>
+            <span style={{ fontSize: '0.8rem', lineHeight: 1, marginBottom: 2 }}>{r.icon}</span>
+            <span style={{ color: r.color, fontWeight: 800, fontSize: '0.9rem', lineHeight: 1 }}>{r.value}</span>
+            <span style={{ color: '#6B7280', fontSize: '0.58rem', marginTop: 2 }}>{r.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function CharacterTab({ hero, classData, xpProgress, mood, happiness, abilities, cefr, stats, masteredCount, uid, onEditProfile, accuracy, checkinDays, unlockedAchievements = {}, profile, onNavigate }) {
   const subtitle     = CLASS_SUBTITLE[classData.id] ?? classData.nameEn;
   const progressData = { level: xpProgress.level, hero, stats, masteredCount, profile };
@@ -621,57 +759,22 @@ export default function CharacterTab({ hero, classData, xpProgress, mood, happin
         checkinDays={checkinDays}
       />
 
+      {/* NPC mentor tip */}
+      <MentorTip happiness={happiness} hero={hero} xpProgress={xpProgress} />
+
       {/* Game-style study CTA */}
       <StudyCta happiness={happiness} xpProgress={xpProgress} classData={classData} onNavigate={onNavigate} />
 
-      {/* Name + Level + XP */}
-      <div className="mx-4 mt-3 rounded-2xl p-5" style={{ background: '#1A1B2E' }}>
-        <div className="text-center mb-4">
-          <div className="font-display text-lg font-bold text-white">
-            {hero.name} · Lv.{xpProgress.level}
-          </div>
-          <div className="text-sm text-gray-400">{subtitle}</div>
-        </div>
-
-        {/* XP bar */}
-        <div className="mb-1 flex justify-between text-xs text-gray-400">
-          <span>{xpProgress.xpIntoLevel} / {xpProgress.xpNeeded} XP</span>
-          <span>下一級</span>
-        </div>
-        <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
-          <div
-            className="h-full rounded-full transition-all duration-700"
-            style={{
-              width: `${xpProgress.percent}%`,
-              background: `linear-gradient(90deg, ${classData.gradientFrom}, ${classData.primaryColor})`,
-            }}
-          />
-        </div>
-
-        {/* Stat badges — game resource style */}
-        <div className="grid grid-cols-3 gap-2 mt-4">
-          {[
-            { icon: '📘', value: cefr,         label: '英語等級', color: CEFR_COLOR[cefr] ?? '#60A5FA' },
-            { icon: '⭐', value: masteredCount, label: '已掌握',   color: '#F59E0B' },
-            { icon: '🔥', value: hero.streak,  label: '天連續',   color: '#F97316' },
-          ].map(r => (
-            <div key={r.label} style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center',
-              padding: '10px 4px 8px',
-              background: `${r.color}12`,
-              border: `1px solid ${r.color}35`,
-              borderRadius: 14,
-            }}>
-              <span style={{ fontSize: '0.85rem', lineHeight: 1, marginBottom: 3 }}>{r.icon}</span>
-              <span style={{ color: r.color, fontWeight: 800, fontSize: '0.95rem', lineHeight: 1 }}>{r.value}</span>
-              <span style={{ color: '#6B7280', fontSize: '0.6rem', marginTop: 3 }}>{r.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Stamina bar */}
-      <StaminaBar happiness={happiness} lastStudied={hero.lastStudied} />
+      {/* RPG Character Sheet */}
+      <HeroSheet
+        hero={hero}
+        classData={classData}
+        xpProgress={xpProgress}
+        happiness={happiness}
+        cefr={cefr}
+        subtitle={subtitle}
+        masteredCount={masteredCount}
+      />
 
       {/* Ability bars */}
       <div className="mx-4 mt-3 rounded-2xl p-5" style={{ background: '#1A1B2E' }}>
