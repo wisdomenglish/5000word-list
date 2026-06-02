@@ -1,10 +1,12 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   loadHero, saveHero, loadStats, saveStats, loadMastery, saveMastery,
   loadCustomWords, saveCustomWords, loadProfile, saveProfile, DEFAULT_STATS,
 } from '../utils/storage';
 import { getXPProgress, getHappiness, getMoodFromHappiness } from '../utils/xp';
 import { CLASSES } from '../data/classes';
+import { checkAndUnlock, loadUnlocked } from '../utils/achievementChecker';
+import { ACHIEVEMENTS } from '../data/achievements';
 
 const CLASS_ABILITY_BONUS = {
   swordsman:  { reading: 5,  listening: 5,  speaking: 15, writing: 10 },
@@ -54,6 +56,22 @@ export function useHeroState() {
   const [profile, setProfile] = useState(() => loadProfile());
   const [justLeveledUp, setJustLeveledUp] = useState(false);
   const [newLevel, setNewLevel] = useState(null);
+  const [prevLevel, setPrevLevel] = useState(null);
+  const [unlockedAchievements, setUnlockedAchievements] = useState(() => loadUnlocked());
+  const [newAchievementIds, setNewAchievementIds] = useState([]);
+
+  // On mount: silently check if any achievements are already met (no toast, just unlock)
+  useEffect(() => {
+    const h = loadHero();
+    const s = loadStats();
+    const p = loadProfile();
+    if (!h) return;
+    const level = getXPProgress(h.totalXP).level;
+    const mc    = Object.keys(loadMastery()).length;
+    const newIds = checkAndUnlock({ level, hero: h, stats: s, masteredCount: mc, profile: p });
+    if (newIds.length > 0) setUnlockedAchievements(loadUnlocked());
+    // No toast on mount — achievements silently unlock in the background
+  }, []);
 
   const createHero = useCallback((classId, name) => {
     const newHero = {
@@ -113,11 +131,21 @@ export function useHeroState() {
       saveHero(updated);
 
       if (newProgress.level > oldProgress.level) {
+        setPrevLevel(oldProgress.level);
         setNewLevel(newProgress.level);
         setJustLeveledUp(true);
       }
       return updated;
     });
+  }, []);
+
+  const triggerAchievementCheck = useCallback((latestHero, latestStats, latestMasteredCount, latestProfile) => {
+    const level = latestHero ? getXPProgress(latestHero.totalXP).level : 1;
+    const newIds = checkAndUnlock({ level, hero: latestHero, stats: latestStats, masteredCount: latestMasteredCount, profile: latestProfile });
+    if (newIds.length > 0) {
+      setUnlockedAchievements(loadUnlocked());
+      setNewAchievementIds(prev => [...prev, ...newIds]);
+    }
   }, []);
 
   const recordAnswer = useCallback((correct, questionType) => {
@@ -143,15 +171,36 @@ export function useHeroState() {
     });
   }, []);
 
-  const completeSession = useCallback(() => {
+  const completeSession = useCallback((sessionType) => {
     setStats(prev => {
-      const updated = { ...prev, sessionsCompleted: prev.sessionsCompleted + 1 };
+      const isConv = sessionType === 'conversation';
+      const typeKey = sessionType ?? 'vocab';
+      const prevTypes = prev.typesAttempted ?? [];
+      const typesAttempted = prevTypes.includes(typeKey) ? prevTypes : [...prevTypes, typeKey];
+      const now  = new Date();
+      const day  = now.getDay();
+      const hour = now.getHours();
+      const isWeekend = day === 0 || day === 6;
+      const isNight   = hour >= 21;
+      const isMorning = hour >= 5 && hour < 8;
+      const updated = {
+        ...prev,
+        sessionsCompleted: prev.sessionsCompleted + 1,
+        conversationSessions: (prev.conversationSessions ?? 0) + (isConv ? 1 : 0),
+        typesAttempted,
+        weekendSessions: (prev.weekendSessions ?? 0) + (isWeekend ? 1 : 0),
+        nightSessions:   (prev.nightSessions ?? 0) + (isNight ? 1 : 0),
+        morningSessions: (prev.morningSessions ?? 0) + (isMorning ? 1 : 0),
+      };
       saveStats(updated);
       return updated;
     });
   }, []);
 
-  const dismissLevelUp = useCallback(() => { setJustLeveledUp(false); setNewLevel(null); }, []);
+  const dismissLevelUp = useCallback(() => { setJustLeveledUp(false); setNewLevel(null); setPrevLevel(null); }, []);
+  const dismissAchievement = useCallback((id) => {
+    setNewAchievementIds(prev => prev.filter(x => x !== id));
+  }, []);
 
   const loadCloudData = useCallback((cloudData) => {
     if (!cloudData) return;
@@ -190,8 +239,10 @@ export function useHeroState() {
   return {
     hero, classData, stats, xpProgress, mood, happiness, abilities,
     cefr, accuracy, mastery, masteredCount, customWords, profile,
-    justLeveledUp, newLevel,
+    justLeveledUp, newLevel, prevLevel,
+    unlockedAchievements, newAchievementIds,
     createHero, addXP, recordAnswer, markMastered, completeSession, dismissLevelUp,
+    dismissAchievement, triggerAchievementCheck,
     addCustomWord, removeCustomWord, loadCloudData, saveProfileData,
   };
 }

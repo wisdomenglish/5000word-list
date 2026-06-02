@@ -32,23 +32,35 @@ export default function BottomNav({ active, onChange }) {
             onClick={() => onChange(id)}
             aria-label={label}
             aria-current={isActive ? 'page' : undefined}
-            className="flex-1 flex flex-col items-center py-3 gap-0.5 transition-all duration-150 active:opacity-70"
+            className="flex-1 flex flex-col items-center py-2.5 gap-0.5 transition-all duration-150 active:opacity-70 relative"
             style={{ minHeight: '56px' }}
           >
+            {isActive && (
+              <div style={{
+                position: 'absolute',
+                top: 6, left: '10%', right: '10%', height: 38,
+                background: 'rgba(255,255,255,0.09)',
+                borderRadius: 14,
+              }} />
+            )}
             <Icon
               size={22}
               aria-hidden="true"
-              style={{ color: isActive ? '#fff' : 'rgba(255,255,255,0.4)' }}
+              style={{
+                color: isActive ? '#fff' : 'rgba(255,255,255,0.38)',
+                position: 'relative', zIndex: 1,
+                filter: isActive ? 'drop-shadow(0 0 6px rgba(255,255,255,0.4))' : undefined,
+              }}
             />
             <span
-              className="text-xs font-medium"
-              style={{ color: isActive ? '#fff' : 'rgba(255,255,255,0.4)' }}
+              className="text-xs font-semibold"
+              style={{
+                color: isActive ? '#fff' : 'rgba(255,255,255,0.38)',
+                position: 'relative', zIndex: 1,
+              }}
             >
               {label}
             </span>
-            {isActive && (
-              <div className="w-4 h-0.5 rounded-full bg-white mt-0.5" />
-            )}
           </button>
         );
       })}

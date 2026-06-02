@@ -19,6 +19,11 @@ export const DEFAULT_STATS = {
   vocabCorrect: 0,
   phraseCorrect: 0,
   wordRecallCorrect: 0,
+  conversationSessions: 0,
+  typesAttempted: [],
+  weekendSessions: 0,
+  nightSessions: 0,
+  morningSessions: 0,
 };
 
 export function loadHero() {

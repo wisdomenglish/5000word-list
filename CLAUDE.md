@@ -477,6 +477,56 @@ firebase login:ci
 
 ---
 
+## yt-dlp 字幕擷取工具
+
+### 安裝
+
+```powershell
+winget install --source winget yt-dlp.yt-dlp
+# 安裝完需重開 PowerShell 才能直接呼叫 yt-dlp
+```
+
+**執行檔路徑**（PATH 未生效時直接用）：
+`C:\Users\f8801\AppData\Local\Microsoft\WinGet\Packages\yt-dlp.yt-dlp_Microsoft.Winget.Source_8wekyb3d8bbwe\yt-dlp.exe`
+
+### 下載字幕（.vtt）
+
+```powershell
+# 重開終端後可直接用（仍需加 --no-check-certificate，SSL 憑證驗證會失敗）
+yt-dlp --no-check-certificate --write-auto-sub --skip-download --sub-lang en -o 輸出檔名 "YouTube網址"
+
+# 若 PATH 未生效，用完整路徑
+& "C:\Users\f8801\AppData\Local\Microsoft\WinGet\Packages\yt-dlp.yt-dlp_Microsoft.Winget.Source_8wekyb3d8bbwe\yt-dlp.exe" --no-check-certificate --write-auto-sub --skip-download --sub-lang en -o 輸出檔名 "YouTube網址"
+```
+
+產出檔案為 `輸出檔名.en.vtt`。
+
+### 轉換 .vtt → 純文字 .txt
+
+```powershell
+$vttFile = "chess.en.vtt"   # 輸入
+$txtFile = "chess.txt"      # 輸出
+
+$lines = Get-Content $vttFile -Encoding UTF8
+$seen = [System.Collections.Generic.HashSet[string]]::new()
+$result = [System.Collections.Generic.List[string]]::new()
+
+foreach ($line in $lines) {
+    if ($line -match '^\s*$' -or $line -match '-->' -or $line -match '^WEBVTT' -or $line -match '^Kind:' -or $line -match '^Language:') { continue }
+    $clean = $line -replace '<[^>]+>', ''
+    $clean = $clean.Trim()
+    if ($clean -eq '' -or $clean -eq '[Music]' -or $clean -eq 'foreign') { continue }
+    if ($seen.Add($clean)) { $result.Add($clean) }
+}
+
+$result | Out-File $txtFile -Encoding UTF8
+Write-Host "完成，共 $($result.Count) 行"
+```
+
+**邏輯說明**：跳過時間碼行、空行、WEBVTT header；移除 `<c>`、時間標記等 inline tag；去重複行；過濾 `[Music]`、`foreign` 等雜訊。
+
+---
+
 ## MCP 工具（.mcp.json）
 
 | MCP | 用途 |

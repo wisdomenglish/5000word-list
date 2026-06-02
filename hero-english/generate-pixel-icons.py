@@ -56,29 +56,6 @@ def draw_pixel_frame(draw):
         rect(draw, (x, y, x + 7, y + 7), c)
 
 
-def draw_hero_lettermark(base):
-    layer = rgba_layer()
-    draw = ImageDraw.Draw(layer)
-
-    # Pixel adaptation of the H/E mark from hero-english-logo-wisdom.html.
-    gold = (252, 211, 77, 112)
-    rect(draw, (18, 24, 24, 87), gold)
-    rect(draw, (18, 24, 102, 30), gold)
-    rect(draw, (18, 51, 102, 57), gold)
-    rect(draw, (18, 81, 102, 87), gold)
-
-    rect(draw, (38, 18, 55, 91), (124, 58, 237, 230))
-    rect(draw, (73, 18, 90, 91), (91, 33, 182, 230))
-    rect(draw, (38, 48, 90, 61), (167, 139, 250, 240))
-    rect(draw, (42, 22, 47, 87), (196, 181, 253, 110))
-    rect(draw, (77, 22, 82, 87), (196, 181, 253, 92))
-    rect(draw, (38, 18, 90, 21), (255, 255, 255, 52))
-
-    glow = layer.filter(ImageFilter.GaussianBlur(2))
-    base.alpha_composite(glow)
-    base.alpha_composite(layer)
-
-
 def pixel_logo_mask():
     src = Image.open(SOURCE).convert("RGBA")
     alpha = src.getchannel("A")
@@ -107,11 +84,10 @@ def build_base_icon():
     base = rgba_layer()
     draw = ImageDraw.Draw(base)
     draw_pixel_frame(draw)
-    draw_hero_lettermark(base)
 
     mask = pixel_logo_mask()
     x = (128 - mask.width) // 2
-    y = 39 + (58 - mask.height) // 2
+    y = 34 + (64 - mask.height) // 2
 
     paste_colored_mask(base, mask, (x + 2, y + 2), (28, 16, 72, 210))
     paste_colored_mask(base, mask, (x + 1, y + 1), (76, 29, 149, 190))

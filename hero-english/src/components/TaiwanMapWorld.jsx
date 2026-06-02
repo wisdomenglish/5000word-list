@@ -248,7 +248,7 @@ export default function TaiwanMapWorld({ classData, level = 1, checkinDays }) {
                     zIndex: 20,
                     filter: `drop-shadow(0 0 8px ${classData.primaryColor}80) drop-shadow(0 4px 6px rgba(0,0,0,0.5))`,
                   }}>
-                    <PixelCharacter classId={classData.id} scale={4} animate />
+                    <PixelCharacter classId={classData.id} level={level} scale={4} animate />
                   </div>
                 )}
 
