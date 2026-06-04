@@ -2499,3 +2499,79 @@ exports.generatePhraseQuizV3 = onRequest({ cors: true, invoker: "public" }, asyn
   }
 });
 
+// ========== generateReadingQuizV2 for hero-english ==========
+exports.generateReadingQuizV2 = onRequest({ cors: true, invoker: "public" }, async (req, res) => {
+  if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
+
+  try {
+    const apiKey = process.env.ANTHROPIC_API_KEY_PWAPROD;
+    if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY_PWAPROD");
+    const client = new (require("@anthropic-ai/sdk")).Anthropic({ apiKey });
+
+    const READING_SOURCES = [
+      { name: "Science Daily", style: "science news", topic_hint: "recent discoveries or technology" },
+      { name: "Travel Blog", style: "travel guide", topic_hint: "interesting places or cultures" },
+      { name: "Sports Update", style: "sports news", topic_hint: "popular sports or athletes" },
+      { name: "Health Tips", style: "health advice", topic_hint: "wellness or healthy living" },
+      { name: "Food Magazine", style: "food review", topic_hint: "cuisine or cooking" }
+    ];
+    const src = READING_SOURCES[Math.floor(Math.random() * READING_SOURCES.length)];
+
+    const prompt = `You are an English reading comprehension quiz generator for Taiwanese junior high school students (A2 level, CEFR).
+
+Write a short English news-style passage (120–160 words) in the style of ${src.style}. Choose an engaging topic related to ${src.topic_hint}.
+
+Passage difficulty rules for A2:
+- Use only common, everyday vocabulary (top 2000 most frequent English words)
+- Short sentences (8–12 words each), simple subject-verb-object structure
+- Avoid idioms, phrasal verbs, complex clauses, or passive voice
+- Present tense preferred; past simple is fine; avoid perfect or conditional tenses
+
+Then create exactly 3 multiple-choice comprehension questions based on the passage.
+
+Question types to cover (one each):
+1. Main idea / purpose of the passage
+2. Specific detail stated in the passage
+3. Vocabulary in context (what a word/phrase means as used in the passage)
+
+Rules:
+- All 4 choices must be plausible; only ONE is clearly correct based on the passage
+- Do NOT make the answer obvious from the question wording alone
+- The passage, title, questions, and all choices MUST be written in English only
+- Only the "explanation" field should be in Traditional Chinese (繁體中文), NOT Simplified Chinese
+- Questions and choices must also use simple A2 vocabulary
+
+Return ONLY valid JSON, no markdown:
+{
+  "source": "${src.name}",
+  "title": "Short engaging headline (under 12 words)",
+  "passage": "Full passage text here...",
+  "questions": [
+    {
+      "prompt": "Question text?",
+      "choices": ["Choice A text", "Choice B text", "Choice C text", "Choice D text"],
+      "answer": "Exact text of the correct choice",
+      "explanation": "一句繁體中文解釋為什麼這個選項正確"
+    }
+  ]
+}`;
+
+    const message = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 2048,
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    let raw = message.content[0].text.trim();
+    if (raw.startsWith("```")) raw = raw.replace(/^```json?\s*/, "").replace(/\s*```$/, "").trim();
+    const data = JSON.parse(raw);
+    if (!data.passage || !Array.isArray(data.questions) || data.questions.length < 1) {
+      throw new Error("Invalid response structure");
+    }
+    res.json(data);
+  } catch (e) {
+    console.error("[ERROR] generateReadingQuizV2:", e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
