@@ -1886,8 +1886,8 @@ exports.generateVocabQuiz = onRequest({ cors: true, invoker: "public" }, async (
     if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY");
     const client = new AnthropicQuiz({ apiKey });
 
-    const wordList = words.slice(0, 10).map(w => `${w.word} (${w.pos || "?"}, ${w.zh || ""})`).join("\n");
-    const count = Math.min(words.length, 10);
+    const wordList = words.slice(0, 40).map(w => `${w.word} (${w.pos || "?"}, ${w.zh || ""})`).join("\n");
+    const count = Math.min(words.length, 40);
     const cefrRule = cefrLevel
       ? `- Sentences must be at ${cefrLevel} reading level: short (under 15 words), simple vocabulary, clear everyday context`
       : "";
@@ -1921,7 +1921,7 @@ ${cefrRule}
 
     const message = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 4096,
+      max_tokens: 16000,
       messages: [{ role: "user", content: prompt }],
     });
 
@@ -1950,10 +1950,10 @@ exports.generatePhraseQuiz = onRequest({ cors: true, invoker: "public" }, async 
     if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY");
     const client = new AnthropicPQ({ apiKey });
 
-    const phraseList = phrases.slice(0, 10)
+    const phraseList = phrases.slice(0, 40)
       .map(p => `"${p.p}" (meaning: ${p.z})`)
       .join("\n");
-    const count = Math.min(phrases.length, 10);
+    const count = Math.min(phrases.length, 40);
 
     const prompt = `Create ${count} fill-in-the-blank quiz sentences for these English phrases:
 ${phraseList}
@@ -1979,7 +1979,7 @@ Rules:
 
     const message = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 4096,
+      max_tokens: 16000,
       messages: [{ role: "user", content: prompt }],
     });
 
@@ -2197,6 +2197,155 @@ Rules:
     res.json(data);
   } catch (e) {
     console.error("[ERROR] generateConversation:", e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ========== v2 Functions: PWA Production (5000word + hero-english) ==========
+// Using: ANTHROPIC_API_KEY_PWAPROD
+
+exports.generateWordExampleV2 = onRequest({ cors: true }, async (req, res) => {
+  if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
+  const { word, pos, zh, style } = req.body || {};
+  if (!word) return res.status(400).json({ error: "Missing word" });
+
+  try {
+    const apiKey = process.env.ANTHROPIC_API_KEY_PWAPROD;
+    if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY_PWAPROD");
+    const client = new (require("@anthropic-ai/sdk")).Anthropic({ apiKey });
+
+    const motivational = style === 'motivational';
+    const prompt = motivational
+      ? `Generate one short, uplifting English example sentence for the word "${word}" (${pos || "unknown"}, meaning: ${zh || "unknown"}). The sentence should feel encouraging and motivational. The word "${word}" must appear naturally.\nRespond ONLY with valid JSON, no markdown:\n{"sentence": "...", "translation": "..."}\nRules:\n- Tone: positive, empowering\n- ALL Chinese text must be Traditional Chinese (繁體中文)\n- Output ONLY the JSON object`
+      : `Generate one natural English example sentence for the word "${word}" (${pos || "unknown"}, meaning: ${zh || "unknown"}).\nRespond ONLY with valid JSON:\n{"sentence": "...", "translation": "..."}\nRules:\n- ALL Chinese text must be Traditional Chinese (繁體中文)\n- Output ONLY the JSON object`;
+
+    const message = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 256,
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    let raw = message.content[0].text.trim();
+    if (raw.startsWith("```")) raw = raw.replace(/^```json?\s*/, "").replace(/\s*```$/, "").trim();
+    const data = JSON.parse(raw);
+    res.json(data);
+  } catch (e) {
+    console.error("[ERROR] generateWordExampleV2:", e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+exports.generateWordEtymologyV2 = onRequest({ cors: true }, async (req, res) => {
+  if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
+  const { word, pos, zh } = req.body || {};
+  if (!word) return res.status(400).json({ error: "Missing word" });
+
+  try {
+    const apiKey = process.env.ANTHROPIC_API_KEY_PWAPROD;
+    if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY_PWAPROD");
+    const client = new (require("@anthropic-ai/sdk")).Anthropic({ apiKey });
+
+    const prompt = `Analyze the etymology of the English word "${word}" (${pos || "unknown"}, ${zh || "unknown"}).\nRespond ONLY with valid JSON:\n{"parts": [{"part": "morpheme", "meaning": "繁體中文", "origin": "拉丁文 xxx"}], "etymology": "50字內繁體說明", "cognates": ["word1", "word2"]}\nRules:\n- ALL Chinese text MUST be Traditional Chinese (繁體中文)\n- Output ONLY the JSON object`;
+
+    const message = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 512,
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    let raw = message.content[0].text.trim();
+    if (raw.startsWith("```")) raw = raw.replace(/^```json?\s*/, "").replace(/\s*```$/, "").trim();
+    const data = JSON.parse(raw);
+    res.json(data);
+  } catch (e) {
+    console.error("[ERROR] generateWordEtymologyV2:", e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+exports.generateWordDefinitionV2 = onRequest({ cors: true, invoker: "public" }, async (req, res) => {
+  if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
+  const { word } = req.body || {};
+  if (!word) return res.status(400).json({ error: "Missing word" });
+
+  try {
+    const apiKey = process.env.ANTHROPIC_API_KEY_PWAPROD;
+    if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY_PWAPROD");
+    const client = new (require("@anthropic-ai/sdk")).Anthropic({ apiKey });
+
+    const prompt = `Define the English word "${word}" in Traditional Chinese.\nCRITICAL: Define EXACTLY "${word}" — letter by letter, exactly as written.\nRespond ONLY with valid JSON:\n{"zh": "主要中文意思", "pos": "詞性縮寫"}\nRules:\n- zh: most common meaning (3-12 chars), use ； for 2 meanings\n- pos: n. / v. / adj. / adv. / prep. / conj. / pron. / interj.\n- ALL Chinese MUST be Traditional Chinese (繁體中文)\n- Output ONLY the JSON object`;
+
+    const message = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 128,
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    let raw = message.content[0].text.trim();
+    if (raw.startsWith("```")) raw = raw.replace(/^```json?\s*/, "").replace(/\s*```$/, "").trim();
+    const data = JSON.parse(raw);
+    res.json(data);
+  } catch (e) {
+    console.error("[ERROR] generateWordDefinitionV2:", e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+exports.generateVocabQuizV2 = onRequest({ cors: true, invoker: "public" }, async (req, res) => {
+  if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
+  const { words, cefrLevel } = req.body || {};
+  if (!words || !words.length) return res.status(400).json({ error: "Missing words" });
+
+  try {
+    const apiKey = process.env.ANTHROPIC_API_KEY_PWAPROD;
+    if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY_PWAPROD");
+    const client = new (require("@anthropic-ai/sdk")).Anthropic({ apiKey });
+
+    const wordList = words.slice(0, 10).map(w => `${w.word} (${w.pos || "?"}, ${w.zh || ""})`).join("\n");
+    const count = Math.min(words.length, 10);
+    const prompt = `Generate ${count} vocabulary fill-in-the-blank questions based on these words:\n${wordList}\n\nRespond ONLY with valid JSON:\n{"questions": [{"sentence": "...", "answer": "word", "options": ["a", "b", "c", "d"]}]}\nRules:\n- Sentence must be natural English with one _____ blank\n- answer is the correct word from the list\n- options array has 4 distinct words (1 correct + 3 distractors)\n- ALL Chinese text MUST be Traditional Chinese\n- Output ONLY valid JSON`;
+
+    const message = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 4096,
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    let raw = message.content[0].text.trim();
+    if (raw.startsWith("```")) raw = raw.replace(/^```json?\s*/, "").replace(/\s*```$/, "").trim();
+    const data = JSON.parse(raw);
+    res.json(data);
+  } catch (e) {
+    console.error("[ERROR] generateVocabQuizV2:", e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+exports.generatePhraseQuizV2 = onRequest({ cors: true, invoker: "public" }, async (req, res) => {
+  if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
+  const { phrases } = req.body || {};
+  if (!phrases || !phrases.length) return res.status(400).json({ error: "Missing phrases" });
+
+  try {
+    const apiKey = process.env.ANTHROPIC_API_KEY_PWAPROD;
+    if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY_PWAPROD");
+    const client = new (require("@anthropic-ai/sdk")).Anthropic({ apiKey });
+
+    const phraseList = phrases.slice(0, 10).map(p => p.p || p).join("\n");
+    const prompt = `Generate multiple-choice questions for these English phrases:\n${phraseList}\n\nRespond ONLY with valid JSON:\n{"questions": [{"sentence": "...", "answer": "phrase", "options": ["phrase1", "phrase2", "phrase3", "phrase4"]}]}\nRules:\n- Sentence must have one _____ blank\n- answer is the correct phrase\n- options has 4 distinct phrases\n- Output ONLY valid JSON`;
+
+    const message = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 4096,
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    let raw = message.content[0].text.trim();
+    if (raw.startsWith("```")) raw = raw.replace(/^```json?\s*/, "").replace(/\s*```$/, "").trim();
+    const data = JSON.parse(raw);
+    res.json(data);
+  } catch (e) {
+    console.error("[ERROR] generatePhraseQuizV2:", e.message);
     res.status(500).json({ error: e.message });
   }
 });

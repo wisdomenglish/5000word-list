@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Flight Pulse | 機票追價工具</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650&family=Noto+Sans+TC:wght@400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero" aria-labelledby="page-title">
+        <div class="radar" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <div class="hero-copy">
+          <p class="eyebrow">Flight Pulse</p>
+          <h1 id="page-title">機票追價中控台</h1>
+          <p class="intro">
+            輸入目的地國家、出發月份與旅遊天數，快速整理可買航班、判斷是否接近近期低點，並建立降價提醒。
+          </p>
+        </div>
+        <div class="hero-stats" aria-label="追蹤摘要">
+          <div>
+            <span id="watchCount">0</span>
+            <small>提醒中</small>
+          </div>
+          <div>
+            <span id="lowestRoute">--</span>
+            <small>目前低點</small>
+          </div>
+        </div>
+      </section>
+
+      <section class="search-panel" aria-label="查詢條件">
+        <form id="searchForm" class="form-grid">
+          <label>
+            <span>目的地國家</span>
+            <select id="country" name="country">
+              <option value="Japan">日本</option>
+              <option value="South Korea">韓國</option>
+              <option value="Thailand">泰國</option>
+              <option value="Vietnam">越南</option>
+              <option value="Singapore">新加坡</option>
+              <option value="Malaysia">馬來西亞</option>
+              <option value="United States">美國</option>
+              <option value="France">法國</option>
+            </select>
+          </label>
+          <label>
+            <span>目的地機場</span>
+            <select id="destinationAirport" name="destinationAirport">
+              <option value="ALL">全部可查機場</option>
+            </select>
+          </label>
+          <label>
+            <span>出發月份</span>
+            <input id="month" name="month" type="month" required />
+          </label>
+          <label>
+            <span>旅遊天數</span>
+            <input id="days" name="days" type="number" min="2" max="45" value="5" required />
+          </label>
+          <label>
+            <span>出發地</span>
+            <select id="origin" name="origin">
+              <option value="TPE">台北 TPE</option>
+              <option value="KHH">高雄 KHH</option>
+              <option value="RMQ">台中 RMQ</option>
+            </select>
+          </label>
+          <button class="primary" type="submit">整理機票</button>
+        </form>
+      </section>
+
+      <section class="workspace">
+        <aside class="insight-board" aria-label="價格洞察">
+          <div class="insight-card">
+            <span class="label">買票建議</span>
+            <strong id="buySignal">等待查詢</strong>
+            <p id="signalText">輸入條件後，我會比較近期價格區間與目前最低航班。</p>
+          </div>
+          <div class="meter-card">
+            <div class="meter-head">
+              <span class="label">低價程度</span>
+              <strong id="scoreText">--</strong>
+            </div>
+            <div class="meter" aria-hidden="true">
+              <span id="scoreBar"></span>
+            </div>
+          </div>
+          <div class="watchlist">
+            <div class="section-title">
+              <h2>降價提醒</h2>
+              <button id="clearAlerts" class="ghost" type="button">清空</button>
+            </div>
+            <div id="alertsList" class="alerts-empty">還沒有提醒。先查詢航班，再設定目標價。</div>
+          </div>
+        </aside>
+
+        <section class="results" aria-live="polite">
+          <div class="results-head">
+            <div>
+              <p class="eyebrow">Results</p>
+              <h2 id="resultsTitle">尚未查詢</h2>
+            </div>
+            <button id="simulateDrop" class="secondary" type="button">模擬降價檢查</button>
+          </div>
+          <div id="cards" class="cards">
+            <div class="empty-state">
+              <strong>準備掃描票價</strong>
+              <p>選好國家、月份與天數後，系統會列出建議日期、航空公司、目前價、近期低點與提醒操作。</p>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <template id="flightCardTemplate">
+      <article class="flight-card">
+        <div class="route-row">
+          <div>
+            <span class="tag routeTag"></span>
+            <h3 class="routeName"></h3>
+          </div>
+          <span class="statusBadge"></span>
+        </div>
+        <div class="price-row">
+          <span class="price"></span>
+          <small class="range"></small>
+        </div>
+        <dl class="details">
+          <div>
+            <dt>航空</dt>
+            <dd class="airline"></dd>
+          </div>
+          <div>
+            <dt>日期</dt>
+            <dd class="dates"></dd>
+          </div>
+          <div>
+            <dt>近期低價</dt>
+            <dd class="recentLow"></dd>
+          </div>
+          <div>
+            <dt>機票狀態</dt>
+            <dd class="ticketState"></dd>
+          </div>
+          <div>
+            <dt>搭配方式</dt>
+            <dd class="flightPlan"></dd>
+          </div>
+          <div>
+            <dt>訂票來源</dt>
+            <dd class="bookingSource"></dd>
+          </div>
+        </dl>
+        <div class="itinerary"></div>
+        <div class="sparkline" aria-hidden="true"></div>
+        <a class="bookingLink" href="#" target="_blank" rel="noreferrer">查看訂票頁</a>
+        <form class="alert-form">
+          <label>
+            <span>提醒目標價</span>
+            <input class="targetPrice" type="number" min="1000" step="100" />
+          </label>
+          <button type="submit">提醒我</button>
+        </form>
+      </article>
+    </template>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

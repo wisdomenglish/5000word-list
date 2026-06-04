@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // users — 只有本人可讀寫（自訂單字、星號清單、學習統計）
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // leaderboard — 5000單字 PWA 排行榜（公開讀；只有本人可寫）
+    match /leaderboard/{userId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // heroLeaderboard — Hero's English Journey 排行榜（公開讀；只有本人可寫）
+    match /heroLeaderboard/{userId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // checkins — 每日簽到板（公開讀；本人建立/刪除；登入者可按讚）
+    match /checkins/{date}/posts/{postId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.auth.uid == postId;
+      allow update: if request.auth != null && (
+        request.auth.uid == postId ||
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes'])
+      );
+      allow delete: if request.auth != null && request.auth.uid == postId;
+    }
+  }
+}
