@@ -1,11 +1,11 @@
 import { VOCAB_DATA } from '../data/vocab-data';
 
 const API_URL          = import.meta.env.VITE_CLAUDE_API_URL || null;
-const EXAMPLE_URL      = 'https://generatewordexample-gtlccx6nka-uc.a.run.app';
-const DEFINITION_URL   = 'https://generateworddefinition-gtlccx6nka-uc.a.run.app';
+const EXAMPLE_URL      = 'https://generatewordexamplev2-gtlccx6nka-uc.a.run.app';
+const DEFINITION_URL   = 'https://generateworddefinitionv2-gtlccx6nka-uc.a.run.app';
 const CONVERSATION_URL = 'https://generateconversation-gtlccx6nka-uc.a.run.app';
-const VOCAB_QUIZ_URL   = 'https://generatevocabquiz-gtlccx6nka-uc.a.run.app';
-const READING_QUIZ_URL = 'https://generatereadingquiz-gtlccx6nka-uc.a.run.app';
+const VOCAB_QUIZ_URL   = 'https://generatevocabquizv2-gtlccx6nka-uc.a.run.app';
+const READING_QUIZ_URL = 'https://generatereadingquizv2-gtlccx6nka-uc.a.run.app';
 const EX_CACHE_PREFIX  = 'hej_ex_';
 const { vocab, phrases } = VOCAB_DATA;
 
