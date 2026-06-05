@@ -1811,8 +1811,8 @@ function renderPhrasePagination(pages){
 function goPhrasePage(n){ phrasePage = n; window.scrollTo({top: 0, behavior: 'smooth'}); phraseUpdate(); }
 
 // ─── 複習清單 & AI 測驗 ───
-const QUIZ_FN_URL = 'https://generatevocabquizv2-gtlccx6nka-uc.a.run.app';
-const PHRASE_QUIZ_FN_URL = 'https://generatephrasequizv2-gtlccx6nka-uc.a.run.app';
+const QUIZ_FN_URL = 'https://generatevocabquiz-gtlccx6nka-uc.a.run.app';
+const PHRASE_QUIZ_FN_URL = 'https://generatephrasequiz-gtlccx6nka-uc.a.run.app';
 const PARAGRAPH_FN_URL = 'https://us-central1-news-english-ef2e4.cloudfunctions.net/generateParagraph';
 let markedWords = new Set(JSON.parse(localStorage.getItem('vocab_marked') || '[]'));
 let paraMode = 'story';
@@ -3394,9 +3394,9 @@ function deleteCustomWord(word){
 }
 
 // ─── Word Detail Modal ───
-const EXAMPLE_FN_URL  = 'https://generatewordexamplev2-gtlccx6nka-uc.a.run.app';
-const ETYMOLOGY_FN_URL = 'https://generatewordetymologyv2-gtlccx6nka-uc.a.run.app';
-const DEFINITION_FN_URL = 'https://generateworddefinitionv2-gtlccx6nka-uc.a.run.app';
+const EXAMPLE_FN_URL  = 'https://generatewordexample-gtlccx6nka-uc.a.run.app';
+const ETYMOLOGY_FN_URL = 'https://generatewordetymology-gtlccx6nka-uc.a.run.app';
+const DEFINITION_FN_URL = 'https://generateworddefinition-gtlccx6nka-uc.a.run.app';
 let currentModalWord = null;
 let currentModalPhrase = null;
 
