@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <title>5000英文單字學習</title>
 <meta name="theme-color" content="#7c6af7">
 <meta name="mobile-web-app-capable" content="yes">
@@ -72,7 +72,7 @@ input[type=search]::placeholder{color:var(--muted);}
 #drawerToggleBtn:hover{color:var(--text);background:var(--bg);}
 header{top:52px!important;}
 /* ── Bottom Nav ── */
-#bottomNav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;z-index:200;box-shadow:0 -2px 14px rgba(0,0,0,.07);padding-bottom:env(safe-area-inset-bottom,0px);}
+#bottomNav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;z-index:200;box-shadow:0 -2px 14px rgba(0,0,0,.07);padding-bottom:env(safe-area-inset-bottom,0px);-webkit-transform:translateZ(0);transform:translateZ(0);will-change:transform;}
 .bnav-btn{flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--muted);font-size:0.6rem;font-weight:500;cursor:pointer;transition:color .2s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;padding:10px 4px 12px;}
 .bnav-btn.active{color:var(--accent);}
 .bnav-icon{font-size:1.3rem;line-height:1;}
@@ -1885,7 +1885,7 @@ function switchTab(tab){
 }
 
 /* ── Streak Tracking ── */
-function getTodayKey(){ return new Date().toISOString().slice(0,10); }
+function getTodayKey(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function getStreakData(){
   return JSON.parse(localStorage.getItem(STREAK_KEY)||'{"streak":0,"best":0,"lastDate":""}');
 }
@@ -1900,7 +1900,7 @@ function touchStreak(){
   const s = getStreakData();
   if(s.lastDate === today) return;
   const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
-  const yKey = yesterday.toISOString().slice(0,10);
+  const yKey = yesterday.getFullYear()+'-'+String(yesterday.getMonth()+1).padStart(2,'0')+'-'+String(yesterday.getDate()).padStart(2,'0');
   if(s.lastDate === yKey){ s.streak++; } else { s.streak=1; }
   s.best = Math.max(s.best, s.streak);
   s.lastDate = today;
