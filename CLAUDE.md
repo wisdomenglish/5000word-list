@@ -24,15 +24,15 @@
 ### 關鍵檔案
 
 - [index.html](index.html) — 單一檔案 PWA，包含所有 CSS/JS
-- [vocabulary-data.js](vocabulary-data.js) — 外部單字庫（4,506 字，格式：`{w, z, p}`）
+- [vocabulary-data.js](vocabulary-data.js) — 外部單字庫（5,565 字，含衍生變化形，格式：`{w, z, p}`；2026-06-11 由 4,391 擴充，新增字以 `generateWordDefinition` CF 補 pos+zh）
 - [phrases-data.js](phrases-data.js) — 外部片語庫（1,125 條，格式：`{p, z}`）
 - [manifest.json](manifest.json) — PWA 設定（name: 5000英文單字學習）
-- [sw.js](sw.js) — Service Worker，支援離線使用（目前版本：`vocab-app-v51`）
+- [sw.js](sw.js) — Service Worker，支援離線使用（目前版本：`vocab-app-v83`）
 - [icon-192.png](icon-192.png) / [icon-512.png](icon-512.png) — Wisdom logo 圖示
 
 ### 功能
 
-- 4,391 英文單字瀏覽、搜尋、字母篩選（移除重複變化形後）
+- 5,565 英文單字瀏覽、搜尋、字母篩選（含常見衍生變化形）
 - Claude AI 生成例句（單字詳細 Modal，📝 例句 Tab）
 - Claude AI 字根拆解（單字詳細 Modal，🌱 字根 Tab）
 - AI 測驗 Tab + 複習清單（單字／片語皆可出題）
@@ -128,14 +128,35 @@
   - `'sentence'`：呼叫 `generatePhraseQuiz` Cloud Function 生成含空格英文句子，選項為英文片語（正確片語 + 3 個隨機干擾片語由 client 端從 PHRASES 選取）；題型物件 `type:'phrase_sentence'`，`answerQ()` 不觸發 markedWords
 - 片語測驗字母篩選同樣有防洩題機制（`enforceLetterDistractors`），但 phrase_sentence 的選項是片語文字，字母分散較自然
 
+### 單字資料夾架構（含片語）
+
+- **資料結構**：`wordFolders`（`let`，存 `localStorage['vocab_folders']`），每個資料夾物件為 `{ id, name, words:[字串], phrases:[字串] }`
+  - `words` 存單字字串（與 `getAllWords()` 的 `word` 對應）；`phrases` 存片語字串（與 `PHRASES` 的 `p` 對應）
+  - **向下相容**：舊資料夾沒有 `phrases` 欄位，讀取時一律 `f.phrases || []`
+- **快取集合**：`folderWordSet` / `folderPhraseSet`（Set），由 `rebuildFolderWordSet()` 從所有資料夾攤平重建；卡片右下角 📁 標示靠這兩個 Set 判斷
+- **`saveFolders()`**：寫 localStorage → `rebuildFolderWordSet()` → Firestore `{ folders }` `{ merge:true }`（片語隨整個 folder 物件一起同步，免改 sync 邏輯）
+- **單字加入資料夾**：單字 Modal `📁 資料夾` 按鈕 → `openFolderSheet(word)` → `toggleWordInFolder` / `createFolderAndAdd`
+- **片語加入資料夾**：片語 Modal footer `📁 資料夾` 按鈕 → `openPhraseFolderSheetCurrent()` → `openPhraseFolderSheet(phrase)` → `togglePhraseInFolder(folderId)` / `createFolderAndAddPhrase()`
+  - **重點**：片語可能含 `'`（如 can't），inline onclick 不傳片語字串，改用全域 `_phraseFolderTarget` 暫存目標片語，避免引號解析爆掉
+- **資料夾詳情**（`openFolderDetail`）：分「📚 單字」與「🔖 片語」兩區；片語列用 index（`openPhraseFromFolder(id,i)` / `removePhraseFromFolder(id,i)`）而非字串，同樣避免引號問題；只含片語的資料夾不顯示「開始測驗」按鈕（測驗僅支援單字）
+- **字典批次選取**（Gmail 式多選，2026-06-11）：
+  - 狀態：`selectMode`（boolean）+ `selectedCards`（Set，存單字字串，**跨分頁保留**）
+  - 字典控制列「☑ 選取」按鈕 → `toggleSelectMode()`；卡片 onclick 改走 `onCardClick(word)` 分流（select 模式 → `toggleCardSelect`，否則 `openWordModal`）
+  - **勾選框平時不顯示**：`.card-check` 預設 `display:none`，只有 `.grid.select-mode .card-check` 才顯示（符合「按下選取前沒有方格」需求）
+  - 勾選用 targeted DOM 更新（不整頁重繪）；卡片帶 `data-word`，用 `CSS.escape` 定位
+  - 批次加入：`addSelectedToFolder()` → `bulkAddToFolder(id)` / `createFolderAndBulkAdd()`（全域 `_bulkFolderTargets` 暫存選取清單），加入後 `_exitSelectMode()` 自動退出
+  - 選取工具列 `.select-bar` `position:sticky; top:calc(52px + safe-area)`（避開固定頂部列）
+- **TDZ 注意**：`wordFolders` / `folderWordSet` / `folderPhraseSet` / `selectMode` / `selectedCards` 皆為 top-level `let`，宣告位置在 `update()` 定義之後沒問題（init 在整段 script 解析完才執行），但**不可在宣告前的 top-level 程式碼呼叫 `update()`**
+
 ### 雲端同步架構（Firebase）
 
 - **Firebase 專案**：`news-english-ef2e4`（與 LINE Bot 共用）
 - **SDK**：Firebase Compat v10（`<script>` 標記，非 ESM），載入 Auth + Firestore
 - **Authentication**：Google Sign-In，授權網域需包含 `wisdomenglish.github.io`
-- **Firestore 路徑**：`users/{uid}` 文件，含兩個欄位：
+- **Firestore 路徑**：`users/{uid}` 文件，含三個欄位：
   - `customWords`（陣列）：自訂單字庫 `[{word, pos, zh, custom:true}]`
   - `markedWords`（陣列）：⭐ 星號複習清單 `["word1", "word2", ...]`
+  - `folders`（陣列）：單字/片語資料夾 `[{id, name, words:[], phrases:[]}]`（見「單字資料夾架構」）
 - **Security Rules**：只允許 `auth.uid === userId` 讀寫自己的文件
 - **`saveCustomWords()`**：同時寫入 localStorage 和 Firestore `{ merge: true }`（已登入時）
 - **`saveMark()`**：每次加/取消星號同時寫入 localStorage 和 Firestore `{ merge: true }`
@@ -712,7 +733,7 @@ python3 -m notebooklm login
 - **Cloud Function 語言**：prompt 中明確指定「ALL Chinese text must be in Traditional Chinese (繁體中文), NOT Simplified Chinese (簡體中文)」
 - **Cloud Function 架構**：每個 export 函式自帶 `require('@anthropic-ai/sdk')` 和 client 實例，不依賴模組頂層共用物件（避免 Cloud Run 作用域問題）
 - **generateVocabQuiz max_tokens**：必須設為 `4096`（非 1024），10 道題目的 JSON 約需 2500–3000 tokens，1024 會截斷 → `Unexpected end of JSON input` → 500 錯誤
-- **Service Worker 快取版本**：更動 `index.html` 或 `vocabulary-data.js` 需同步升版 `sw.js` 的 `CACHE` 常數（目前 `vocab-app-v51`），否則舊使用者看不到更新
+- **Service Worker 快取版本**：更動 `index.html` 或 `vocabulary-data.js` 需同步升版 `sw.js` 的 `CACHE` 常數（目前 `vocab-app-v83`），否則舊使用者看不到更新
 - **檔案編碼**：`functions/index.js` 和 `package.json` 必須存為 UTF-8（無 BOM），Windows PowerShell redirect 可能產生 UTF-16 BOM 導致部署失敗
 - **行事曆 iCal 日期格式化**：`formatCalendarEvents` 使用 `evt.start`（YYYY-MM-DD 字串）手動格式化日期，不使用 `toLocaleDateString`（Cloud Run 環境下對 Invalid Date 輸出字串 "Invalid Date"）；`startObj` 存為毫秒 timestamp（`getTime()`），用 `getUTC*` 方法讀取時間
 - **iCal 折疊（folding）**：iCal 超過 75 字元的行會折疊（`CRLF + 空格`），解析前必須先 unfolding（`icalText.replace(/\r\n[ \t]/g, "")...`），否則長標題（如 `[Sammy, Frank, Ivy] 考猜試教@ 府中`）會被截斷、名字解析失敗
