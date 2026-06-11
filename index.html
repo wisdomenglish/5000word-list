@@ -536,6 +536,10 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
 .select-bar .sb-count{font-weight:600;color:var(--text);font-size:0.9rem;margin-right:auto;}
 .select-bar button{border:1px solid var(--border);background:var(--card);border-radius:8px;padding:7px 12px;font-size:0.78rem;cursor:pointer;color:var(--text);white-space:nowrap;}
 .select-bar button.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+.mw-check{flex-shrink:0;width:22px;height:22px;border:2px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:0.8rem;color:#fff;background:var(--surface);cursor:pointer;align-self:center;}
+.mw-item.selected{border-color:var(--accent);background:rgba(67,97,238,.08);}
+.mw-item.selected .mw-check{background:var(--accent);border-color:var(--accent);}
+.mw-wrap.mw-selecting .mw-actions-col{display:none;}
 .folder-list{display:flex;flex-direction:column;gap:8px;margin-bottom:8px;}
 .folder-row{display:flex;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;gap:10px;}
 .folder-row-info{flex:1;min-width:0;cursor:pointer;}
@@ -831,11 +835,12 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
           <span class="news-date">2026-06-12</span>
           <span class="news-type feature">新功能</span>
           <span class="news-type improve">優化</span>
-          <span class="ni-title">📤 每日一字分享限動・單字庫釋義校正</span>
+          <span class="ni-title">📤 每日一字分享限動・我的單字批次選取・釋義校正</span>
           <span class="news-arrow">›</span>
         </div>
         <div class="news-detail">
           <ul class="news-list">
+            <li><strong>「我的單字」批次選取</strong>：在「我的單字」頁右上角點「☑ 選取」，即可勾選自訂單字庫與複習清單中的多個單字，一鍵「📁 加入資料夾」，整理更快。</li>
             <li><strong>每日一字一鍵分享</strong>：每日一字卡片新增「📤 分享」按鈕，會自動生成精美的直式圖片（含單字、詞性、解釋、例句），可直接發佈到 Instagram / Facebook 限時動態或貼文，與朋友分享今日學到的單字。手機上會跳出系統分享選單，電腦則會下載圖片。</li>
             <li><strong>中文釋義標點校正</strong>：修正單字庫中文解釋出現多餘分號、詞語被切斷的問題（例如「競爭；性；的」→「競爭性的」、「全神貫；注」→「全神貫注」），閱讀更通順。</li>
             <li><strong>單字庫精簡</strong>：移除大量重複的變化形（名詞複數、動詞過去式等純變化形），保留原形與真正的形容詞/獨立詞，讓字典更精煉好查。</li>
@@ -1843,9 +1848,14 @@ function _exitSelectMode(){
   const bar = document.getElementById('selectBar');
   if(bar) bar.style.display = 'none';
 }
+let _bulkFolderTargets = [];
+let _bulkSource = 'dict';   // 'dict'（字典）或 'mw'（我的單字）
 function addSelectedToFolder(){
   if(!selectedCards.size){ alert('請先選取單字'); return; }
-  _bulkFolderTargets = [...selectedCards];
+  _bulkFolderTargets = [...selectedCards]; _bulkSource = 'dict';
+  _openBulkFolderSheet();
+}
+function _openBulkFolderSheet(){
   const sheet = document.getElementById('folderSheet');
   sheet.innerHTML = `
     <div class="fs-backdrop" onclick="closeFolderSheet()"></div>
@@ -1859,7 +1869,6 @@ function addSelectedToFolder(){
     </div>`;
   sheet.style.display = 'block';
 }
-let _bulkFolderTargets = [];
 function _bulkFsListHtml(){
   if(!wordFolders.length) return `<div class="fs-empty">尚未建立任何資料夾</div>`;
   return wordFolders.map(f=>{
@@ -1871,6 +1880,16 @@ function _bulkFsListHtml(){
     </div>`;
   }).join('');
 }
+function _bulkFinish(){
+  if(_bulkSource === 'mw'){
+    _exitMwSelectMode();
+    document.getElementById('folderSheet').style.display = 'none';
+    renderMyWords();
+  } else {
+    _exitSelectMode();
+    closeFolderSheet();
+  }
+}
 function bulkAddToFolder(folderId){
   const f = wordFolders.find(f => f.id === folderId);
   if(!f) return;
@@ -1878,8 +1897,7 @@ function bulkAddToFolder(folderId){
   _bulkFolderTargets.forEach(w => { if(!f.words.includes(w)){ f.words.push(w); added++; } });
   saveFolders();
   const name = f.name, total = _bulkFolderTargets.length;
-  _exitSelectMode();
-  closeFolderSheet();
+  _bulkFinish();
   alert(`已將 ${total} 個單字加入「${name}」${added<total?`（其中 ${total-added} 個已在資料夾內）`:''}`);
 }
 function createFolderAndBulkAdd(){
@@ -1890,9 +1908,48 @@ function createFolderAndBulkAdd(){
   wordFolders.push(f);
   saveFolders();
   const total = f.words.length;
-  _exitSelectMode();
-  closeFolderSheet();
+  _bulkFinish();
   alert(`已建立「${name}」並加入 ${total} 個單字`);
+}
+
+/* ── 「我的單字」頁的多選 ── */
+let mwSelectMode = false;
+let mwSelected = new Set();
+function toggleMwSelectMode(){
+  mwSelectMode = !mwSelectMode;
+  if(!mwSelectMode) mwSelected.clear();
+  renderMyWords();
+}
+function _exitMwSelectMode(){ mwSelectMode = false; mwSelected.clear(); }
+function onMwItemClick(word){
+  if(mwSelectMode) toggleMwSelect(word);
+  else openWordModal(word);
+}
+function toggleMwSelect(word){
+  const on = !mwSelected.has(word);
+  if(on) mwSelected.add(word); else mwSelected.delete(word);
+  const sel = '#myWordsSection .mw-item[data-word="'+(window.CSS&&CSS.escape?CSS.escape(word):word.replace(/"/g,'\\"'))+'"]';
+  const item = document.querySelector(sel);
+  if(item){ item.classList.toggle('selected', on); const c=item.querySelector('.mw-check'); if(c) c.textContent = on?'✓':''; }
+  updateMwSelectCount();
+}
+function updateMwSelectCount(){ const el=document.getElementById('mwSelectCount'); if(el) el.textContent = `已選 ${mwSelected.size} 個`; }
+function mwSelectAllVisible(){
+  document.querySelectorAll('#myWordsSection .mw-item[data-word]').forEach(it=>{
+    mwSelected.add(it.getAttribute('data-word')); it.classList.add('selected');
+    const c=it.querySelector('.mw-check'); if(c) c.textContent='✓';
+  });
+  updateMwSelectCount();
+}
+function mwClearSelection(){
+  mwSelected.clear();
+  document.querySelectorAll('#myWordsSection .mw-item.selected').forEach(it=>{ it.classList.remove('selected'); const c=it.querySelector('.mw-check'); if(c) c.textContent=''; });
+  updateMwSelectCount();
+}
+function addMwSelectedToFolder(){
+  if(!mwSelected.size){ alert('請先選取單字'); return; }
+  _bulkFolderTargets = [...mwSelected]; _bulkSource = 'mw';
+  _openBulkFolderSheet();
 }
 
 // ─── 片語瀏覽 ───
@@ -3249,13 +3306,21 @@ function renderMyWords(){
     return oa - ob;
   });
 
-  let html = `<div class="mw-wrap">
+  let html = `<div class="mw-wrap${mwSelectMode?' mw-selecting':''}">
     <div class="mw-hdr">
       <span class="mw-title">⭐ 我的單字</span>
       <div class="mw-actions">
+        <button class="select-toggle-btn ${mwSelectMode?'active':''}" onclick="toggleMwSelectMode()">${mwSelectMode?'✕ 取消選取':'☑ 選取'}</button>
         <button class="add-word-btn" onclick="toggleAddWordForm()">＋ 新增單字</button>
       </div>
     </div>
+    ${mwSelectMode?`<div class="select-bar" id="mwSelectBar" style="top:0">
+      <span class="sb-count" id="mwSelectCount">已選 ${mwSelected.size} 個</span>
+      <button onclick="mwSelectAllVisible()">全選</button>
+      <button onclick="mwClearSelection()">清除</button>
+      <button class="primary" onclick="addMwSelectedToFolder()">📁 加入資料夾</button>
+      <button onclick="toggleMwSelectMode()">✕ 完成</button>
+    </div>`:''}
     ${_addWordFormHtml()}`;
 
   html += `<div class="mw-section-hdr first">
@@ -3286,19 +3351,20 @@ function renderMyWords(){
       <span class="mw-section-title">📝 自訂單字庫 (${customWords.length})</span>
     </div>
     <div class="mw-grid">
-      ${customWords.map(w=>`
-        <div class="mw-item">
-          <div style="flex:1;min-width:0;cursor:pointer" onclick="openWordModal('${w.word}')">
+      ${customWords.map(w=>{const e=w.word.replace(/\\/g,'\\\\').replace(/'/g,"\\'");return `
+        <div class="mw-item${mwSelectMode&&mwSelected.has(w.word)?' selected':''}" data-word="${w.word.replace(/"/g,'&quot;')}">
+          ${mwSelectMode?`<span class="mw-check" onclick="onMwItemClick('${e}')">${mwSelected.has(w.word)?'✓':''}</span>`:''}
+          <div style="flex:1;min-width:0;cursor:pointer" onclick="onMwItemClick('${e}')">
             <div class="mw-word">${w.word}<span class="custom-badge">自訂</span></div>
             ${w.pos?`<div class="mw-pos">${w.pos}</div>`:''}
             ${w.zh?`<div class="mw-zh">${getZhDef(w.zh)}</div>`:''}
           </div>
           <div class="mw-actions-col">
-            <button class="speak-btn" style="width:30px;height:30px" onclick="speak('${w.word}',this)">${_speakBtnSvg()}</button>
-            <button class="mw-edit-btn" onclick="editCustomWord('${w.word}')">✏️ 編輯</button>
-            <button class="mw-delete-btn" onclick="deleteCustomWord('${w.word}')">✕ 刪除</button>
+            <button class="speak-btn" style="width:30px;height:30px" onclick="speak('${e}',this)">${_speakBtnSvg()}</button>
+            <button class="mw-edit-btn" onclick="editCustomWord('${e}')">✏️ 編輯</button>
+            <button class="mw-delete-btn" onclick="deleteCustomWord('${e}')">✕ 刪除</button>
           </div>
-        </div>`).join('')}
+        </div>`;}).join('')}
     </div>`;
   }
 
@@ -3315,17 +3381,19 @@ function renderMyWords(){
       ${markedList.map(w=>{
         const ml=mastery[w.word];
         const mBadge=_masteryBadge(ml);
+        const e=w.word.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
         const borderStyle=ml==='unfamiliar'?'border-left:3px solid #FECACA;':
           ml==='moderate'?'border-left:3px solid #FED7AA;':'';
-        return `<div class="mw-item" style="${borderStyle}">
-          <div style="flex:1;min-width:0;cursor:pointer" onclick="openWordModal('${w.word}')">
+        return `<div class="mw-item${mwSelectMode&&mwSelected.has(w.word)?' selected':''}" data-word="${w.word.replace(/"/g,'&quot;')}" style="${borderStyle}">
+          ${mwSelectMode?`<span class="mw-check" onclick="onMwItemClick('${e}')">${mwSelected.has(w.word)?'✓':''}</span>`:''}
+          <div style="flex:1;min-width:0;cursor:pointer" onclick="onMwItemClick('${e}')">
             <div class="mw-word">${w.word}${w.custom?`<span class="custom-badge">自訂</span>`:''}${mBadge}</div>
             ${w.pos?`<div class="mw-pos">${w.pos}</div>`:''}
             ${w.zh?`<div class="mw-zh">${getZhDef(w.zh)}</div>`:''}
           </div>
           <div class="mw-actions-col">
-            <button class="speak-btn" style="width:30px;height:30px" onclick="speak('${w.word}',this)">${_speakBtnSvg()}</button>
-            <button class="mw-mastered" onclick="removeMark('${w.word}');renderMyWords()">✓ 已熟</button>
+            <button class="speak-btn" style="width:30px;height:30px" onclick="speak('${e}',this)">${_speakBtnSvg()}</button>
+            <button class="mw-mastered" onclick="removeMark('${e}');renderMyWords()">✓ 已熟</button>
           </div>
         </div>`;}).join('')}
     </div>`;
