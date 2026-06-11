@@ -24,15 +24,15 @@
 ### 關鍵檔案
 
 - [index.html](index.html) — 單一檔案 PWA，包含所有 CSS/JS
-- [vocabulary-data.js](vocabulary-data.js) — 外部單字庫（5,565 字，含衍生變化形，格式：`{w, z, p}`；2026-06-11 由 4,391 擴充，新增字以 `generateWordDefinition` CF 補 pos+zh）
+- [vocabulary-data.js](vocabulary-data.js) — 外部單字庫（4,549 字，格式：`{w, z, p}`；2026-06-11 由 4,391 擴充至 5,565 後，2026-06-12 精簡純變化形回 4,549，並 AI 校正中文釋義標點，保留原形＋真形容詞/獨立詞）
 - [phrases-data.js](phrases-data.js) — 外部片語庫（1,125 條，格式：`{p, z}`）
 - [manifest.json](manifest.json) — PWA 設定（name: 5000英文單字學習）
-- [sw.js](sw.js) — Service Worker，支援離線使用（目前版本：`vocab-app-v83`）
+- [sw.js](sw.js) — Service Worker，支援離線使用（目前版本：`vocab-app-v85`）
 - [icon-192.png](icon-192.png) / [icon-512.png](icon-512.png) — Wisdom logo 圖示
 
 ### 功能
 
-- 5,565 英文單字瀏覽、搜尋、字母篩選（含常見衍生變化形）
+- 4,549 英文單字瀏覽、搜尋、字母篩選
 - Claude AI 生成例句（單字詳細 Modal，📝 例句 Tab）
 - Claude AI 字根拆解（單字詳細 Modal，🌱 字根 Tab）
 - AI 測驗 Tab + 複習清單（單字／片語皆可出題）
@@ -181,6 +181,17 @@
 - `touchStreak()`：每次 `incrementDailyCount()` 呼叫時更新 `vocab_streak`（連續打卡）
 - `trackAccuracy(correct)`：在 `answerQ()` 內呼叫，更新 `vocab_accuracy`
 - `renderHome()`：學測倒數固定 `new Date(2027,0,22)`，讀 streak / daily goal / heatmap 渲染首頁
+
+### 每日一字（Word of the Day）架構
+
+- `showWotdIfNeeded()`：每天首次開啟才彈出（`localStorage[WOTD_SHOWN_KEY]` 比對 `getTWDate()`）；`closeWotd()` 寫入今日日期，當天不再出現
+- `showWotd()`：`getWotdWord()` 取當日單字 → 設 `_wotdWord` → 抓例句（`EXAMPLE_FN_URL`，`style:'motivational'`，快取 `vocab_wotd_ex_{word}`）→ `renderWotdEx()`
+- **分享成限動/貼文圖片**（2026-06-12）：
+  - `📤 分享` 按鈕（`#wotdShareBtn`）→ `shareWotdImage()`
+  - `buildWotdShareImage()`：用隱藏 `#shareCanvas`（1080×1920）畫直式圖（藍紫漸層底 + 白卡：單字/詞性/釋義/例句/翻譯 + 品牌頁尾），回傳 PNG `Blob`；含 CJK+latin 混排換行 helper `_shTokens`/`_shWrap`、圓角 `_shRound`；單字過長自動縮字級
+  - **iOS gesture 重點**：圖片在 `renderWotdEx()` 結尾就用 `prepareWotdShareImage()` 預先產生並存 `_wotdShareFile`，這樣 `shareWotdImage()` 能**同步**呼叫 `navigator.share({files})`，不會因 await 失去 user activation
+  - 分享路徑：`navigator.canShare({files})` 為真 → `navigator.share`（手機跳系統選單選 IG/FB）；否則 fallback 下載 PNG（桌機）。使用者取消為 `AbortError`，靜默處理
+  - 字型：畫圖前 `await document.fonts.ready`，font stack 用 `"Playfair Display"`（單字）/ `"DM Sans","Noto Sans TC","PingFang TC","Microsoft JhengHei"`（中文）
 
 ### 更新公告頁
 
@@ -733,7 +744,7 @@ python3 -m notebooklm login
 - **Cloud Function 語言**：prompt 中明確指定「ALL Chinese text must be in Traditional Chinese (繁體中文), NOT Simplified Chinese (簡體中文)」
 - **Cloud Function 架構**：每個 export 函式自帶 `require('@anthropic-ai/sdk')` 和 client 實例，不依賴模組頂層共用物件（避免 Cloud Run 作用域問題）
 - **generateVocabQuiz max_tokens**：必須設為 `4096`（非 1024），10 道題目的 JSON 約需 2500–3000 tokens，1024 會截斷 → `Unexpected end of JSON input` → 500 錯誤
-- **Service Worker 快取版本**：更動 `index.html` 或 `vocabulary-data.js` 需同步升版 `sw.js` 的 `CACHE` 常數（目前 `vocab-app-v83`），否則舊使用者看不到更新
+- **Service Worker 快取版本**：更動 `index.html` 或 `vocabulary-data.js` 需同步升版 `sw.js` 的 `CACHE` 常數（目前 `vocab-app-v85`），否則舊使用者看不到更新
 - **檔案編碼**：`functions/index.js` 和 `package.json` 必須存為 UTF-8（無 BOM），Windows PowerShell redirect 可能產生 UTF-16 BOM 導致部署失敗
 - **行事曆 iCal 日期格式化**：`formatCalendarEvents` 使用 `evt.start`（YYYY-MM-DD 字串）手動格式化日期，不使用 `toLocaleDateString`（Cloud Run 環境下對 Invalid Date 輸出字串 "Invalid Date"）；`startObj` 存為毫秒 timestamp（`getTime()`），用 `getUTC*` 方法讀取時間
 - **iCal 折疊（folding）**：iCal 超過 75 字元的行會折疊（`CRLF + 空格`），解析前必須先 unfolding（`icalText.replace(/\r\n[ \t]/g, "")...`），否則長標題（如 `[Sammy, Frank, Ivy] 考猜試教@ 府中`）會被截斷、名字解析失敗
