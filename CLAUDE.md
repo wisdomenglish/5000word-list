@@ -146,7 +146,12 @@
   - 勾選用 targeted DOM 更新（不整頁重繪）；卡片帶 `data-word`，用 `CSS.escape` 定位
   - 批次加入：`addSelectedToFolder()` → `bulkAddToFolder(id)` / `createFolderAndBulkAdd()`（全域 `_bulkFolderTargets` 暫存選取清單），加入後 `_exitSelectMode()` 自動退出
   - 選取工具列 `.select-bar` `position:sticky; top:calc(52px + safe-area)`（避開固定頂部列）
-- **TDZ 注意**：`wordFolders` / `folderWordSet` / `folderPhraseSet` / `selectMode` / `selectedCards` 皆為 top-level `let`，宣告位置在 `update()` 定義之後沒問題（init 在整段 script 解析完才執行），但**不可在宣告前的 top-level 程式碼呼叫 `update()`**
+- **「我的單字」頁批次選取**（2026-06-12）：同樣的多選，作用於 `renderMyWords()` 的 📝 自訂單字庫 + ⭐ 複習清單
+  - 獨立狀態 `mwSelectMode` / `mwSelected`（與字典 `selectMode`/`selectedCards` **分開**，避免互相干擾）；`toggleMwSelectMode()` 重繪整頁
+  - `.mw-item` 帶 `data-word`，內含 `.mw-check`（平時不渲染，select 模式才加）；onclick 走 `onMwItemClick(word)` 分流；`.mw-wrap.mw-selecting .mw-actions-col{display:none}` 隱藏編輯/刪除/已熟按鈕
+  - **共用 bulk 寫入**：`addSelectedToFolder`（字典）與 `addMwSelectedToFolder`（我的單字）都設 `_bulkFolderTargets` + `_bulkSource`（`'dict'`/`'mw'`）後呼叫 `_openBulkFolderSheet()`；完成時 `_bulkFinish()` 依 `_bulkSource` 決定退出哪個選取模式並重繪對應頁面
+  - 注意 `.select-toggle-btn` 在字典與我的單字各有一顆（CSS class 共用、字典那顆額外有 `#selectToggleBtn` id）
+- **TDZ 注意**：`wordFolders` / `folderWordSet` / `folderPhraseSet` / `selectMode` / `selectedCards` / `mwSelectMode` / `mwSelected` 皆為 top-level `let`，宣告位置在 `update()` 定義之後沒問題（init 在整段 script 解析完才執行），但**不可在宣告前的 top-level 程式碼呼叫 `update()`**
 
 ### 雲端同步架構（Firebase）
 
