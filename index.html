@@ -455,6 +455,13 @@ header{top:52px!important;}
 .streak-dot.done{background:var(--accent);border-color:var(--accent);color:#fff;}
 .streak-dot.today{border-color:var(--accent);background:rgba(67,97,238,.1);color:var(--accent);}
 .streak-lbl{font-size:0.58rem;color:var(--muted);}
+.home-wotd-card{display:flex;align-items:center;gap:12px;margin:0 16px 12px;padding:14px 16px;border-radius:16px;cursor:pointer;background:linear-gradient(135deg,#4361EE 0%,#7B9EFF 100%);box-shadow:0 4px 16px rgba(67,97,238,.28);transition:transform .15s,box-shadow .2s;}
+.home-wotd-card:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(67,97,238,.38);}
+.home-wotd-spark{font-size:1.5rem;flex-shrink:0;}
+.home-wotd-text{flex:1;min-width:0;}
+.home-wotd-title{color:#fff;font-weight:700;font-size:1rem;}
+.home-wotd-sub{color:rgba(255,255,255,.82);font-size:0.75rem;margin-top:2px;}
+.home-wotd-arrow{color:rgba(255,255,255,.9);font-size:1.5rem;flex-shrink:0;}
 .home-quick-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 16px 12px;}
 .home-quick-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px 16px;cursor:pointer;transition:all .15s;box-shadow:var(--shadow);}
 .home-quick-card:hover{border-color:rgba(67,97,238,.3);box-shadow:0 4px 20px rgba(67,97,238,.12);transform:translateY(-1px);}
@@ -2313,6 +2320,14 @@ function renderHome(){
       </div>
       <div class="streak-row">${streakDots}</div>
     </div>
+    <div class="home-wotd-card" onclick="showWotd()">
+      <div class="home-wotd-spark">✨</div>
+      <div class="home-wotd-text">
+        <div class="home-wotd-title">每日一字</div>
+        <div class="home-wotd-sub">看今天的單字 · 可分享到限動 / 貼文</div>
+      </div>
+      <div class="home-wotd-arrow">›</div>
+    </div>
     <div class="home-quick-row">
       <div class="home-quick-card" onclick="switchTab('quiz')">
         <div class="home-quick-icon">✏️</div>
@@ -2805,34 +2820,70 @@ async function startQuiz(){
     return;
   }
 
-  document.getElementById('quizSection').innerHTML=`
-    <div class="quiz-loading">
-      <div class="quiz-spinner"></div>
-      <h3>Claude AI 正在生成題目…</h3>
-      <p>正在為 ${selected.length} 個單字量身設計考題</p>
-    </div>`;
+  // ── 客戶端題庫快取（localStorage）：已快取的題目免再呼叫 CF，離線也能複習 ──
+  const cachedQ = {};   // word -> question
+  selected.forEach(w => {
+    try { const c = localStorage.getItem('vocab_quiz_' + w.word); if(c) cachedQ[w.word] = JSON.parse(c); } catch(e){}
+  });
+  const needGen = selected.filter(w => !cachedQ[w.word]);
 
-  try{
-    const resp=await fetch(QUIZ_FN_URL,{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({words:selected.map(w=>({word:w.word,pos:w.pos||'',zh:w.zh||''}))})
-    });
-    if(!resp.ok) throw new Error(`伺服器錯誤 (HTTP ${resp.status})`);
-    const data=await resp.json();
-    qQuestions=Array.isArray(data)?data:(data.questions||[]);
-    if(!qQuestions.length) throw new Error('題目為空，請重試');
-    qQuestions.forEach(q => { if(!q.type) q.type = 'sentence'; });
-    if(qSource==='filtered' && selectedLetters.size>0) qQuestions=enforceLetterDistractors(qQuestions,selectedLetters);
-    qIndex=0; qScore=0; qSelected=null;
-    renderQuestion();
-  }catch(e){
+  let fetched = [];
+  if(needGen.length){
+    document.getElementById('quizSection').innerHTML=`
+      <div class="quiz-loading">
+        <div class="quiz-spinner"></div>
+        <h3>Claude AI 正在生成題目…</h3>
+        <p>正在為 ${needGen.length} 個單字量身設計考題${Object.keys(cachedQ).length?`（另 ${Object.keys(cachedQ).length} 題用快取）`:''}</p>
+      </div>`;
+    try{
+      const resp=await fetch(QUIZ_FN_URL,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({words:needGen.map(w=>({word:w.word,pos:w.pos||'',zh:w.zh||''}))})
+      });
+      if(!resp.ok) throw new Error(`伺服器錯誤 (HTTP ${resp.status})`);
+      const data=await resp.json();
+      fetched=Array.isArray(data)?data:(data.questions||[]);
+      // 寫入客戶端快取（對應回原單字，避免大小寫不符）
+      const normToOrig={}; needGen.forEach(w=>{ normToOrig[w.word.toLowerCase().trim()]=w.word; });
+      fetched.forEach(q=>{
+        if(!q||!q.word) return;
+        const orig=normToOrig[String(q.word).toLowerCase().trim()]||q.word;
+        try{ localStorage.setItem('vocab_quiz_'+orig, JSON.stringify(q)); }catch(e){}
+      });
+    }catch(e){
+      // 離線 / 失敗：若有部分快取就用快取題目複習，否則才報錯
+      if(!Object.keys(cachedQ).length){
+        document.getElementById('quizSection').innerHTML=`
+          <div class="quiz-error">
+            <h3>⚠️ 出題失敗</h3>
+            <p>${navigator.onLine===false?'目前離線，且這些單字尚無已下載的題目。請先在有網路時練習一次。':e.message}</p>
+            <button class="quiz-start-btn" style="width:auto;padding:12px 28px" onclick="renderQuizSetup()">返回重試</button>
+          </div>`;
+        return;
+      }
+    }
+  }
+
+  // ── 合併（依選取順序）：快取優先，其次本次生成 ──
+  const fByNorm={}; fetched.forEach(q=>{ if(q&&q.word) fByNorm[String(q.word).toLowerCase().trim()]=q; });
+  qQuestions=[];
+  selected.forEach(w=>{
+    const q = cachedQ[w.word] || fByNorm[w.word.toLowerCase().trim()];
+    if(q) qQuestions.push(q);
+  });
+  if(!qQuestions.length){
     document.getElementById('quizSection').innerHTML=`
       <div class="quiz-error">
         <h3>⚠️ 出題失敗</h3>
-        <p>${e.message}</p>
+        <p>題目為空，請重試</p>
         <button class="quiz-start-btn" style="width:auto;padding:12px 28px" onclick="renderQuizSetup()">返回重試</button>
       </div>`;
+    return;
   }
+  qQuestions.forEach(q => { if(!q.type) q.type = 'sentence'; });
+  if(qSource==='filtered' && selectedLetters.size>0) qQuestions=enforceLetterDistractors(qQuestions,selectedLetters);
+  qIndex=0; qScore=0; qSelected=null;
+  renderQuestion();
 }
 
 function enforceLetterDistractors(questions, filterLetters){

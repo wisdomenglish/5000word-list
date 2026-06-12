@@ -59,6 +59,7 @@
 - 例句結果以 `vocab_ex_{word}` 為 key 存入 localStorage（快取）
 - 字根結果以 `vocab_etym_{word}` 為 key 存入 localStorage（快取）
 - **片語例句**以 `vocab_phrase_ex_{phrase}` 為 key 存入 localStorage（快取）
+- **句子填空題目**以 `vocab_quiz_{word}` 為 key 存入 localStorage（客戶端題庫快取，疊加在 Firebase 共享快取之上）：`startQuiz()` sentence 模式出題前先讀本地快取，只對未快取單字呼叫 `generateVocabQuiz`，回傳後寫回；**已練過的單字離線也能複習**（fetch 失敗時若有部分本地快取則用快取題目，全無才報錯）
 - 自訂單字以 `vocab_custom_words` 為 key 存入 localStorage（JSON array，格式：`{word, pos, zh, custom:true}`）
 - **學習統計 localStorage keys**：
   - `vocab_streak`：`{streak, best, lastDate}` 連續打卡天數
@@ -191,7 +192,10 @@
 ### 每日一字（Word of the Day）架構
 
 - `showWotdIfNeeded()`：每天首次開啟才彈出（`localStorage[WOTD_SHOWN_KEY]` 比對 `getTWDate()`）；`closeWotd()` 寫入今日日期，當天不再出現
-- `showWotd()`：`getWotdWord()` 取當日單字 → 設 `_wotdWord` → 抓例句（`EXAMPLE_FN_URL`，`style:'motivational'`，快取 `vocab_wotd_ex_{word}`）→ `renderWotdEx()`
+- `getWotdWord()`：用台灣日期 seed 的 Knuth 乘法雜湊取 `WORDS[idx]` → **所有用戶當天同一個字**（前提：同一份 WORDS）
+- `showWotd()`：`getWotdWord()` 取當日單字 → 設 `_wotdWord` → 抓例句（`EXAMPLE_FN_URL`，`style:'motivational'`，本地快取 `vocab_wotd_ex_{word}`）→ `renderWotdEx()`
+- **共享例句**：`generateWordExample` CF 已加 Firebase `/example-cache/{md5(word\|style)}`，第一位用戶生成後其他人共用同一句（每日一字所有人看到的句子一致、省 token）
+- **可重複開啟**：首頁有 `.home-wotd-card`（藍紫橫幅）`onclick="showWotd()"`，看完關閉後仍可隨時再打開觀看 / 分享（`showWotdIfNeeded()` 的每日一次只控制「自動彈出」，手動開啟不受限）
 - **分享成限動/貼文圖片**（2026-06-12）：
   - `📤 分享` 按鈕（`#wotdShareBtn`）→ `shareWotdImage()`
   - `buildWotdShareImage()`：用隱藏 `#shareCanvas`（1080×1920）畫直式圖（藍紫漸層底 + 白卡：單字/詞性/釋義/例句/翻譯 + 品牌頁尾），回傳 PNG `Blob`；含 CJK+latin 混排換行 helper `_shTokens`/`_shWrap`、圓角 `_shRound`；單字過長自動縮字級
@@ -235,18 +239,19 @@ firebase deploy --only hosting
 hero-english/src/
 ├── App.jsx                          # 主應用（SplashScreen → AuthGate → 新手流程 → 主畫面）
 ├── components/
-│   ├── SplashScreen.jsx             # 像素 RPG 進場畫面（sessionStorage 控制每次開啟顯示一次）
+│   ├── SplashScreen.jsx             # RPG 進場畫面，含四職業 Q 版角色展示（sessionStorage 控制每次開啟顯示一次）
 │   ├── Onboarding.jsx               # 新手引導
 │   ├── ClassSelect.jsx              # 職業選擇（劍士/法師/馴獸師/鬥士）
 │   ├── GlobalTopBar.jsx             # 頂部 HUD（🔥連續 + Lv 徽章 + XP 微進度條）
-│   ├── BottomNav.jsx                # 底部導覽（4 tabs，frosted glass pill active 指示器）
+│   ├── BottomNav.jsx                # 底部導覽（4 tabs，active icon 浮起成發光圓形徽章，每 tab 專屬色）
 │   ├── SideDrawer.jsx               # 右側抽屜（雲端同步 + 個人資料）
 │   ├── CharacterTab.jsx             # 角色頁（圖鑑 + 地圖 + StudyCta + 能力值 + 成就）
 │   ├── QuestBoardTab.jsx            # 任務板
 │   ├── LearningTab.jsx              # 學習 tab（答題/測驗）
 │   ├── VocabBookTab.jsx             # 詞彙本
 │   ├── TaiwanMapWorld.jsx           # 角色走動場景（台灣地圖世界）
-│   ├── PixelCharacter.jsx           # 像素角色（Tier CSS 特效）
+│   ├── ChibiCharacter.jsx           # Q 版 SVG 角色（2026-06-12 取代像素圖，會眨眼/彈跳 + Tier 特效）
+│   ├── PixelCharacter.jsx           # （舊）像素角色，已無人引用，保留備用
 │   ├── LevelUpModal.jsx             # 升級彈窗
 │   ├── CharacterUnboxingModal.jsx   # Tier 里程碑進化演出（Lv.10/20/30）
 │   ├── AchievementToast.jsx         # 成就解鎖浮動通知
@@ -275,29 +280,31 @@ hero-english/src/
 
 **底部 4 tabs**：角色（CharacterTab）/ 任務（QuestBoardTab）/ 學習（LearningTab）/ 詞彙本（VocabBookTab）
 
-**CharacterTab 元件順序**：
+**CharacterTab 元件順序**（2026-06-12 改版後實際渲染順序）：
 1. `ActionPill`：最優先行動提示（體力危急🔴 / 限時成就⏰ / 快升級⚡ / 打卡提醒🔥）
 2. `CollectionCard`：英雄圖鑑（Tier 進度 + 成就解鎖數 + 限時成就警示）
-3. `TaiwanMapWorld`：角色走動場景
-4. `StudyCta`：大型 CTA 按鈕（橘色「今日練習」→ 低體力變紅、近升級變職業色）
-5. Hero 資訊卡：名稱 + XP 進度條 + 彩色資源格（📘英語等級 / ⭐已掌握 / 🔥天連續）
-6. `StaminaBar`：體力 HP 條
+3. `TaiwanMapWorld`：角色走動場景（Q 版角色 `walking` 踏步動畫）
+4. `MentorTip`：智慧法師 🧙 NPC 對話泡泡（依體力/連續天數/XP 給提示）
+5. `StudyCta`：大型 3D 糖果 CTA 按鈕（橘色「今日練習」→ 低體力變紅、近升級變職業色）
+6. `HeroSheet`：英雄資訊卡 — 左側 Q 版立繪（發光底座＋名牌）＋ Lv/CEFR + HP/XP 條 + 底部資源列（⭐已掌握 / 🔥天連續 / 📘英語等級）
 7. `AbilityBar`：四項能力值（閱讀/聽力/口說/寫作）
 8. `EvolutionRoadmap`：四階段進化路線圖
 9. `AchievementSection`：可折疊分類的成就牆
 10. `LeaderboardSection`：排行榜
 
+（`StaminaBar` 元件仍在檔案內但目前未渲染，HP 已整合進 `HeroSheet`）
+
 ### 角色 Tier 系統
 
-| Tier | 等級 | 稱號 | CSS 特效 |
+| Tier | 等級 | 稱號 | 視覺特效（ChibiCharacter） |
 |------|------|------|---------|
-| 1 | Lv.1–9 | 🌱 學徒 | `saturate(0.5) brightness(0.85)` 略灰 |
-| 2 | Lv.10–19 | ⚔️ 初學者 | 正常（現有 `-hd.png`）|
-| 3 | Lv.20–29 | ✨ 精英 | `drop-shadow(0 0 8px #F59E0B)` 金光 |
-| 4 | Lv.30+ | 👑 大師 | 彩虹 glow 動畫 |
+| 1 | Lv.1–9 | 🌱 學徒 | `saturate(0.55) brightness(0.85)` 略灰 |
+| 2 | Lv.10–19 | ⚔️ 初學者 | 正常 |
+| 3 | Lv.20–29 | ✨ 精英 | 金色 drop-shadow + 閃爍星星 |
+| 4 | Lv.30+ | 👑 大師 | 彩虹 glow 動畫 + 金皇冠（法師除外，有帽子） |
 
 - Tier 里程碑（Lv.10/20/30）→ `isTierMilestone(level)` 為 `true` → 渲染 `CharacterUnboxingModal`（進化演出），否則渲染 `LevelUpModal`
-- **自訂 Tier 圖**：命名 `{classId}-t{1-4}.png`（如 `swordsman-t3.png`）放至 `hero-english/` 根目錄即自動套用
+- ~~自訂 Tier PNG 圖~~：舊 `{classId}-t{1-4}.png` 機制只屬於已停用的 `PixelCharacter.jsx`；現行角色為純 SVG（`ChibiCharacter.jsx`），改造型直接改 SVG 程式碼
 
 ### 成就系統
 
@@ -309,14 +316,14 @@ hero-english/src/
 
 ### SplashScreen 架構
 
-- 像素 RPG 風格：深紫 → 深黑綠漸層天空 + 像素草地 + 閃爍星星 + 四職業角色浮動展示
+- RPG 風格：深紫 → 深黑綠漸層天空 + 像素草地 + 閃爍星星 + 四職業 Q 版角色浮動展示（ChibiCharacter，scale 3.2）；標語「召喚你的英雄，英文大冒險！」
 - `sessionStorage['hej_splash_v1']`：每次關閉瀏覽器後重新顯示；無痕視窗每次都顯示
 - 自動 2.9s 後淡出（opacity transition 0.38s），點擊立即跳過
 - CSS 動畫：`ss-twinkle` / `ss-float` / `ss-fadeup` / `ss-pop` / `ss-blink` / `ss-sparkle` / `ss-sway` / `ss-scan`
 
 ### GlobalTopBar HUD 樣式
 
-- 左側：🔥連續天數（琥珀膠囊 pill）+ Lv.X（紫色膠囊 pill）
+- 左側：🔥連續天數（琥珀漸層光澤膠囊）+ Lv.X（紫色漸層光澤膠囊，帶 glow）
 - 中：App icon（Wisdom logo，紫色 glow）
 - 右：☰ 選單按鈕
 - 底部：2px XP 微進度條（`#7C3AED → #A78BFA` 漸層，實時反映當前 XP%）
@@ -338,9 +345,11 @@ hero-english/src/
 
 - **色彩主題**：深色（`#0F0F14` 背景），主色 `#7C3AED`（紫）/ `#A78BFA`（淺紫），行動色 `#F59E0B`（琥珀）/ `#F97316`（橘）
 - **字體**：標題 Playfair Display，內文 DM Sans + Tailwind CSS utility classes
-- **StudyCta 按鈕**：happiness < 30 → 紅色；xpProgress.percent ≥ 75 → 職業主色；其他 → 橘黃漸層
+- **StudyCta 按鈕**：happiness < 30 → 紅色；xpProgress.percent ≥ 75 → 職業主色；其他 → 橘黃漸層（皆為 `.game-btn` 3D 糖果款）
 - **最小字體**：game UI 標籤最小 `0.65rem`（0.5rem 以下不可用）
-- **BottomNav active 指示**：frosted glass pill 背景（`rgba(255,255,255,0.09)`）+ icon glow `drop-shadow`
+- **BottomNav active 指示（2026-06-12 改版）**：選中 tab 的 icon 浮起成發光圓形漸層徽章（每 tab 專屬色：角色紫/任務琥珀/學習藍/詞彙綠），彈性動畫 `cubic-bezier(0.34,1.56,0.64,1)`
+- **角色系統（2026-06-12 改版）**：`ChibiCharacter.jsx` 取代 16×16 像素 PNG。純 SVG 手繪 Q 版（大頭大眼、`chibiBlink` 眨眼、`chibiBob` 待機彈跳），四職業專屬造型（劍士：紅頭帶＋劍／法師：尖帽＋發光法杖／馴獸師：恐龍連帽＋尾巴／格鬥家：刺刺頭＋纏布拳）。Props 與舊 PixelCharacter 相同（`classId/level/scale/animate/grayscale`），另有 `walking`（true 時雙腳交替踏步 `chibiStepL/R` + 身體搖擺 `chibiWaddle` + 步伐彈跳 `chibiWalkBob`，取代待機 bob；TaiwanMapWorld 地圖角色使用）。寬 = `scale*16`、高 = 寬×1.16（含腳下陰影）。Tier 1 降飽和、Tier 3 金光＋星星、Tier 4 彩虹光暈＋皇冠（法師除外，有帽子）。使用處：TaiwanMapWorld、LevelUpModal、CharacterUnboxingModal、CharacterTab HeroSheet 立繪、ClassSelect、SplashScreen
+- **遊戲風共用樣式（index.css）**：`.game-panel`（漸層面板＋上緣亮邊＋立體陰影）、`.game-btn`（3D 糖果按鈕：CSS 變數 `--btn-edge` 底邊色／`--btn-glow` 光暈色，`:active` 下沉 4px）、`.game-section-title`（emoji 標題＋漸層分隔線）
 
 ---
 
@@ -470,6 +479,7 @@ node line-bot-firebase/setup-rich-menu.js
 |------|------|
 | `/cache/{md5}` | Bot 1/3 Claude 回覆快取（7天 TTL） |
 | `/quiz-cache/{word}` | `generateVocabQuiz` 共享題庫快取（無 TTL）；`{ q:{word,sentence,options,answer,translation,explanation}, createdAt }`，key 為單字小寫去非英數（見下方說明） |
+| `/example-cache/{md5}` | `generateWordExample` 共享例句快取（無 TTL）；key = `md5(word小寫\|style)`，value `{ data:{sentence,translation}, createdAt }`；讓**每日一字所有用戶共用同一句**，也快取一般單字/片語例句 |
 | `/calendar-cache` | iCal 事件快取（24小時 TTL）；由 `trigger-reminder.js`（本機）或 Cloud Function 寫入 |
 | `/calendar-subscribers/{userId}` | Bot 2 提醒訂閱者清單 |
 | `/calendar-sent/{eventId}_{userId}` | 已發送的行程提醒記錄（防重複） |

@@ -1796,12 +1796,35 @@ Rules:
 // ========== Word Example API ==========
 const { Anthropic: AnthropicEx } = require("@anthropic-ai/sdk");
 
+// 例句共享快取 key（word + style，用 md5 避免特殊字元/長度問題）
+function exampleCacheKey(word, style) {
+  const crypto = require("crypto");
+  return crypto.createHash("md5").update(String(word).toLowerCase().trim() + "|" + (style || "default")).digest("hex");
+}
+
 exports.generateWordExample = onRequest({ cors: true }, async (req, res) => {
   if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
   const { word, pos, zh, style } = req.body || {};
   if (!word) return res.status(400).json({ error: "Missing word" });
 
   try {
+    // ── 先查 Firebase 共享快取（跨所有用戶只生成一次；每日一字所有人共用同一句）──
+    let db = null;
+    try { initializeFirebase(); db = dbRef; } catch (e) { console.error("[exampleCache] firebase init fail:", e.message); }
+    const ckey = exampleCacheKey(word, style);
+    if (db) {
+      try {
+        const snap = await db.ref(`/example-cache/${ckey}`).get();
+        if (snap.exists()) {
+          const v = snap.val();
+          if (v && v.data && v.data.sentence) {
+            console.log(`[exampleCache] HIT ${word} (${style || "default"})`);
+            return res.json(v.data);
+          }
+        }
+      } catch (e) { /* 讀取失敗就當未快取 */ }
+    }
+
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY");
     const client = new AnthropicEx({ apiKey });
@@ -1847,6 +1870,10 @@ Rules:
       raw = raw.replace(/^```json?\s*/, "").replace(/\s*```$/, "").trim();
 
     const data = JSON.parse(raw);
+    // ── 寫回共享快取 ──
+    if (db && data && data.sentence) {
+      try { await db.ref(`/example-cache/${ckey}`).set({ data, createdAt: Date.now() }); } catch (e) { /* 寫入失敗不影響回傳 */ }
+    }
     res.json(data);
   } catch (e) {
     console.error("[ERROR] generateWordExample:", e.message);

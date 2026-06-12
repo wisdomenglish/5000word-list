@@ -1,4 +1,4 @@
-const CACHE = 'vocab-app-v87';
+const CACHE = 'vocab-app-v89';
 const BASE  = '/5000word-list';
 
 self.addEventListener('install', e => {
