@@ -149,9 +149,10 @@
 - **「我的單字」頁批次選取**（2026-06-12）：同樣的多選，作用於 `renderMyWords()` 的 📝 自訂單字庫 + ⭐ 複習清單
   - 獨立狀態 `mwSelectMode` / `mwSelected`（與字典 `selectMode`/`selectedCards` **分開**，避免互相干擾）；`toggleMwSelectMode()` 重繪整頁
   - `.mw-item` 帶 `data-word`，內含 `.mw-check`（平時不渲染，select 模式才加）；onclick 走 `onMwItemClick(word)` 分流；`.mw-wrap.mw-selecting .mw-actions-col{display:none}` 隱藏編輯/刪除/已熟按鈕
-  - **共用 bulk 寫入**：`addSelectedToFolder`（字典）與 `addMwSelectedToFolder`（我的單字）都設 `_bulkFolderTargets` + `_bulkSource`（`'dict'`/`'mw'`）後呼叫 `_openBulkFolderSheet()`；完成時 `_bulkFinish()` 依 `_bulkSource` 決定退出哪個選取模式並重繪對應頁面
-  - 注意 `.select-toggle-btn` 在字典與我的單字各有一顆（CSS class 共用、字典那顆額外有 `#selectToggleBtn` id）
-- **TDZ 注意**：`wordFolders` / `folderWordSet` / `folderPhraseSet` / `selectMode` / `selectedCards` / `mwSelectMode` / `mwSelected` 皆為 top-level `let`，宣告位置在 `update()` 定義之後沒問題（init 在整段 script 解析完才執行），但**不可在宣告前的 top-level 程式碼呼叫 `update()`**
+  - **共用 bulk 寫入**：`addSelectedToFolder`（字典）/ `addMwSelectedToFolder`（我的單字）/ `addPhraseSelectedToFolder`（片語）都設 `_bulkFolderTargets` + `_bulkSource`（`'dict'`/`'mw'`/`'phrase'`）後呼叫 `_openBulkFolderSheet()`；`bulkAddToFolder`/`createFolderAndBulkAdd` 依 `_bulkIsPhrase()` 決定寫入 `f.phrases` 或 `f.words`、彈窗文案切換「片語/單字」；完成時 `_bulkFinish()` 依 `_bulkSource` 退出對應選取模式並重繪對應頁面
+  - 注意 `.select-toggle-btn` 在字典/片語/我的單字各有一顆（CSS class 共用，id 各為 `#selectToggleBtn`/`#phraseSelectToggleBtn`，我的單字那顆無 id）
+- **片語頁批次選取**（2026-06-12）：狀態 `phraseSelectMode` / `phraseSelected`（存片語字串 `p.p`）；片語卡用 `data-pidx` + 事件委派分流（select 模式 → 切換選取，否則 `openPhraseModal`），卡內 `.pcard-check` 平時 `display:none`、`#phraseGrid.select-mode` 才顯示；用 data-pidx + Set **避開片語含 `'`/`/`/`=`/`(` 的引號問題**
+- **TDZ 注意**：`wordFolders` / `folderWordSet` / `folderPhraseSet` / `selectMode` / `selectedCards` / `mwSelectMode` / `mwSelected` / `phraseSelectMode` / `phraseSelected` 皆為 top-level `let`，宣告位置在 `update()` 定義之後沒問題（init 在整段 script 解析完才執行），但**不可在宣告前的 top-level 程式碼呼叫 `update()`**
 
 ### 雲端同步架構（Firebase）
 
