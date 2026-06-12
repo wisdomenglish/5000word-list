@@ -432,36 +432,34 @@ header{top:52px!important;}
 /* ── Home Screen ── */
 #homeSection{padding:0 0 16px;min-height:70vh;}
 .home-top-area{padding:18px 16px 0;}
-.home-greeting{font-size:1rem;color:var(--muted);margin-bottom:3px;}
-.home-countdown{font-family:'Playfair Display',serif;font-size:1.85rem;font-weight:700;color:var(--text);line-height:1.2;}
-.home-countdown em{color:var(--accent);font-style:normal;}
-.goal-card{margin:14px 16px 12px;background:linear-gradient(135deg,#4361EE 0%,#7B9EFF 100%);border-radius:20px;padding:18px 20px;color:#fff;box-shadow:0 6px 24px rgba(67,97,238,.35);}
-.goal-label-badge{display:inline-block;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;background:rgba(255,255,255,.22);padding:3px 10px;border-radius:20px;margin-bottom:10px;}
-.goal-top-row{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;}
-.goal-nums{font-size:2.1rem;font-weight:800;line-height:1;}
-.goal-nums-unit{font-size:0.92rem;font-weight:400;opacity:.82;margin-left:2px;}
-.goal-continue-btn{background:#fff;color:var(--accent);border:none;border-radius:10px;padding:9px 16px;font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:opacity .15s;}
-.goal-continue-btn:hover{opacity:.9;}
-.goal-pbar-bg{height:5px;background:rgba(255,255,255,.25);border-radius:3px;margin:10px 0 6px;overflow:hidden;}
-.goal-pbar{height:100%;background:#fff;border-radius:3px;transition:width .6s ease;}
-.goal-meta-row{display:flex;justify-content:space-between;font-size:0.74rem;opacity:.82;}
-.streak-section{margin:0 16px 12px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 16px;box-shadow:var(--shadow);}
-.streak-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
-.streak-title{font-size:0.86rem;font-weight:600;color:var(--text);}
-.streak-best{font-size:0.72rem;color:var(--muted);}
-.streak-row{display:flex;gap:0;justify-content:space-between;}
-.streak-day-col{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;}
-.streak-dot{width:34px;height:34px;border-radius:50%;background:var(--bg);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:0.78rem;transition:all .2s;}
-.streak-dot.done{background:var(--accent);border-color:var(--accent);color:#fff;}
-.streak-dot.today{border-color:var(--accent);background:rgba(67,97,238,.1);color:var(--accent);}
-.streak-lbl{font-size:0.58rem;color:var(--muted);}
-.home-wotd-card{display:flex;align-items:center;gap:12px;margin:0 16px 12px;padding:14px 16px;border-radius:16px;cursor:pointer;background:linear-gradient(135deg,#4361EE 0%,#7B9EFF 100%);box-shadow:0 4px 16px rgba(67,97,238,.28);transition:transform .15s,box-shadow .2s;}
-.home-wotd-card:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(67,97,238,.38);}
+.home-greeting{font-size:1rem;color:var(--muted);}
+/* Exam countdown hero */
+.home-hero{position:relative;overflow:hidden;margin:12px 16px 14px;padding:22px 22px 18px;border-radius:24px;color:#fff;background:linear-gradient(135deg,#1E1B4B 0%,#3730A3 48%,#4361EE 100%);box-shadow:0 10px 30px rgba(30,27,75,.38);}
+.home-hero::after{content:'';position:absolute;top:-44px;right:-34px;width:170px;height:170px;border-radius:50%;background:radial-gradient(circle,rgba(247,37,133,.38),transparent 68%);pointer-events:none;}
+.home-hero-label{position:relative;font-size:0.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.8);}
+.home-hero-num-row{position:relative;display:flex;align-items:baseline;gap:8px;margin:4px 0 14px;}
+.home-hero-num{font-family:'Playfair Display',serif;font-size:3.5rem;font-weight:800;line-height:.95;letter-spacing:-.02em;}
+.home-hero-unit{font-size:1rem;font-weight:600;opacity:.92;}
+.home-hero-prep-bg{position:relative;height:6px;background:rgba(255,255,255,.22);border-radius:4px;overflow:hidden;}
+.home-hero-prep{height:100%;border-radius:4px;background:linear-gradient(90deg,#F72585,#FF8AC2);transition:width .7s ease;}
+.home-hero-prep-lbl{position:relative;display:flex;justify-content:space-between;font-size:0.7rem;opacity:.85;margin-top:7px;}
+/* Mini stat tiles */
+.home-stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 16px 14px;}
+.home-stat-tile{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 6px;text-align:center;box-shadow:var(--shadow);cursor:pointer;transition:transform .15s,border-color .15s;-webkit-tap-highlight-color:transparent;}
+.home-stat-tile:hover{border-color:rgba(67,97,238,.3);}
+.home-stat-tile:active{transform:scale(.96);}
+.home-stat-ico{font-size:1.3rem;line-height:1;}
+.home-stat-num{font-size:1.4rem;font-weight:800;color:var(--text);line-height:1.1;margin-top:5px;}
+.home-stat-num small{font-size:0.78rem;font-weight:600;color:var(--muted);}
+.home-stat-lbl{font-size:0.66rem;color:var(--muted);margin-top:3px;}
+/* WOTD — warm orange to differ from hero/blue */
+.home-wotd-card{display:flex;align-items:center;gap:12px;margin:0 16px 12px;padding:14px 16px;border-radius:16px;cursor:pointer;background:linear-gradient(135deg,#EA580C 0%,#F59E0B 100%);box-shadow:0 4px 16px rgba(234,88,12,.28);transition:transform .15s,box-shadow .2s;}
+.home-wotd-card:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(234,88,12,.4);}
 .home-wotd-spark{font-size:1.5rem;flex-shrink:0;}
 .home-wotd-text{flex:1;min-width:0;}
 .home-wotd-title{color:#fff;font-weight:700;font-size:1rem;}
-.home-wotd-sub{color:rgba(255,255,255,.82);font-size:0.75rem;margin-top:2px;}
-.home-wotd-arrow{color:rgba(255,255,255,.9);font-size:1.5rem;flex-shrink:0;}
+.home-wotd-sub{color:rgba(255,255,255,.92);font-size:0.75rem;margin-top:2px;}
+.home-wotd-arrow{color:rgba(255,255,255,.95);font-size:1.5rem;flex-shrink:0;}
 .home-quick-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 16px 12px;}
 .home-quick-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px 16px;cursor:pointer;transition:all .15s;box-shadow:var(--shadow);}
 .home-quick-card:hover{border-color:rgba(67,97,238,.3);box-shadow:0 4px 20px rgba(67,97,238,.12);transform:translateY(-1px);}
@@ -575,9 +573,24 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
 /* ── Progress Section ── */
 #progressSection{padding:16px 16px 24px;min-height:70vh;}
 .progress-title{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--text);margin-bottom:16px;}
+/* Progress overview hero (matches home hero language) */
+.prog-hero{position:relative;overflow:hidden;margin-bottom:14px;padding:20px 22px 18px;border-radius:22px;color:#fff;background:linear-gradient(135deg,#1E1B4B 0%,#3730A3 48%,#4361EE 100%);box-shadow:0 10px 28px rgba(30,27,75,.36);}
+.prog-hero::after{content:'';position:absolute;top:-44px;right:-34px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(247,37,133,.36),transparent 68%);pointer-events:none;}
+.prog-hero-label{position:relative;font-size:0.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.8);}
+.prog-hero-num-row{position:relative;display:flex;align-items:baseline;gap:7px;margin:4px 0 12px;}
+.prog-hero-num{font-family:'Playfair Display',serif;font-size:3rem;font-weight:800;line-height:.95;letter-spacing:-.02em;}
+.prog-hero-unit{font-size:0.95rem;font-weight:600;opacity:.92;}
+.prog-hero-bar-bg{position:relative;height:6px;background:rgba(255,255,255,.22);border-radius:4px;overflow:hidden;}
+.prog-hero-bar{height:100%;border-radius:4px;background:linear-gradient(90deg,#34D399,#A7F3D0);transition:width .7s ease;}
+.prog-hero-chips{position:relative;display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.prog-hero-chip{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.14);border-radius:20px;padding:5px 11px;font-size:0.74rem;font-weight:600;}
 .stat-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 14px;box-shadow:var(--shadow);}
-.stat-card-icon{font-size:1.2rem;margin-bottom:6px;line-height:1;}
+.stat-card-icon{width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;margin-bottom:9px;line-height:1;background:var(--bg);}
+.stat-card.sc-blue .stat-card-icon{background:rgba(67,97,238,.12);}
+.stat-card.sc-amber .stat-card-icon{background:rgba(245,158,11,.16);}
+.stat-card.sc-green .stat-card-icon{background:rgba(52,211,153,.16);}
+.stat-card.sc-pink .stat-card-icon{background:rgba(247,37,133,.12);}
 .stat-card-num{font-size:1.55rem;font-weight:800;color:var(--text);line-height:1.1;}
 .stat-card-num em{font-size:0.88rem;font-weight:500;font-style:normal;color:var(--muted);}
 .stat-card-label{font-size:0.7rem;font-weight:600;color:var(--muted);margin-top:3px;}
@@ -848,6 +861,23 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
     <!-- ══ 更新紀錄索引 ══ -->
     <div class="news-index-section">
       <div class="news-index-section-title">📋 更新紀錄</div>
+
+      <!-- 2026-06-12 首頁 / 進度頁改版 -->
+      <div class="news-index-entry">
+        <div class="news-index-item" onclick="toggleNewsDetail(this.parentElement)">
+          <span class="news-date">2026-06-12</span>
+          <span class="news-type improve">介面改版</span>
+          <span class="ni-title">🎨 首頁與學習進度頁全新視覺</span>
+          <span class="news-arrow">›</span>
+        </div>
+        <div class="news-detail">
+          <ul class="news-list">
+            <li><strong>首頁改版</strong>：學測倒數升級成醒目的深藍大字主視覺，並新增「備考進度條」一眼看出距離學測還有多少準備時間。下方改成三顆統計磚（🔥連續打卡／🎯今日目標／⭐複習清單），點一下就能跳到對應功能。</li>
+            <li><strong>每日一字卡改為橘色</strong>：和上方藍色主視覺區隔，畫面更清爽不撞色。</li>
+            <li><strong>學習進度頁改版</strong>：新增「學習總覽」深藍卡（複習中字數 + 進度條 + 連續天數／正確率／下個目標標籤），四張統計卡加上彩色圖示，與首頁風格一致。熱力圖與排行榜維持不變。</li>
+          </ul>
+        </div>
+      </div>
 
       <!-- 2026-06-12 分享 / 單字庫優化 -->
       <div class="news-index-entry">
@@ -2269,6 +2299,9 @@ function renderHome(){
   const today = new Date();
   const gsatDate = new Date(2027, 0, 22);
   const daysLeft = Math.max(0, Math.ceil((gsatDate - today) / 86400000));
+  /* 備考進度：以考前一年為起點，今天走到哪 */
+  const prepStart = new Date(gsatDate); prepStart.setFullYear(prepStart.getFullYear()-1);
+  const prepPct = Math.max(0, Math.min(100, Math.round((today - prepStart)/(gsatDate - prepStart)*100)));
   /* Streak */
   const s = getStreakData();
   const badge = document.getElementById('streakBadge');
@@ -2284,41 +2317,35 @@ function renderHome(){
   const name = userProfile?.name ? userProfile.name.split(/[·、]/)[0].trim() : '同學';
   const hour = today.getHours();
   const greet = hour < 12 ? '早安' : hour < 18 ? '午安' : '晚安';
-  /* 7-day streak dots */
-  const dayNames = ['日','一','二','三','四','五','六'];
-  const streakDots = Array.from({length:7}, (_,i)=>{
-    const d = new Date(today); d.setDate(d.getDate() - (6-i));
-    const key = d.toISOString().slice(0,10);
-    const isToday = key === getTodayKey();
-    const isDone  = !isToday && (s.lastDate >= key && key >= (()=>{const x=new Date(s.lastDate);x.setDate(x.getDate()-s.streak+1);return x.toISOString().slice(0,10)})());
-    const doneMark = key === s.lastDate || (s.streak>1 && !isToday && isDone);
-    return `<div class="streak-day-col">
-      <div class="streak-dot ${key===s.lastDate||doneMark?'done':''}${isToday&&s.lastDate!==getTodayKey()?'today':''}">${key===s.lastDate||doneMark?'✓':''}${isToday&&s.lastDate!==getTodayKey()?'·':''}</div>
-      <div class="streak-lbl">${dayNames[d.getDay()]}</div>
-    </div>`;
-  }).join('');
   container.innerHTML = `
     <div class="home-top-area">
       <div class="home-greeting">${greet}，${_escH(name)} 👋</div>
-      <div class="home-countdown">學測倒數 <em>${daysLeft}</em> 天</div>
     </div>
-    <div class="goal-card">
-      <div class="goal-label-badge">今日目標</div>
-      <div class="goal-top-row">
-        <div>
-          <div class="goal-nums">${dGoal.count}<span class="goal-nums-unit">/${dGoal.goal} 個單字</span></div>
-        </div>
-        <button class="goal-continue-btn" onclick="switchTab('dict')">▶ 繼續</button>
+    <div class="home-hero">
+      <div class="home-hero-label">116 學測倒數</div>
+      <div class="home-hero-num-row">
+        <span class="home-hero-num">${daysLeft}</span>
+        <span class="home-hero-unit">天</span>
       </div>
-      <div class="goal-pbar-bg"><div class="goal-pbar" style="width:${pct}%"></div></div>
-      <div class="goal-meta-row"><span>剩 ${Math.max(0,dGoal.goal-dGoal.count)} 字</span><span>完成 ${pct}%</span></div>
+      <div class="home-hero-prep-bg"><div class="home-hero-prep" style="width:${prepPct}%"></div></div>
+      <div class="home-hero-prep-lbl"><span>備考進度</span><span>${prepPct}%</span></div>
     </div>
-    <div class="streak-section">
-      <div class="streak-hdr">
-        <span class="streak-title">🔥 連續打卡 ${s.streak} 天</span>
-        <span class="streak-best">最高 ${s.best} 天</span>
+    <div class="home-stat-row">
+      <div class="home-stat-tile" onclick="switchTab('progress')">
+        <div class="home-stat-ico">🔥</div>
+        <div class="home-stat-num">${s.streak}<small> 天</small></div>
+        <div class="home-stat-lbl">連續打卡</div>
       </div>
-      <div class="streak-row">${streakDots}</div>
+      <div class="home-stat-tile" onclick="switchTab('quiz')">
+        <div class="home-stat-ico">🎯</div>
+        <div class="home-stat-num">${dGoal.count}<small>/${dGoal.goal}</small></div>
+        <div class="home-stat-lbl">今日目標</div>
+      </div>
+      <div class="home-stat-tile" onclick="switchTab('mywords')">
+        <div class="home-stat-ico">⭐</div>
+        <div class="home-stat-num">${starCount}</div>
+        <div class="home-stat-lbl">複習清單</div>
+      </div>
     </div>
     <div class="home-wotd-card" onclick="showWotd()">
       <div class="home-wotd-spark">✨</div>
@@ -2450,29 +2477,43 @@ function renderProgress(){
   const accPct  = acc.total > 0 ? Math.round(acc.correct/acc.total*100) : 0;
   const starCount  = markedWords.size;
   const totalWords = getAllWords().length;
+  const milestone  = Math.max(50, Math.ceil((starCount||1)/50)*50);
+  const masterPct  = Math.min(100, Math.round(starCount/milestone*100));
   el.innerHTML = `
     <div style="padding:16px 16px 24px">
-      <div class="progress-title">學習進度</div>
+      <div class="prog-hero">
+        <div class="prog-hero-label">學習總覽</div>
+        <div class="prog-hero-num-row">
+          <span class="prog-hero-num">${starCount}</span>
+          <span class="prog-hero-unit">字 · 複習中</span>
+        </div>
+        <div class="prog-hero-bar-bg"><div class="prog-hero-bar" style="width:${masterPct}%"></div></div>
+        <div class="prog-hero-chips">
+          <span class="prog-hero-chip">🔥 連續 ${s.streak} 天</span>
+          <span class="prog-hero-chip">🎯 正確率 ${accPct}%</span>
+          <span class="prog-hero-chip">📈 下個目標 ${milestone}</span>
+        </div>
+      </div>
       <div class="stat-cards">
-        <div class="stat-card">
+        <div class="stat-card sc-blue">
           <div class="stat-card-icon">📚</div>
           <div class="stat-card-num">${starCount}<em>/${totalWords.toLocaleString()}</em></div>
           <div class="stat-card-label">掌握單字</div>
           <div class="stat-card-sub">已加入複習清單</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card sc-amber">
           <div class="stat-card-icon">🔥</div>
           <div class="stat-card-num">${s.streak}<em>天</em></div>
           <div class="stat-card-label">連續打卡</div>
           <div class="stat-card-sub">最高 ${s.best} 天</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card sc-green">
           <div class="stat-card-icon">🎯</div>
           <div class="stat-card-num">${accPct}<em>%</em></div>
           <div class="stat-card-label">正確率</div>
           <div class="stat-card-sub">共 ${acc.total} 題</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card sc-pink">
           <div class="stat-card-icon">✏️</div>
           <div class="stat-card-num">${userStats.weeklyReviews}</div>
           <div class="stat-card-label">本週答題</div>

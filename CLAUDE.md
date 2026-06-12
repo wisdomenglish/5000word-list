@@ -27,7 +27,7 @@
 - [vocabulary-data.js](vocabulary-data.js) — 外部單字庫（4,549 字，格式：`{w, z, p}`；2026-06-11 由 4,391 擴充至 5,565 後，2026-06-12 精簡純變化形回 4,549，並 AI 校正中文釋義標點，保留原形＋真形容詞/獨立詞）
 - [phrases-data.js](phrases-data.js) — 外部片語庫（1,125 條，格式：`{p, z}`）
 - [manifest.json](manifest.json) — PWA 設定（name: 5000英文單字學習）
-- [sw.js](sw.js) — Service Worker，支援離線使用（目前版本：`vocab-app-v85`）
+- [sw.js](sw.js) — Service Worker，支援離線使用（目前版本：`vocab-app-v90`）
 - [icon-192.png](icon-192.png) / [icon-512.png](icon-512.png) — Wisdom logo 圖示
 
 ### 功能
@@ -41,7 +41,7 @@
 - **雲端同步**：登入 Google 帳號後自訂單字庫與 ⭐ 星號複習清單自動同步至 Firebase Firestore
 - **🃏 單字卡模式**：翻卡互動練習，自評還不熟／普通／會了，結果自動加入複習清單並標色
 - **學習進度 Tab**：統計卡（掌握字數、連續打卡、正確率、本週答題）+ 本月熱力圖 + 排行榜
-- **首頁**：學測倒數（116 學測 2027-01-22）、今日目標進度、連續打卡、快速操作卡
+- **首頁**（2026-06-12 改版「考生倒數 Hero」）：深藍 hero 大字學測倒數（116 學測 2027-01-22）+ 備考進度條（以考前一年為起點算 %）→ 3 顆 mini 統計磚（🔥連續打卡／🎯今日目標／⭐複習清單，可點擊跳對應 Tab）→ 橘色每日一字卡 → 快速操作卡 → 我的字表
 - **更新公告**：側邊欄 ☰ 可開啟，記錄功能更新歷史
 - **學習資源**：側邊欄 ☰ 含三個 Google Drive 外部連結（學習歷程、面試攻略、字彙表）
 - PWA：可加入主畫面、離線字典
@@ -187,7 +187,7 @@
 - `buildHeatmap()`：讀 `vocab_heatmap`，生成 6 週日曆格，依 count 分 lv1–lv4（`rgba(67,97,238,...)` 透明度）
 - `touchStreak()`：每次 `incrementDailyCount()` 呼叫時更新 `vocab_streak`（連續打卡）
 - `trackAccuracy(correct)`：在 `answerQ()` 內呼叫，更新 `vocab_accuracy`
-- `renderHome()`：學測倒數固定 `new Date(2027,0,22)`，讀 streak / daily goal / heatmap 渲染首頁
+- `renderHome()`（2026-06-12「考生倒數 Hero」改版）：學測倒數固定 `new Date(2027,0,22)`，算 `daysLeft` + `prepPct`（備考進度＝今天落在「考前一年→考試日」區間的 %）；讀 streak / daily goal / markedWords 渲染深藍 hero 卡 + 3 顆 `.home-stat-tile` + 橘色每日一字卡。舊版的 `.goal-card` 大藍卡與 `.streak-section` 7 日打卡點已移除（CSS class 一併刪除）
 
 ### 每日一字（Word of the Day）架構
 
@@ -195,7 +195,7 @@
 - `getWotdWord()`：用台灣日期 seed 的 Knuth 乘法雜湊取 `WORDS[idx]` → **所有用戶當天同一個字**（前提：同一份 WORDS）
 - `showWotd()`：`getWotdWord()` 取當日單字 → 設 `_wotdWord` → 抓例句（`EXAMPLE_FN_URL`，`style:'motivational'`，本地快取 `vocab_wotd_ex_{word}`）→ `renderWotdEx()`
 - **共享例句**：`generateWordExample` CF 已加 Firebase `/example-cache/{md5(word\|style)}`，第一位用戶生成後其他人共用同一句（每日一字所有人看到的句子一致、省 token）
-- **可重複開啟**：首頁有 `.home-wotd-card`（藍紫橫幅）`onclick="showWotd()"`，看完關閉後仍可隨時再打開觀看 / 分享（`showWotdIfNeeded()` 的每日一次只控制「自動彈出」，手動開啟不受限）
+- **可重複開啟**：首頁有 `.home-wotd-card`（橘色橫幅，2026-06-12 改版前為藍紫，改色避免與 hero 撞色）`onclick="showWotd()"`，看完關閉後仍可隨時再打開觀看 / 分享（`showWotdIfNeeded()` 的每日一次只控制「自動彈出」，手動開啟不受限）
 - **分享成限動/貼文圖片**（2026-06-12）：
   - `📤 分享` 按鈕（`#wotdShareBtn`）→ `shareWotdImage()`
   - `buildWotdShareImage()`：用隱藏 `#shareCanvas`（1080×1920）畫直式圖（藍紫漸層底 + 白卡：單字/詞性/釋義/例句/翻譯 + 品牌頁尾），回傳 PNG `Blob`；含 CJK+latin 混排換行 helper `_shTokens`/`_shWrap`、圓角 `_shRound`；單字過長自動縮字級
@@ -762,7 +762,7 @@ python3 -m notebooklm login
 - **Cloud Function 架構**：每個 export 函式自帶 `require('@anthropic-ai/sdk')` 和 client 實例，不依賴模組頂層共用物件（避免 Cloud Run 作用域問題）
 - **generateVocabQuiz max_tokens**：必須設為 `4096`（非 1024），10 道題目的 JSON 約需 2500–3000 tokens，1024 會截斷 → `Unexpected end of JSON input` → 500 錯誤
 - **generateVocabQuiz 共享題庫快取（2026-06-12，省 token）**：出題前先用 `quizCacheKey(word)`（小寫、非英數轉 `_`）查 Firebase Realtime DB `/quiz-cache/{key}`，只對「未快取」的單字呼叫 Claude，生成後寫回；跨所有學生每個單字題目只生成一次，命中快取 0 token、約 9 倍快。`initializeFirebase()` 取得 `dbRef`；Firebase 連不上時 fallback 為原本即時生成（不會壞）。回傳依原請求順序合併「快取 + 新生成」。無 TTL（句子不會過期）。若日後啟用 `cefrLevel`，key 會加 `__{cefr}` 後綴避免混用。客戶端 `QUIZ_FN_URL` 打的是 base `generateVocabQuiz`（非 V2/V3）
-- **Service Worker 快取版本**：更動 `index.html` 或 `vocabulary-data.js` 需同步升版 `sw.js` 的 `CACHE` 常數（目前 `vocab-app-v85`），否則舊使用者看不到更新
+- **Service Worker 快取版本**：更動 `index.html` 或 `vocabulary-data.js` 需同步升版 `sw.js` 的 `CACHE` 常數（目前 `vocab-app-v90`），否則舊使用者看不到更新
 - **檔案編碼**：`functions/index.js` 和 `package.json` 必須存為 UTF-8（無 BOM），Windows PowerShell redirect 可能產生 UTF-16 BOM 導致部署失敗
 - **行事曆 iCal 日期格式化**：`formatCalendarEvents` 使用 `evt.start`（YYYY-MM-DD 字串）手動格式化日期，不使用 `toLocaleDateString`（Cloud Run 環境下對 Invalid Date 輸出字串 "Invalid Date"）；`startObj` 存為毫秒 timestamp（`getTime()`），用 `getUTC*` 方法讀取時間
 - **iCal 折疊（folding）**：iCal 超過 75 字元的行會折疊（`CRLF + 空格`），解析前必須先 unfolding（`icalText.replace(/\r\n[ \t]/g, "")...`），否則長標題（如 `[Sammy, Frank, Ivy] 考猜試教@ 府中`）會被截斷、名字解析失敗
