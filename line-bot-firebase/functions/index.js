@@ -67,15 +67,27 @@ app.use(express.json({
 
 // ========== 初始化 ==========
 let anthropic;
+let anthropicWisdom;
 let dbRef;
 
 function initializeAnthropic() {
   if (anthropic) return;
   try {
-    const apiKey = getCredential("ANTHROPIC_API_KEY");
+    const apiKey = getCredential("ANTHROPIC_API_KEY_STUDENT");
     anthropic = new Anthropic({ apiKey });
   } catch (error) {
     console.error("[ERROR] Failed to initialize Anthropic:", error.message);
+    throw error;
+  }
+}
+
+function initializeAnthropicWisdom() {
+  if (anthropicWisdom) return;
+  try {
+    const apiKey = getCredential("ANTHROPIC_API_KEY_PWAPROD");
+    anthropicWisdom = new Anthropic({ apiKey });
+  } catch (error) {
+    console.error("[ERROR] Failed to initialize AnthropicWisdom:", error.message);
     throw error;
   }
 }
@@ -228,6 +240,22 @@ async function callClaude(systemPrompt, userMessage, maxTokens = 1024) {
   }
 }
 
+async function callClaudeWisdom(systemPrompt, userMessage, maxTokens = 1024) {
+  try {
+    initializeAnthropicWisdom();
+    const message = await anthropicWisdom.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: maxTokens,
+      system: systemPrompt,
+      messages: [{ role: "user", content: userMessage }],
+    });
+    return message.content[0].type === "text" ? message.content[0].text : "";
+  } catch (error) {
+    console.error("[ERROR] Claude Wisdom API error:", error.message);
+    throw error;
+  }
+}
+
 // ========== 文本清理 ==========
 function sanitizeTextForLine(text) {
   return text.replace(/[\r\n]+/g, "\n").trim();
@@ -237,7 +265,7 @@ function sanitizeTextForLine(text) {
 async function detectIntentWithClaude(userMessage) {
   try {
     initializeAnthropic();
-    const systemPrompt = `你是一個英文教學助手的意圖識別器。分析用戶訊息，判斷他們的真正需求，並提取關鍵內容。  分類規則（檢查訊息中是否包含關鍵詞）：  1. vocabulary（單字查詞）- 用戶想查單字的各方面資訊（支持大写开头的单字如 Serendipity、Apple 等）     1.1 subIntent: "meaning" - 查單字的中文意思、定義        關鍵詞：「是什麼意思」、「意思」、「定義」、「翻譯」        例：「serendipity 是什麼意思？」或「Serendipity 是什麼意思？」     1.2 subIntent: "pronunciation" - 查發音、怎麼唸        關鍵詞：「怎麼唸」、「唸法」、「發音」、「音標」        例：「ephemeral 怎麼唸」或「Ephemeral 怎麼唸」     1.3 subIntent: "synonym" - 查同義詞、相似詞        關鍵詞：「同義詞」、「類似詞」、「近似詞」、「同義」        例：「ephemeral 有何同義詞？」或「Ephemeral 有何同義詞？」     1.4 subIntent: "antonym" - 查反義詞、相反詞        關鍵詞：「反義詞」、「相反詞」、「反義」        例：「happy 的反義詞是什麼」或「Happy 的反義詞是什麼」     1.5 subIntent: "example" - 查用法例句        關鍵詞：「例句」、「怎麼用」、「用法」、「造句」、「應用」        例：「用 ubiquitous 造句」或「用 Ubiquitous 造句」     ⭐ 重要：提取單字時，保留用戶輸入的大小寫形式（大寫開頭或全小寫都可）    預設 subIntent：如果沒有明確關鍵詞，預設為 "meaning"    提取內容：單字本身（保持用戶的大小寫格式）    → intent: "vocabulary", subIntent: "meaning|pronunciation|synonym|antonym|example", content: "serendipity" 或 "Serendipity"  2. translation（翻譯）- 用戶請求翻譯句子或文章（英譯中或中譯英）    關鍵詞：「翻譯」、「translate」、「中文是」、「英文怎麼說」    例：    - 「請幫我翻譯：How are you?」    - 「翻譯：This is a beautiful day」    - 「'你好'英文怎麼說」    提取內容：要翻譯的句子    → intent: "translation", content: "How are you?"  3. grammar（文法問題）- 用戶問文法、語法規則、句子結構或選擇題     3.1 基本文法問題        關鍵詞：「差別」、「差異」、「怎麼用」、「用法」、「什麼」、「文法」+ 詞彙對        例：        - 「is 和 are 的差別」        - 「would 和 should 的用法」        - 「現在完成式是什麼」        → intent: "grammar", subIntent: "explanation", content: "is 和 are 的差別"     3.2 選擇題/填空題 ✨ 新增        特徵：包含 ________ 或 _____ 空白、有 (A)(B)(C)(D) 選項        例：        - 「________ the water in the bottle ________ clean, so you can drink it.          (A) One of; is (B) Any of; is (C) All of; is (D) None; is」        - 「The book ________ by my teacher yesterday.          (A) was given (B) were given (C) has been given (D) is given」        → intent: "grammar", subIntent: "quiz", content: "[完整題目]"  4. error_correction（句子糾錯）- 用戶請求檢查或修正英文句子    關鍵詞：「對嗎」、「改」、「修改」、「檢查」、「糾正」、「英文句子」    例：    - 「這句對嗎：I go to school yesterday」    - 「請幫我改這句」    - 「He don't like apples，這樣對嗎」    提取內容：英文句子    → intent: "error_correction", content: "I go to school yesterday"  4. essay_review（寫作協助）- 用戶請求批改文章或寫作範例     4.1 subIntent: "review" - 批改、修正文章        關鍵詞：「批改」、「修改潤飾」、「文章」、「段落」、「有什麼問題」        例：        - 「請幫我修改潤飾這段英文」        - 「這篇文章有什麼問題」        - 「幫我改一下這個句子」        提取內容：英文段落或文章內容        → intent: "essay_review", subIntent: "review", content: "[文章內容]"     4.2 subIntent: "example" - 提供寫作範例或範本        關鍵詞：「範例」、「寫個」、「給我」、「怎麼寫」、「範本」、「模板」        例：        - 「商業信範例：客訴回應信」        - 「幫我寫個感謝信」        - 「給我一封求職信的範例」        - 「怎麼寫一個道歉信」        提取內容：要寫什麼類型的信/文章        → intent: "essay_review", subIntent: "example", content: "感謝信"  回覆為純 JSON（不要加 markdown 符號或其他文字）： {   "intent": "vocabulary|translation|grammar|error_correction|essay_review",   "subIntent": "vocabulary 時：meaning|pronunciation|synonym|antonym|example（預設 meaning）；grammar 時：explanation|quiz（預設 explanation）；essay_review 時：review|example（預設 review）",   "content": "提取的關鍵內容"}  規則： - 必須回覆 JSON - 如果無法判斷，回覆 {"intent": "unknown", "content": "原始訊息"} - content 務必精確提取，例如單字就提取單字，句子就提取句子 - 不要有 markdown、code block 或任何其他文字`;
+    const systemPrompt = `你是一個英文教學助手的意圖識別器。分析用戶訊息，判斷他們的真正需求，並提取關鍵內容。  分類規則（檢查訊息中是否包含關鍵詞）：  1. vocabulary（單字查詞）- 用戶想查單字的各方面資訊（支持大写开头的单字如 Serendipity、Apple 等）     1.1 subIntent: "meaning" - 查單字的中文意思、定義        關鍵詞：「是什麼意思」、「意思」、「定義」、「翻譯」        例：「serendipity 是什麼意思？」或「Serendipity 是什麼意思？」     1.2 subIntent: "pronunciation" - 查發音、怎麼唸        關鍵詞：「怎麼唸」、「唸法」、「發音」、「音標」        例：「ephemeral 怎麼唸」或「Ephemeral 怎麼唸」     1.3 subIntent: "synonym" - 查同義詞、相似詞        關鍵詞：「同義詞」、「類似詞」、「近似詞」、「同義」        例：「ephemeral 有何同義詞？」或「Ephemeral 有何同義詞？」     1.4 subIntent: "antonym" - 查反義詞、相反詞        關鍵詞：「反義詞」、「相反詞」、「反義」        例：「happy 的反義詞是什麼」或「Happy 的反義詞是什麼」     1.5 subIntent: "example" - 查用法例句        關鍵詞：「例句」、「怎麼用」、「用法」、「造句」、「應用」        例：「用 ubiquitous 造句」或「用 Ubiquitous 造句」     ⭐ 重要：提取單字時，保留用戶輸入的大小寫形式（大寫開頭或全小寫都可）    預設 subIntent：如果沒有明確關鍵詞，預設為 "meaning"    提取內容：單字本身（保持用戶的大小寫格式）    → intent: "vocabulary", subIntent: "meaning|pronunciation|synonym|antonym|example", content: "serendipity" 或 "Serendipity"  2. translation（翻譯）- 用戶請求翻譯句子或文章（英譯中或中譯英）    關鍵詞：「翻譯」、「translate」、「中文是」、「英文怎麼說」    例：    - 「請幫我翻譯：How are you?」    - 「翻譯：This is a beautiful day」    - 「'你好'英文怎麼說」    提取內容：要翻譯的句子    → intent: "translation", content: "How are you?"  3. grammar（文法問題）- 用戶問文法、語法規則、句子結構或選擇題     3.1 基本文法問題        關鍵詞：「差別」、「差異」、「怎麼用」、「用法」、「什麼」、「文法」+ 詞彙對        例：        - 「is 和 are 的差別」        - 「would 和 should 的用法」        - 「現在完成式是什麼」        → intent: "grammar", subIntent: "explanation", content: "is 和 are 的差別"     3.2 選擇題/填空題 ✨ 新增        特徵：包含 ________ 或 _____ 空白、有 (A)(B)(C)(D) 選項        例：        - 「________ the water in the bottle ________ clean, so you can drink it.          (A) One of; is (B) Any of; is (C) All of; is (D) None; is」        - 「The book ________ by my teacher yesterday.          (A) was given (B) were given (C) has been given (D) is given」        → intent: "grammar", subIntent: "quiz", content: "[完整題目]"  4. error_correction（句子糾錯）- 用戶請求檢查或修正英文句子    關鍵詞：「對嗎」、「改」、「修改」、「檢查」、「糾正」、「英文句子」    例：    - 「這句對嗎：I go to school yesterday」    - 「請幫我改這句」    - 「He don't like apples，這樣對嗎」    提取內容：英文句子    → intent: "error_correction", content: "I go to school yesterday"  4. essay_review（寫作協助）- 用戶請求批改文章或寫作範例     4.1 subIntent: "review" - 批改、修正文章        關鍵詞：「批改」、「修改潤飾」、「文章」、「段落」、「有什麼問題」        例：        - 「請幫我修改潤飾這段英文」        - 「這篇文章有什麼問題」        - 「幫我改一下這個句子」        提取內容：英文段落或文章內容        → intent: "essay_review", subIntent: "review", content: "[文章內容]"     4.2 subIntent: "example" - 提供寫作範例或範本        關鍵詞：「範例」、「寫個」、「給我」、「怎麼寫」、「範本」、「模板」、「描述」、「如何描述」、「如何用英文」、「英文怎麼描述」、「作文題目」、「寫作主題」        ⭐ 特殊規則：當用戶提供中文作文主題（如「作文描述XXX」、「描述XXX的情況」）但沒有提供英文文章時，一律歸類為 "example"，因為用戶是想要英文寫作範例，而非批改已有的文章。        例：        - 「商業信範例：客訴回應信」        - 「幫我寫個感謝信」        - 「給我一封求職信的範例」        - 「怎麼寫一個道歉信」        - 「作文描述人潮擁擠的狀況」        - 「如何用英文描述天氣」        - 「描述一個緊張的場面」        提取內容：要寫什麼類型的信/文章/主題        → intent: "essay_review", subIntent: "example", content: "感謝信" 或 content: "人潮擁擠的狀況"  回覆為純 JSON（不要加 markdown 符號或其他文字）： {   "intent": "vocabulary|translation|grammar|error_correction|essay_review",   "subIntent": "vocabulary 時：meaning|pronunciation|synonym|antonym|example（預設 meaning）；grammar 時：explanation|quiz（預設 explanation）；essay_review 時：review|example（預設 review）",   "content": "提取的關鍵內容"}  規則： - 必須回覆 JSON - 如果無法判斷，回覆 {"intent": "unknown", "content": "原始訊息"} - content 務必精確提取，例如單字就提取單字，句子就提取句子 - 不要有 markdown、code block 或任何其他文字`;
     const message = await anthropic.messages.create({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 300,
@@ -306,7 +334,7 @@ function buildPrompt(intent, subIntent = null) {
     translation: `${baseSystem}  你的任務是提供準確的英中或中英翻譯。使用以下格式回覆：  🔄 翻譯結果 ━━━━━━━━━━━━━━━━ 🔹 原文 [原始文本]  🔹 翻譯 [翻譯結果]  ━━━━━━━━━━━━━━━━ 💡 詞彙說明  [關鍵詞1]：[詳細說明] [關鍵詞2]：[詳細說明]  ━━━━━━━━━━━━━━━━ ✨ 其他翻譯選項  ✓ [替代翻譯1] ✓ [替代翻譯2]（如果有）  🎯 翻譯小貼士 [實用說明]  ━━━━━━━━━━━━━━━━ 💪 希望這個翻譯有幫助！  規則： - 準確翻譯，保留原意 - 標記出特別難翻譯的部分 - 提供 1-2 個替代翻譯 - 簡潔清晰 - 不超過 400 字`,
     error_correction: `${baseSystem}  你的任務是糾正和解釋英文句子錯誤。使用以下格式回覆：  ✏️ 句子糾錯 ━━━━━━━━━━━━━━━━ ❌ 原句 [原句]  ✓ 正確 [正確句子]  ━━━━━━━━━━━━━━━━ 🔹 錯誤說明 [清晰說明錯誤在哪裡、為什麼錯]  🔹 文法重點 [相關的文法規則說明]  ━━━━━━━━━━━━━━━━ 💡 更多例句 ✓ [類似句子1 - 正確] （說明該用法） ✓ [類似句子2 - 正確] （說明該用法）  ━━━━━━━━━━━━━━━━ 💪 練習建議 [鼓勵和建議]  格式要求： - 清楚識別所有文法、拼寫或用法錯誤 - 提供正確版本 - 解釋為什麼是錯的 - 提供更多例句幫助理解 - 結尾用 💪 鼓勵`,
     essay_review_review: `${baseSystem}  你的任務是批改英文寫作。使用以下格式回覆：  📝 作文批改 ━━━━━━━━━━━━━━━━ 👍 優點  [列出 2-3 個優點]  ━━━━━━━━━━━━━━━━ ✨ 建議改進  1️⃣ 文法部分 [錯誤位置]："[錯誤]" 應改為："[正確]" （說明原因）  2️⃣ 用詞建議 "[原詞]" 可以改用更精確的詞 → [建議詞匯]  3️⃣ 句子連貫性 [建議] → [改進方式]  ━━━━━━━━━━━━━━━━ 🎯 修改後參考 [提供修改後的參考段落或句子]  ━━━━━━━━━━━━━━━━ 💪 整體評價 [寫得很棒的評語] [稍微調整的地方] [鼓勵和下一步建議]✨  格式要求： - 整體評語（優點、主要改進方向） - 結構分析（邏輯、段落組織） - 列出 2-3 個最重要的錯誤和改進建議 - 提供修改後的參考內容 - 用 emoji 表示不同段落，無粗體 - 鼓勵為主，批評為輔`,
-    essay_review_example: `${baseSystem}  你的任務是提供英文寫作範例或範本。根據用戶要求，提供一個專業、實用的範例。使用以下格式回覆：  📋 [文件類型] 範例 ━━━━━━━━━━━━━━━━ 🔹 範例文本  [完整的範例內容]  ━━━━━━━━━━━━━━━━ 💡 關鍵要點  ✓ [要點1] - [解釋] ✓ [要點2] - [解釋] ✓ [要點3] - [解釋]  📝 可用短語  [常用短語1] [常用短語2] [常用短語3]  ━━━━━━━━━━━━━━━━ ⚠️ 注意事項  [常見錯誤或注意事項1] [常見錯誤或注意事項2]  🎯 實用建議 [延伸應用或寫作建議]  ━━━━━━━━━━━━━━━━ 💪 試試用這個範例寫出你自己的作品吧！  規則： - 提供完整、可直接參考的範例 - 標記出關鍵的表達方式 - 列出可套用的短語和句型 - 簡潔明確，不超過 600 字`,
+    essay_review_example: `${baseSystem}  你的任務是提供英文寫作範例。【最重要規則】範例文本必須用英文撰寫！說明和解析才用繁體中文。  根據用戶的主題或需求，使用以下格式回覆：  📋 [主題] 英文作文範例 ━━━━━━━━━━━━━━━━ 🔹 英文範例段落  [3-5 個完整的英文句子，必須是道地的英文寫作，包含豐富詞彙和句型變化]  ━━━━━━━━━━━━━━━━ 💡 關鍵詞彙（中文說明）  ✓ [英文詞彙1]：[中文解釋] ✓ [英文詞彙2]：[中文解釋] ✓ [英文詞彙3]：[中文解釋]  📝 實用句型  ✓ [英文句型1] （中文翻譯） ✓ [英文句型2] （中文翻譯）  ━━━━━━━━━━━━━━━━ 🎯 寫作技巧 [用中文說明描寫此主題的寫作技巧和注意事項]  ━━━━━━━━━━━━━━━━ 💪 試試看用這些句型寫出你自己的版本吧！  規則： - 範例段落必須是英文（English），不可以是中文！ - 提供 3-5 個完整英文句子，展示地道表達方式 - 詞彙說明和寫作技巧用繁體中文解釋 - 選用豐富的形容詞、副詞和句型變化 - 不超過 600 字`,
     essay_review: `${baseSystem}  你的任務是批改英文寫作。使用以下格式回覆：  📝 作文批改 ━━━━━━━━━━━━━━━━ 👍 優點  [列出 2-3 個優點]  ━━━━━━━━━━━━━━━━ ✨ 建議改進  1️⃣ 文法部分 [錯誤位置]："[錯誤]" 應改為："[正確]" （說明原因）  2️⃣ 用詞建議 "[原詞]" 可以改用更精確的詞 → [建議詞匯]  ━━━━━━━━━━━━━━━━ ⭐ 整體評分 文法：⭐⭐⭐ (3/5) 詞彙：⭐⭐⭐ (3/5) 結構：⭐⭐⭐⭐ (4/5)  ━━━━━━━━━━━━━━━━ 💪 整體評價 [寫得很棒的評語] [稍微調整的地方] [鼓勵和下一步建議]✨  - 整體評語（優點、主要改進方向） - 結構分析（邏輯、段落組織） - 列出 2-3 個最重要的錯誤 - 具體改進建議 - 用星星標記（⭐）評分`,
   };
   if (subIntent) {
@@ -396,7 +424,7 @@ async function fetchCalendarWithRetry(icalUrl, maxRetries = 3) {
           if (line.startsWith("DTSTART")) currentEvent.start = line.substring(line.indexOf(":") + 1);
           if (line.startsWith("DTEND")) currentEvent.end = line.substring(line.indexOf(":") + 1);
           if (line.startsWith("SUMMARY:")) currentEvent.summary = line.substring(8).trim()
-            .replace(/\\,/g, ",").replace(/\\n/g, "\n").replace(/\\\\/g, "\\");
+            .replace(/\\,/g, ",").replace(/\\n/g, " ").replace(/\\\\/g, "\\");
           if (line.startsWith("UID:")) currentEvent.uid = line.substring(4);
           if (line.startsWith("LOCATION:")) {
             currentEvent.location = line.substring(9)
@@ -1286,9 +1314,9 @@ async function handleImageMessage(messageId, replyToken, token, userId) {
 格式規定：使用分隔線 ━━━━━━━━━━━━━━━━ 和 emoji，絕對不使用 ** 粗體標記。`;
     }
 
-    initializeAnthropic();
+    initializeAnthropicWisdom();
     const userText = level ? `請提供${level}改寫` : "請給予作文批改 Feedback";
-    const message = await anthropic.messages.create({
+    const message = await anthropicWisdom.messages.create({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 2048,
       system: systemPrompt,
@@ -1361,7 +1389,7 @@ async function handleFrankImageMessage(messageId, replyToken, token) {
   }
 }
 
-// Wisdom AI Teacher 專屬文字訊息處理（智能回覆使用 Wisdom 風格訊息）
+// Wisdom AI Teacher 專屬文字訊息處理（使用 ANTHROPIC_API_KEY_PWAPROD）
 async function handleWisdomTextMessage(userMessage, replyToken, token) {
   try {
     const intentData = await detectIntentWithClaude(userMessage);
@@ -1396,7 +1424,7 @@ async function handleWisdomTextMessage(userMessage, replyToken, token) {
     }
     const systemPrompt = buildPrompt(intent, subIntent);
     const maxTokens = intent === "essay_review" ? 2048 : 1024;
-    response = await callClaude(systemPrompt, content, maxTokens);
+    response = await callClaudeWisdom(systemPrompt, content, maxTokens);
     await setCachedResponse(cacheKey, response);
     await replyLineMessage(replyToken, { type: "text", text: sanitizeTextForLine(response) }, token);
   } catch (error) {
@@ -1876,23 +1904,54 @@ Rules:
 // ========== Vocab Quiz API ==========
 const { Anthropic: AnthropicQuiz } = require("@anthropic-ai/sdk");
 
+// 將單字轉成 Firebase 可用的快取 key（RTDB key 不可含 . # $ [ ] /）
+function quizCacheKey(word, cefrLevel) {
+  const base = String(word).toLowerCase().trim().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+  return cefrLevel ? `${base}__${String(cefrLevel).toLowerCase()}` : base;
+}
+
 exports.generateVocabQuiz = onRequest({ cors: true, invoker: "public" }, async (req, res) => {
   if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
   const { words, cefrLevel } = req.body || {};
   if (!words || !words.length) return res.status(400).json({ error: "Missing words" });
 
   try {
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY");
-    const client = new AnthropicQuiz({ apiKey });
+    const list = words.slice(0, 40);
 
-    const wordList = words.slice(0, 40).map(w => `${w.word} (${w.pos || "?"}, ${w.zh || ""})`).join("\n");
-    const count = Math.min(words.length, 40);
-    const cefrRule = cefrLevel
-      ? `- Sentences must be at ${cefrLevel} reading level: short (under 15 words), simple vocabulary, clear everyday context`
-      : "";
+    // ── 1. 先查 Firebase 共享快取（跨所有學生只生成一次）──
+    let db = null;
+    try { initializeFirebase(); db = dbRef; } catch (e) { console.error("[quizCache] firebase init fail:", e.message); }
 
-    const prompt = `Create ${count} fill-in-the-blank vocabulary quiz questions for these English words:
+    const cachedByWord = {};   // word -> question
+    if (db) {
+      await Promise.all(list.map(async (w) => {
+        try {
+          const snap = await db.ref(`/quiz-cache/${quizCacheKey(w.word, cefrLevel)}`).get();
+          if (snap.exists()) {
+            const v = snap.val();
+            if (v && v.q && Array.isArray(v.q.options)) cachedByWord[w.word] = v.q;
+          }
+        } catch (e) { /* 單筆讀取失敗就當未快取 */ }
+      }));
+    }
+
+    const toGen = list.filter(w => !cachedByWord[w.word]);
+    console.log(`[quizCache] requested=${list.length} cached=${list.length - toGen.length} generate=${toGen.length}`);
+
+    // ── 2. 只對「沒快取」的單字呼叫 Claude ──
+    let generated = [];
+    if (toGen.length) {
+      const apiKey = process.env.ANTHROPIC_API_KEY;
+      if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY");
+      const client = new AnthropicQuiz({ apiKey });
+
+      const wordList = toGen.map(w => `${w.word} (${w.pos || "?"}, ${w.zh || ""})`).join("\n");
+      const count = toGen.length;
+      const cefrRule = cefrLevel
+        ? `- Sentences must be at ${cefrLevel} reading level: short (under 15 words), simple vocabulary, clear everyday context`
+        : "";
+
+      const prompt = `Create ${count} fill-in-the-blank vocabulary quiz questions for these English words:
 ${wordList}
 
 Respond ONLY with a valid JSON array, no markdown, no extra text:
@@ -1919,18 +1978,44 @@ ${cefrRule}
 - ALL Chinese text must be in Traditional Chinese (繁體中文), NOT Simplified Chinese (簡體中文)
 - Output ONLY the JSON array, nothing else`;
 
-    const message = await client.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 16000,
-      messages: [{ role: "user", content: prompt }],
-    });
+      const message = await client.messages.create({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 16000,
+        messages: [{ role: "user", content: prompt }],
+      });
 
-    let raw = message.content[0].text.trim();
-    if (raw.startsWith("```"))
-      raw = raw.replace(/^```json?\s*/, "").replace(/\s*```$/, "").trim();
+      let raw = message.content[0].text.trim();
+      if (raw.startsWith("```"))
+        raw = raw.replace(/^```json?\s*/, "").replace(/\s*```$/, "").trim();
+      generated = JSON.parse(raw);
+      if (!Array.isArray(generated)) generated = generated.questions || [];
 
-    const data = JSON.parse(raw);
-    res.json(data);
+      // ── 3. 寫回共享快取 ──
+      if (db) {
+        const byNorm = {};
+        toGen.forEach(w => { byNorm[String(w.word).toLowerCase().trim()] = w.word; });
+        await Promise.all(generated.map(async (q) => {
+          if (!q || !q.word || !Array.isArray(q.options)) return;
+          const orig = byNorm[String(q.word).toLowerCase().trim()] || q.word;
+          try {
+            await db.ref(`/quiz-cache/${quizCacheKey(orig, cefrLevel)}`).set({ q, createdAt: Date.now() });
+          } catch (e) { /* 寫入失敗不影響回傳 */ }
+        }));
+      }
+    }
+
+    // ── 4. 合併（依原請求順序）回傳 ──
+    const genByNorm = {};
+    generated.forEach(q => { if (q && q.word) genByNorm[String(q.word).toLowerCase().trim()] = q; });
+    const result = [];
+    for (const w of list) {
+      if (cachedByWord[w.word]) result.push(cachedByWord[w.word]);
+      else {
+        const g = genByNorm[String(w.word).toLowerCase().trim()];
+        if (g) result.push(g);
+      }
+    }
+    res.json(result.length ? result : generated);
   } catch (e) {
     console.error("[ERROR] generateVocabQuiz:", e.message);
     res.status(500).json({ error: e.message });
@@ -2212,7 +2297,7 @@ exports.generateWordExampleV2 = onRequest({ cors: true }, async (req, res) => {
   try {
     const apiKey = process.env.ANTHROPIC_API_KEY_PWAPROD;
     if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY_PWAPROD");
-    const client = new (require("@anthropic-ai/sdk")).Anthropic({ apiKey });
+    const client = new Anthropic({ apiKey });
 
     const motivational = style === 'motivational';
     const prompt = motivational
@@ -2243,7 +2328,7 @@ exports.generateWordEtymologyV2 = onRequest({ cors: true }, async (req, res) => 
   try {
     const apiKey = process.env.ANTHROPIC_API_KEY_PWAPROD;
     if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY_PWAPROD");
-    const client = new (require("@anthropic-ai/sdk")).Anthropic({ apiKey });
+    const client = new Anthropic({ apiKey });
 
     const prompt = `Analyze the etymology of the English word "${word}" (${pos || "unknown"}, ${zh || "unknown"}).\nRespond ONLY with valid JSON:\n{"parts": [{"part": "morpheme", "meaning": "繁體中文", "origin": "拉丁文 xxx"}], "etymology": "50字內繁體說明", "cognates": ["word1", "word2"]}\nRules:\n- ALL Chinese text MUST be Traditional Chinese (繁體中文)\n- Output ONLY the JSON object`;
 
@@ -2271,7 +2356,7 @@ exports.generateWordDefinitionV2 = onRequest({ cors: true, invoker: "public" }, 
   try {
     const apiKey = process.env.ANTHROPIC_API_KEY_PWAPROD;
     if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY_PWAPROD");
-    const client = new (require("@anthropic-ai/sdk")).Anthropic({ apiKey });
+    const client = new Anthropic({ apiKey });
 
     const prompt = `Define the English word "${word}" in Traditional Chinese.\nCRITICAL: Define EXACTLY "${word}" — letter by letter, exactly as written.\nRespond ONLY with valid JSON:\n{"zh": "主要中文意思", "pos": "詞性縮寫"}\nRules:\n- zh: most common meaning (3-12 chars), use ； for 2 meanings\n- pos: n. / v. / adj. / adv. / prep. / conj. / pron. / interj.\n- ALL Chinese MUST be Traditional Chinese (繁體中文)\n- Output ONLY the JSON object`;
 
@@ -2292,18 +2377,21 @@ exports.generateWordDefinitionV2 = onRequest({ cors: true, invoker: "public" }, 
 });
 
 exports.generateVocabQuizV2 = onRequest({ cors: true, invoker: "public" }, async (req, res) => {
+  // Updated: Re-deploy to refresh environment variables (2026-06-05)
   if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
   const { words, cefrLevel } = req.body || {};
   if (!words || !words.length) return res.status(400).json({ error: "Missing words" });
 
   try {
     const apiKey = process.env.ANTHROPIC_API_KEY_PWAPROD;
-    if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY_PWAPROD");
-    const client = new (require("@anthropic-ai/sdk")).Anthropic({ apiKey });
+    console.log("[DEBUG] ANTHROPIC_API_KEY_PWAPROD exists:", !!apiKey);
+    console.log("[DEBUG] Environment keys with KEY:", Object.keys(process.env).filter(k => k.includes('KEY')));
+    if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY_PWAPROD - available: " + Object.keys(process.env).filter(k => k.includes('KEY')).join(', '));
+    const client = new Anthropic({ apiKey });
 
     const wordList = words.slice(0, 10).map(w => `${w.word} (${w.pos || "?"}, ${w.zh || ""})`).join("\n");
     const count = Math.min(words.length, 10);
-    const prompt = `Generate ${count} vocabulary fill-in-the-blank questions based on these words:\n${wordList}\n\nRespond ONLY with valid JSON:\n{"questions": [{"sentence": "...", "answer": "word", "options": ["a", "b", "c", "d"]}]}\nRules:\n- Sentence must be natural English with one _____ blank\n- answer is the correct word from the list\n- options array has 4 distinct words (1 correct + 3 distractors)\n- ALL Chinese text MUST be Traditional Chinese\n- Output ONLY valid JSON`;
+    const prompt = `Generate ${count} vocabulary fill-in-the-blank questions based on these words:\n${wordList}\n\nRespond ONLY with valid JSON array:\n[{"sentence": "...", "answer": "word", "options": ["a", "b", "c", "d"]}]\nRules:\n- Sentence must be natural English with one _____ blank\n- answer is the correct word from the list\n- options array has 4 distinct words (1 correct + 3 distractors)\n- ALL Chinese text MUST be Traditional Chinese\n- Output ONLY valid JSON`;
 
     const message = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
@@ -2314,7 +2402,7 @@ exports.generateVocabQuizV2 = onRequest({ cors: true, invoker: "public" }, async
     let raw = message.content[0].text.trim();
     if (raw.startsWith("```")) raw = raw.replace(/^```json?\s*/, "").replace(/\s*```$/, "").trim();
     const data = JSON.parse(raw);
-    res.json(data);
+    res.json(Array.isArray(data) ? data : data.questions || data);
   } catch (e) {
     console.error("[ERROR] generateVocabQuizV2:", e.message);
     res.status(500).json({ error: e.message });
@@ -2329,10 +2417,10 @@ exports.generatePhraseQuizV2 = onRequest({ cors: true, invoker: "public" }, asyn
   try {
     const apiKey = process.env.ANTHROPIC_API_KEY_PWAPROD;
     if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY_PWAPROD");
-    const client = new (require("@anthropic-ai/sdk")).Anthropic({ apiKey });
+    const client = new Anthropic({ apiKey });
 
     const phraseList = phrases.slice(0, 10).map(p => p.p || p).join("\n");
-    const prompt = `Generate multiple-choice questions for these English phrases:\n${phraseList}\n\nRespond ONLY with valid JSON:\n{"questions": [{"sentence": "...", "answer": "phrase", "options": ["phrase1", "phrase2", "phrase3", "phrase4"]}]}\nRules:\n- Sentence must have one _____ blank\n- answer is the correct phrase\n- options has 4 distinct phrases\n- Output ONLY valid JSON`;
+    const prompt = `Generate multiple-choice questions for these English phrases:\n${phraseList}\n\nRespond ONLY with valid JSON array:\n[{"sentence": "...", "answer": "phrase", "options": ["phrase1", "phrase2", "phrase3", "phrase4"]}]\nRules:\n- Sentence must have one _____ blank\n- answer is the correct phrase\n- options has 4 distinct phrases\n- Output ONLY valid JSON`;
 
     const message = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
@@ -2343,7 +2431,7 @@ exports.generatePhraseQuizV2 = onRequest({ cors: true, invoker: "public" }, asyn
     let raw = message.content[0].text.trim();
     if (raw.startsWith("```")) raw = raw.replace(/^```json?\s*/, "").replace(/\s*```$/, "").trim();
     const data = JSON.parse(raw);
-    res.json(data);
+    res.json(Array.isArray(data) ? data : data.questions || data);
   } catch (e) {
     console.error("[ERROR] generatePhraseQuizV2:", e.message);
     res.status(500).json({ error: e.message });
@@ -2361,7 +2449,7 @@ exports.generateWordExampleV3 = onRequest({ cors: true }, async (req, res) => {
   try {
     const apiKey = process.env.ANTHROPIC_API_KEY_STUDENT;
     if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY_STUDENT");
-    const client = new (require("@anthropic-ai/sdk")).Anthropic({ apiKey });
+    const client = new Anthropic({ apiKey });
 
     const motivational = style === 'motivational';
     const prompt = motivational
@@ -2392,7 +2480,7 @@ exports.generateWordEtymologyV3 = onRequest({ cors: true }, async (req, res) => 
   try {
     const apiKey = process.env.ANTHROPIC_API_KEY_STUDENT;
     if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY_STUDENT");
-    const client = new (require("@anthropic-ai/sdk")).Anthropic({ apiKey });
+    const client = new Anthropic({ apiKey });
 
     const prompt = `Analyze the etymology of the English word "${word}" (${pos || "unknown"}, ${zh || "unknown"}).\nRespond ONLY with valid JSON:\n{"parts": [{"part": "morpheme", "meaning": "繁體中文", "origin": "拉丁文 xxx"}], "etymology": "50字內繁體說明", "cognates": ["word1", "word2"]}\nRules:\n- ALL Chinese text MUST be Traditional Chinese (繁體中文)\n- Output ONLY the JSON object`;
 
@@ -2420,7 +2508,7 @@ exports.generateWordDefinitionV3 = onRequest({ cors: true, invoker: "public" }, 
   try {
     const apiKey = process.env.ANTHROPIC_API_KEY_STUDENT;
     if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY_STUDENT");
-    const client = new (require("@anthropic-ai/sdk")).Anthropic({ apiKey });
+    const client = new Anthropic({ apiKey });
 
     const prompt = `Define the English word "${word}" in Traditional Chinese.\nCRITICAL: Define EXACTLY "${word}" — letter by letter, exactly as written.\nRespond ONLY with valid JSON:\n{"zh": "主要中文意思", "pos": "詞性縮寫"}\nRules:\n- zh: most common meaning (3-12 chars), use ； for 2 meanings\n- pos: n. / v. / adj. / adv. / prep. / conj. / pron. / interj.\n- ALL Chinese MUST be Traditional Chinese (繁體中文)\n- Output ONLY the JSON object`;
 
@@ -2448,11 +2536,11 @@ exports.generateVocabQuizV3 = onRequest({ cors: true, invoker: "public" }, async
   try {
     const apiKey = process.env.ANTHROPIC_API_KEY_STUDENT;
     if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY_STUDENT");
-    const client = new (require("@anthropic-ai/sdk")).Anthropic({ apiKey });
+    const client = new Anthropic({ apiKey });
 
     const wordList = words.slice(0, 10).map(w => `${w.word} (${w.pos || "?"}, ${w.zh || ""})`).join("\n");
     const count = Math.min(words.length, 10);
-    const prompt = `Generate ${count} vocabulary fill-in-the-blank questions based on these words:\n${wordList}\n\nRespond ONLY with valid JSON:\n{"questions": [{"sentence": "...", "answer": "word", "options": ["a", "b", "c", "d"]}]}\nRules:\n- Sentence must be natural English with one _____ blank\n- answer is the correct word from the list\n- options array has 4 distinct words (1 correct + 3 distractors)\n- ALL Chinese text MUST be Traditional Chinese\n- Output ONLY valid JSON`;
+    const prompt = `Generate ${count} vocabulary fill-in-the-blank questions based on these words:\n${wordList}\n\nRespond ONLY with valid JSON array:\n[{"sentence": "...", "answer": "word", "options": ["a", "b", "c", "d"]}]\nRules:\n- Sentence must be natural English with one _____ blank\n- answer is the correct word from the list\n- options array has 4 distinct words (1 correct + 3 distractors)\n- ALL Chinese text MUST be Traditional Chinese\n- Output ONLY valid JSON`;
 
     const message = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
@@ -2463,7 +2551,7 @@ exports.generateVocabQuizV3 = onRequest({ cors: true, invoker: "public" }, async
     let raw = message.content[0].text.trim();
     if (raw.startsWith("```")) raw = raw.replace(/^```json?\s*/, "").replace(/\s*```$/, "").trim();
     const data = JSON.parse(raw);
-    res.json(data);
+    res.json(Array.isArray(data) ? data : data.questions || data);
   } catch (e) {
     console.error("[ERROR] generateVocabQuizV3:", e.message);
     res.status(500).json({ error: e.message });
@@ -2478,10 +2566,10 @@ exports.generatePhraseQuizV3 = onRequest({ cors: true, invoker: "public" }, asyn
   try {
     const apiKey = process.env.ANTHROPIC_API_KEY_STUDENT;
     if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY_STUDENT");
-    const client = new (require("@anthropic-ai/sdk")).Anthropic({ apiKey });
+    const client = new Anthropic({ apiKey });
 
     const phraseList = phrases.slice(0, 10).map(p => p.p || p).join("\n");
-    const prompt = `Generate multiple-choice questions for these English phrases:\n${phraseList}\n\nRespond ONLY with valid JSON:\n{"questions": [{"sentence": "...", "answer": "phrase", "options": ["phrase1", "phrase2", "phrase3", "phrase4"]}]}\nRules:\n- Sentence must have one _____ blank\n- answer is the correct phrase\n- options has 4 distinct phrases\n- Output ONLY valid JSON`;
+    const prompt = `Generate multiple-choice questions for these English phrases:\n${phraseList}\n\nRespond ONLY with valid JSON array:\n[{"sentence": "...", "answer": "phrase", "options": ["phrase1", "phrase2", "phrase3", "phrase4"]}]\nRules:\n- Sentence must have one _____ blank\n- answer is the correct phrase\n- options has 4 distinct phrases\n- Output ONLY valid JSON`;
 
     const message = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
@@ -2492,7 +2580,7 @@ exports.generatePhraseQuizV3 = onRequest({ cors: true, invoker: "public" }, asyn
     let raw = message.content[0].text.trim();
     if (raw.startsWith("```")) raw = raw.replace(/^```json?\s*/, "").replace(/\s*```$/, "").trim();
     const data = JSON.parse(raw);
-    res.json(data);
+    res.json(Array.isArray(data) ? data : data.questions || data);
   } catch (e) {
     console.error("[ERROR] generatePhraseQuizV3:", e.message);
     res.status(500).json({ error: e.message });
@@ -2506,7 +2594,7 @@ exports.generateReadingQuizV2 = onRequest({ cors: true, invoker: "public" }, asy
   try {
     const apiKey = process.env.ANTHROPIC_API_KEY_PWAPROD;
     if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY_PWAPROD");
-    const client = new (require("@anthropic-ai/sdk")).Anthropic({ apiKey });
+    const client = new Anthropic({ apiKey });
 
     const READING_SOURCES = [
       { name: "Science Daily", style: "science news", topic_hint: "recent discoveries or technology" },
