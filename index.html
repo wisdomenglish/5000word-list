@@ -540,6 +540,11 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
 .mw-item.selected{border-color:var(--accent);background:rgba(67,97,238,.08);}
 .mw-item.selected .mw-check{background:var(--accent);border-color:var(--accent);}
 .mw-wrap.mw-selecting .mw-actions-col{display:none;}
+.pcard-check{position:absolute;left:12px;top:14px;width:22px;height:22px;border:2px solid var(--border);border-radius:6px;display:none;align-items:center;justify-content:center;font-size:0.8rem;color:#fff;background:var(--surface);z-index:2;}
+#phraseGrid.select-mode .phrase-card{padding-left:46px;}
+#phraseGrid.select-mode .pcard-check{display:flex;}
+.phrase-card.selected{border-color:var(--accent);background:rgba(67,97,238,.06);}
+.phrase-card.selected .pcard-check{background:var(--accent);border-color:var(--accent);}
 .folder-list{display:flex;flex-direction:column;gap:8px;margin-bottom:8px;}
 .folder-row{display:flex;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;gap:10px;}
 .folder-row-info{flex:1;min-width:0;cursor:pointer;}
@@ -765,10 +770,18 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
       </div>
       <button class="sort-btn active" id="phraseSortAZ" onclick="setPhraseSort('az')">A → Z</button>
       <button class="sort-btn" id="phraseSortZA" onclick="setPhraseSort('za')">Z → A</button>
+      <button class="select-toggle-btn" id="phraseSelectToggleBtn" onclick="togglePhraseSelectMode()">☑ 選取</button>
     </div>
     <div class="alpha-bar" id="phraseAlphaBar"></div>
   </header>
   <div class="stats-bar" id="phraseStatsBar"></div>
+  <div class="select-bar" id="phraseSelectBar" style="display:none">
+    <span class="sb-count" id="phraseSelectCount">已選 0 個</span>
+    <button onclick="phraseSelectAllVisible()">全選本頁</button>
+    <button onclick="clearPhraseSelection()">清除</button>
+    <button class="primary" onclick="addPhraseSelectedToFolder()">📁 加入資料夾</button>
+    <button onclick="togglePhraseSelectMode()">✕ 完成</button>
+  </div>
   <div class="grid" id="phraseGrid"></div>
   <div class="pagination" id="phrasePagination"></div>
 </div><!-- /phraseView -->
@@ -840,7 +853,7 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
         </div>
         <div class="news-detail">
           <ul class="news-list">
-            <li><strong>「我的單字」批次選取</strong>：在「我的單字」頁右上角點「☑ 選取」，即可勾選自訂單字庫與複習清單中的多個單字，一鍵「📁 加入資料夾」，整理更快。</li>
+            <li><strong>批次選取加入資料夾（單字＋片語）</strong>：字典單字頁、片語頁、以及「我的單字」頁右上角都有「☑ 選取」按鈕，可勾選多個單字或片語，一鍵「📁 加入資料夾」，整理更快。</li>
             <li><strong>每日一字一鍵分享</strong>：每日一字卡片新增「📤 分享」按鈕，會自動生成精美的直式圖片（含單字、詞性、解釋、例句），可直接發佈到 Instagram / Facebook 限時動態或貼文，與朋友分享今日學到的單字。手機上會跳出系統分享選單，電腦則會下載圖片。</li>
             <li><strong>中文釋義標點校正</strong>：修正單字庫中文解釋出現多餘分號、詞語被切斷的問題（例如「競爭；性；的」→「競爭性的」、「全神貫；注」→「全神貫注」），閱讀更通順。</li>
             <li><strong>單字庫精簡</strong>：移除大量重複的變化形（名詞複數、動詞過去式等純變化形），保留原形與真正的形容詞/獨立詞，讓字典更精煉好查。</li>
@@ -1849,7 +1862,10 @@ function _exitSelectMode(){
   if(bar) bar.style.display = 'none';
 }
 let _bulkFolderTargets = [];
-let _bulkSource = 'dict';   // 'dict'（字典）或 'mw'（我的單字）
+let _bulkSource = 'dict';   // 'dict'（字典）/ 'mw'（我的單字）/ 'phrase'（片語）
+function _bulkIsPhrase(){ return _bulkSource === 'phrase'; }
+function _bulkUnit(){ return _bulkIsPhrase() ? '片語' : '單字'; }
+function _bulkFolderArr(f){ if(_bulkIsPhrase()){ if(!f.phrases) f.phrases=[]; return f.phrases; } return f.words; }
 function addSelectedToFolder(){
   if(!selectedCards.size){ alert('請先選取單字'); return; }
   _bulkFolderTargets = [...selectedCards]; _bulkSource = 'dict';
@@ -1857,13 +1873,14 @@ function addSelectedToFolder(){
 }
 function _openBulkFolderSheet(){
   const sheet = document.getElementById('folderSheet');
+  const unit = _bulkUnit();
   sheet.innerHTML = `
     <div class="fs-backdrop" onclick="closeFolderSheet()"></div>
     <div class="fs-box">
-      <div class="fs-title">📁 將 ${_bulkFolderTargets.length} 個單字加入資料夾</div>
+      <div class="fs-title">📁 將 ${_bulkFolderTargets.length} 個${unit}加入資料夾</div>
       <div id="fsItemList">${_bulkFsListHtml()}</div>
       <div class="fs-new">
-        <input class="fs-input" id="fsNewInput" placeholder="新資料夾名稱（如：6/1單字）">
+        <input class="fs-input" id="fsNewInput" placeholder="新資料夾名稱（如：6/1${unit}）">
         <button class="fs-add-btn" onclick="createFolderAndBulkAdd()">＋ 建立並加入</button>
       </div>
     </div>`;
@@ -1871,12 +1888,15 @@ function _openBulkFolderSheet(){
 }
 function _bulkFsListHtml(){
   if(!wordFolders.length) return `<div class="fs-empty">尚未建立任何資料夾</div>`;
+  const isP = _bulkIsPhrase();
   return wordFolders.map(f=>{
-    const allIn = _bulkFolderTargets.every(w => f.words.includes(w));
+    const arr = isP ? (f.phrases||[]) : f.words;
+    const allIn = _bulkFolderTargets.every(w => arr.includes(w));
+    const cnt = isP ? `${(f.phrases||[]).length} 片語` : `${f.words.length} 個單字`;
     return `<div class="fs-item" onclick="bulkAddToFolder('${f.id}')">
       <div class="fs-check ${allIn?'on':''}">${allIn?'✓':''}</div>
       <span style="flex:1">${f.name}</span>
-      <span style="color:var(--muted);font-size:0.8rem">${f.words.length} 個單字</span>
+      <span style="color:var(--muted);font-size:0.8rem">${cnt}</span>
     </div>`;
   }).join('');
 }
@@ -1885,6 +1905,10 @@ function _bulkFinish(){
     _exitMwSelectMode();
     document.getElementById('folderSheet').style.display = 'none';
     renderMyWords();
+  } else if(_bulkSource === 'phrase'){
+    _exitPhraseSelectMode();
+    document.getElementById('folderSheet').style.display = 'none';
+    renderPhraseGrid();
   } else {
     _exitSelectMode();
     closeFolderSheet();
@@ -1893,23 +1917,25 @@ function _bulkFinish(){
 function bulkAddToFolder(folderId){
   const f = wordFolders.find(f => f.id === folderId);
   if(!f) return;
+  const arr = _bulkFolderArr(f);
   let added = 0;
-  _bulkFolderTargets.forEach(w => { if(!f.words.includes(w)){ f.words.push(w); added++; } });
+  _bulkFolderTargets.forEach(w => { if(!arr.includes(w)){ arr.push(w); added++; } });
   saveFolders();
-  const name = f.name, total = _bulkFolderTargets.length;
+  const name = f.name, total = _bulkFolderTargets.length, unit = _bulkUnit();
   _bulkFinish();
-  alert(`已將 ${total} 個單字加入「${name}」${added<total?`（其中 ${total-added} 個已在資料夾內）`:''}`);
+  alert(`已將 ${total} 個${unit}加入「${name}」${added<total?`（其中 ${total-added} 個已在資料夾內）`:''}`);
 }
 function createFolderAndBulkAdd(){
   const input = document.getElementById('fsNewInput');
   const name = input.value.trim();
   if(!name){ input.focus(); return; }
-  const f = { id: Date.now().toString(), name, words: [..._bulkFolderTargets], phrases: [] };
+  const isP = _bulkIsPhrase();
+  const f = { id: Date.now().toString(), name, words: isP?[]:[..._bulkFolderTargets], phrases: isP?[..._bulkFolderTargets]:[] };
   wordFolders.push(f);
   saveFolders();
-  const total = f.words.length;
+  const total = _bulkFolderTargets.length, unit = _bulkUnit();
   _bulkFinish();
-  alert(`已建立「${name}」並加入 ${total} 個單字`);
+  alert(`已建立「${name}」並加入 ${total} 個${unit}`);
 }
 
 /* ── 「我的單字」頁的多選 ── */
@@ -1949,6 +1975,46 @@ function mwClearSelection(){
 function addMwSelectedToFolder(){
   if(!mwSelected.size){ alert('請先選取單字'); return; }
   _bulkFolderTargets = [...mwSelected]; _bulkSource = 'mw';
+  _openBulkFolderSheet();
+}
+
+/* ── 片語頁的多選 ── */
+let phraseSelectMode = false;
+let phraseSelected = new Set();
+function togglePhraseSelectMode(){
+  phraseSelectMode = !phraseSelectMode;
+  if(!phraseSelectMode) phraseSelected.clear();
+  const btn = document.getElementById('phraseSelectToggleBtn');
+  if(btn){ btn.classList.toggle('active', phraseSelectMode); btn.textContent = phraseSelectMode ? '✕ 取消選取' : '☑ 選取'; }
+  const bar = document.getElementById('phraseSelectBar');
+  if(bar) bar.style.display = phraseSelectMode ? 'flex' : 'none';
+  renderPhraseGrid();
+  updatePhraseSelectCount();
+}
+function _exitPhraseSelectMode(){
+  phraseSelectMode = false; phraseSelected.clear();
+  const btn = document.getElementById('phraseSelectToggleBtn');
+  if(btn){ btn.classList.remove('active'); btn.textContent = '☑ 選取'; }
+  const bar = document.getElementById('phraseSelectBar');
+  if(bar) bar.style.display = 'none';
+}
+function updatePhraseSelectCount(){ const el=document.getElementById('phraseSelectCount'); if(el) el.textContent = `已選 ${phraseSelected.size} 個`; }
+function phraseSelectAllVisible(){
+  document.querySelectorAll('#phraseGrid .phrase-card[data-pidx]').forEach(card=>{
+    const p = phraseFiltered[parseInt(card.dataset.pidx)]; if(!p) return;
+    phraseSelected.add(p.p); card.classList.add('selected');
+    const c=card.querySelector('.pcard-check'); if(c) c.textContent='✓';
+  });
+  updatePhraseSelectCount();
+}
+function clearPhraseSelection(){
+  phraseSelected.clear();
+  document.querySelectorAll('#phraseGrid .phrase-card.selected').forEach(card=>{ card.classList.remove('selected'); const c=card.querySelector('.pcard-check'); if(c) c.textContent=''; });
+  updatePhraseSelectCount();
+}
+function addPhraseSelectedToFolder(){
+  if(!phraseSelected.size){ alert('請先選取片語'); return; }
+  _bulkFolderTargets = [...phraseSelected]; _bulkSource = 'phrase';
   _openBulkFolderSheet();
 }
 
@@ -2021,10 +2087,12 @@ function renderPhraseGrid(){
   const slice = phraseFiltered.slice((phrasePage - 1) * PER, phrasePage * PER);
   document.getElementById('phraseStatsBar').textContent = `顯示 ${total} 個片語`;
   const grid = document.getElementById('phraseGrid');
+  grid.classList.toggle('select-mode', phraseSelectMode);
   grid.innerHTML = slice.length
     ? slice.map((p, i) => {
         const idx = (phrasePage - 1) * PER + i;
-        return `<div class="phrase-card" data-pidx="${idx}"><div class="card-top"><div class="phrase-en">${p.p}</div><button class="speak-btn" data-word="${cleanPhraseText(p.p).replace(/"/g,'&quot;')}" onclick="event.stopPropagation();speak(this.dataset.word,this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg></button></div><div class="phrase-zh">${p.z}</div>${folderPhraseSet&&folderPhraseSet.has(p.p)?'<span class="phrase-folder-icon">📁</span>':''}</div>`;
+        const sel = phraseSelectMode && phraseSelected.has(p.p);
+        return `<div class="phrase-card${sel?' selected':''}" data-pidx="${idx}"><span class="pcard-check">${sel?'✓':''}</span><div class="card-top"><div class="phrase-en">${p.p}</div><button class="speak-btn" data-word="${cleanPhraseText(p.p).replace(/"/g,'&quot;')}" onclick="event.stopPropagation();speak(this.dataset.word,this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg></button></div><div class="phrase-zh">${p.z}</div>${folderPhraseSet&&folderPhraseSet.has(p.p)?'<span class="phrase-folder-icon">📁</span>':''}</div>`;
       }).join('')
     : `<div class="empty">找不到符合的片語</div>`;
   if(!grid._phraseClickBound){
@@ -2032,9 +2100,17 @@ function renderPhraseGrid(){
     grid.addEventListener('click', e => {
       const card = e.target.closest('[data-pidx]');
       if(!card) return;
-      const idx = parseInt(card.dataset.pidx);
-      const p = phraseFiltered[idx];
-      if(p) openPhraseModal(p.p);
+      const p = phraseFiltered[parseInt(card.dataset.pidx)];
+      if(!p) return;
+      if(phraseSelectMode){
+        const on = !phraseSelected.has(p.p);
+        if(on) phraseSelected.add(p.p); else phraseSelected.delete(p.p);
+        card.classList.toggle('selected', on);
+        const c = card.querySelector('.pcard-check'); if(c) c.textContent = on ? '✓' : '';
+        updatePhraseSelectCount();
+      } else {
+        openPhraseModal(p.p);
+      }
     });
   }
   renderPhrasePagination(totalPages);
