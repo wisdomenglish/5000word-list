@@ -27,7 +27,7 @@
 - [vocabulary-data.js](vocabulary-data.js) — 外部單字庫（4,549 字，格式：`{w, z, p}`；2026-06-11 由 4,391 擴充至 5,565 後，2026-06-12 精簡純變化形回 4,549，並 AI 校正中文釋義標點，保留原形＋真形容詞/獨立詞）
 - [phrases-data.js](phrases-data.js) — 外部片語庫（1,125 條，格式：`{p, z}`）
 - [manifest.json](manifest.json) — PWA 設定（name: 5000英文單字學習）
-- [sw.js](sw.js) — Service Worker，支援離線使用（目前版本：`vocab-app-v90`）
+- [sw.js](sw.js) — Service Worker，支援離線使用（目前版本：`vocab-app-v91`）
 - [icon-192.png](icon-192.png) / [icon-512.png](icon-512.png) — Wisdom logo 圖示
 
 ### 功能
@@ -84,6 +84,8 @@
 ### UI 設計規範
 
 - **色彩主題**：明亮（`--bg:#F2F2F7`），強調色 `--accent:#4361EE`（藍紫）、`--accent2:#F72585`（粉紅）；`--surface:#FFFFFF;--text:#1C1C1E;--muted:#8E8E93`
+  - **2026-06-13 全站配色統一**：移除舊主題殘留的紫色 tint `rgba(124,106,247,*)`，全部改成藍色 accent `rgba(67,97,238,*)`；藍→紫漸層按鈕端點 `#9b8bf0` 改 `#7B9EFF`；修掉 `.dict-mode-bar` 深色殘留底（`#12121c` → `var(--surface)`）
+- **共用深藍 hero（`.page-hero`，2026-06-13）**：首頁/進度頁/測驗頁/我的字本頁統一的主視覺卡 — `linear-gradient(135deg,#1E1B4B,#3730A3,#4361EE)` + 右上粉紅光暈 `::after`。子元素 `.page-hero-eyebrow`（小標）/`.page-hero-title`（Playfair 大標）/`.page-hero-sub`/`.page-hero-chips`+`.page-hero-chip`（半透明白膠囊統計）。測驗頁 `renderQuizSetup` 頂部「🎯 測驗中心」、我的字本 `renderMyWords` 頂部「⭐ 我的單字」+ 資料夾/自訂/複習 chips 用此元件；首頁 `.home-hero`、進度頁 `.prog-hero` 是同語言的獨立版本
 - **字體**：標題 Playfair Display（serif），內文 DM Sans（sans-serif）
 - **導覽結構**：
   - 頂部固定列（`#globalTopBar`，52px）：Logo + 連續打卡 badge + ☰ 選單按鈕
@@ -762,7 +764,7 @@ python3 -m notebooklm login
 - **Cloud Function 架構**：每個 export 函式自帶 `require('@anthropic-ai/sdk')` 和 client 實例，不依賴模組頂層共用物件（避免 Cloud Run 作用域問題）
 - **generateVocabQuiz max_tokens**：必須設為 `4096`（非 1024），10 道題目的 JSON 約需 2500–3000 tokens，1024 會截斷 → `Unexpected end of JSON input` → 500 錯誤
 - **generateVocabQuiz 共享題庫快取（2026-06-12，省 token）**：出題前先用 `quizCacheKey(word)`（小寫、非英數轉 `_`）查 Firebase Realtime DB `/quiz-cache/{key}`，只對「未快取」的單字呼叫 Claude，生成後寫回；跨所有學生每個單字題目只生成一次，命中快取 0 token、約 9 倍快。`initializeFirebase()` 取得 `dbRef`；Firebase 連不上時 fallback 為原本即時生成（不會壞）。回傳依原請求順序合併「快取 + 新生成」。無 TTL（句子不會過期）。若日後啟用 `cefrLevel`，key 會加 `__{cefr}` 後綴避免混用。客戶端 `QUIZ_FN_URL` 打的是 base `generateVocabQuiz`（非 V2/V3）
-- **Service Worker 快取版本**：更動 `index.html` 或 `vocabulary-data.js` 需同步升版 `sw.js` 的 `CACHE` 常數（目前 `vocab-app-v90`），否則舊使用者看不到更新
+- **Service Worker 快取版本**：更動 `index.html` 或 `vocabulary-data.js` 需同步升版 `sw.js` 的 `CACHE` 常數（目前 `vocab-app-v91`），否則舊使用者看不到更新
 - **檔案編碼**：`functions/index.js` 和 `package.json` 必須存為 UTF-8（無 BOM），Windows PowerShell redirect 可能產生 UTF-16 BOM 導致部署失敗
 - **行事曆 iCal 日期格式化**：`formatCalendarEvents` 使用 `evt.start`（YYYY-MM-DD 字串）手動格式化日期，不使用 `toLocaleDateString`（Cloud Run 環境下對 Invalid Date 輸出字串 "Invalid Date"）；`startObj` 存為毫秒 timestamp（`getTime()`），用 `getUTC*` 方法讀取時間
 - **iCal 折疊（folding）**：iCal 超過 75 字元的行會折疊（`CRLF + 空格`），解析前必須先 unfolding（`icalText.replace(/\r\n[ \t]/g, "")...`），否則長標題（如 `[Sammy, Frank, Ivy] 考猜試教@ 府中`）會被截斷、名字解析失敗
