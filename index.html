@@ -86,6 +86,16 @@ header{top:52px!important;}
 .drawer-close-btn{background:var(--tag-bg);border:none;color:var(--muted);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:0.85rem;display:flex;align-items:center;justify-content:center;}
 .drawer-close-btn:hover{color:var(--text);}
 .drawer-section{padding:18px 18px;border-bottom:1px solid var(--border);}
+.setting-row{display:flex;align-items:center;gap:12px;padding:4px 4px;}
+.setting-text{flex:1;min-width:0;}
+.setting-title{font-size:0.9rem;color:var(--text);font-weight:600;}
+.setting-sub{font-size:0.7rem;color:var(--muted);margin-top:3px;line-height:1.45;}
+.switch{position:relative;display:inline-block;width:46px;height:28px;flex-shrink:0;}
+.switch input{opacity:0;width:0;height:0;}
+.switch-slider{position:absolute;inset:0;background:var(--border);border-radius:28px;transition:.2s;cursor:pointer;}
+.switch-slider::before{content:'';position:absolute;height:22px;width:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.3);}
+.switch input:checked + .switch-slider{background:var(--accent);}
+.switch input:checked + .switch-slider::before{transform:translateX(18px);}
 .drawer-section-label{color:var(--muted);font-size:0.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;}
 .drawer-nav-btn{display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;border-radius:10px;color:var(--text);padding:11px 12px;font-size:0.9rem;cursor:pointer;text-align:left;transition:background .15s;-webkit-tap-highlight-color:transparent;}
 .drawer-nav-btn:hover{background:rgba(255,255,255,.05);}
@@ -738,6 +748,19 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
       <div class="dfb-arrow">›</div>
     </button>
   </div>
+  <div class="drawer-section">
+    <div class="drawer-section-label">⚙️ 設定</div>
+    <div class="setting-row">
+      <div class="setting-text">
+        <div class="setting-title">📳 觸感回饋</div>
+        <div class="setting-sub">答題時震動回饋（Android 支援；iPhone 網頁版受 Safari 限制）</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="hapticToggle" onchange="setHaptics(this.checked); if(this.checked) haptic(18);">
+        <span class="switch-slider"></span>
+      </label>
+    </div>
+  </div>
   <div class="drawer-section" style="border-bottom:none;">
     <div class="drawer-section-label">學習資源</div>
     <a class="drawer-nav-btn" href="https://drive.google.com/drive/folders/1eHS-Swd7QaOA24xN9JfNlcysx1eK33uJ?usp=drive_link" target="_blank" rel="noopener" style="text-decoration:none;">📁 學習歷程 <span style="font-size:0.7rem;color:var(--muted);margin-left:auto;">↗</span></a>
@@ -869,6 +892,24 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
     <!-- ══ 更新紀錄索引 ══ -->
     <div class="news-index-section">
       <div class="news-index-section-title">📋 更新紀錄</div>
+
+      <!-- 2026-06-13 連續打卡雲端同步 + 觸感回饋 -->
+      <div class="news-index-entry">
+        <div class="news-index-item" onclick="toggleNewsDetail(this.parentElement)">
+          <span class="news-date">2026-06-13</span>
+          <span class="news-type feature">新功能</span>
+          <span class="news-type fix">修正</span>
+          <span class="ni-title">🔥 連續打卡跨裝置同步・📳 答題觸感回饋</span>
+          <span class="news-arrow">›</span>
+        </div>
+        <div class="news-detail">
+          <ul class="news-list">
+            <li><strong>連續打卡雲端同步</strong>：登入 Google 帳號後，連續打卡天數會同步到雲端。換手機或用不同裝置時，會以「天數較多」的那筆為準，不再因為裝置不同而打卡天數對不上。</li>
+            <li><strong>答題觸感回饋</strong>：測驗答題、單字卡評分時會有輕微震動回饋（答對短震、答錯雙震）。可在右上角 <strong>☰ 選單 → ⚙️ 設定</strong> 開關。</li>
+            <li><strong>說明</strong>：觸感回饋在 Android 手機支援；iPhone 因 Safari 網頁版限制目前無法震動。</li>
+          </ul>
+        </div>
+      </div>
 
       <!-- 2026-06-13 單字/測驗/我的字本 改版 -->
       <div class="news-index-entry">
@@ -1609,6 +1650,24 @@ async function syncFromCloud(uid, db){
       } else if(wordFolders.length > 0){
         await ref.set({ folders: wordFolders }, { merge: true });
       }
+      // 連續打卡：登入時取「較大的次數」合併，並把結果寫回雲端讓兩邊一致
+      {
+        const local = getStreakData();
+        const cloud = data.streak;
+        if(cloud){
+          const merged = {
+            streak: Math.max(local.streak||0, cloud.streak||0),
+            best:   Math.max(local.best||0, cloud.best||0, local.streak||0, cloud.streak||0),
+            lastDate: ((local.lastDate||'') > (cloud.lastDate||'')) ? (local.lastDate||'') : (cloud.lastDate||'')
+          };
+          localStorage.setItem(STREAK_KEY, JSON.stringify(merged));
+          await ref.set({ streak: merged }, { merge: true });
+          const badge = document.getElementById('streakBadge');
+          if(badge) badge.textContent = '🔥 ' + merged.streak;
+        } else if((local.streak||0) > 0 || (local.best||0) > 0){
+          await ref.set({ streak: local }, { merge: true });
+        }
+      }
       // 答題統計 & 個人資料
       if(data.stats){
         userStats = { ...userStats, ...data.stats };
@@ -1624,6 +1683,8 @@ async function syncFromCloud(uid, db){
       if(customWords.length > 0) upload.customWords = customWords;
       if(markedWords.size  > 0) upload.markedWords  = [...markedWords];
       if(wordFolders.length > 0) upload.folders     = wordFolders;
+      const sd = getStreakData();
+      if((sd.streak||0) > 0 || (sd.best||0) > 0) upload.streak = sd;
       if(Object.keys(upload).length > 0) await ref.set(upload);
     }
     // 登入後將本地統計同步到排行榜（不 await，背景執行）
@@ -1762,6 +1823,18 @@ const STREAK_KEY   = 'vocab_streak';
 const DAILY_KEY    = 'vocab_daily';
 const HEATMAP_KEY  = 'vocab_heatmap';
 const ACCURACY_KEY = 'vocab_accuracy';
+const SETTINGS_KEY = 'vocab_settings';
+let appSettings = (()=>{ try{ return Object.assign({haptics:true}, JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}')); }catch(e){ return {haptics:true}; } })();
+/* 觸感回饋：Android Chrome 支援 navigator.vibrate；iOS Safari 網頁版不支援（會靜默略過）*/
+function haptic(pattern){ try{ if(appSettings.haptics && navigator.vibrate) navigator.vibrate(pattern); }catch(e){} }
+function setHaptics(on){ appSettings.haptics = !!on; localStorage.setItem(SETTINGS_KEY, JSON.stringify(appSettings)); }
+/* 連續打卡雲端同步（登入時取較大次數，避免跨裝置日期不一致）*/
+function saveStreak(s){
+  if(window._fbUser && window._fbDb){
+    window._fbDb.collection('users').doc(window._fbUser.uid)
+      .set({ streak: s || getStreakData() }, { merge: true }).catch(()=>{});
+  }
+}
 /* init home screen */
 (function initHome(){
   touchStreak();
@@ -2292,6 +2365,7 @@ function touchStreak(){
   s.best = Math.max(s.best, s.streak);
   s.lastDate = today;
   localStorage.setItem(STREAK_KEY, JSON.stringify(s));
+  saveStreak(s);
   const badge = document.getElementById('streakBadge');
   if(badge) badge.textContent = '🔥 ' + s.streak;
 }
@@ -2429,6 +2503,8 @@ function openDrawer(){
   document.getElementById('drawerOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
   renderDrawerStats();
+  const ht = document.getElementById('hapticToggle');
+  if(ht) ht.checked = !!appSettings.haptics;
 }
 function closeDrawer(){
   document.getElementById('sideDrawer').classList.remove('open');
@@ -3049,6 +3125,7 @@ function renderFlashcard(){
 function flipCard(){ fcFlipped=!fcFlipped; renderFlashcard(); }
 function fcNav(dir){ fcIndex=Math.max(0,Math.min(fcCards.length-1,fcIndex+dir)); fcFlipped=false; renderFlashcard(); }
 function rateFc(level){
+  haptic(12);
   const w=fcCards[fcIndex];
   if(level==='unfamiliar'){ setMastery(w.word,'unfamiliar'); if(!markedWords.has(w.word)) addMark(w.word); }
   else if(level==='moderate'){ setMastery(w.word,'moderate'); if(!markedWords.has(w.word)) addMark(w.word); }
@@ -3152,6 +3229,7 @@ function submitSpelling(){
   qSelected=val;
   const q=qQuestions[qIndex];
   const correct=val.toLowerCase()===q.word.toLowerCase();
+  haptic(correct ? 18 : [0,25,40,25]);
   trackAccuracy(correct);
   if(correct){qScore++;removeMark(q.word);}
   else addMark(q.word);
@@ -3316,6 +3394,7 @@ function answerQ(idx){
   qSelected=idx;
   const q=qQuestions[qIndex];
   const correct = idx===q.answer;
+  haptic(correct ? 18 : [0,25,40,25]);
   trackAccuracy(correct);
   if(correct){
     qScore++;

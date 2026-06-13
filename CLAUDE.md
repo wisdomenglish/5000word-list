@@ -27,7 +27,7 @@
 - [vocabulary-data.js](vocabulary-data.js) — 外部單字庫（4,549 字，格式：`{w, z, p}`；2026-06-11 由 4,391 擴充至 5,565 後，2026-06-12 精簡純變化形回 4,549，並 AI 校正中文釋義標點，保留原形＋真形容詞/獨立詞）
 - [phrases-data.js](phrases-data.js) — 外部片語庫（1,125 條，格式：`{p, z}`）
 - [manifest.json](manifest.json) — PWA 設定（name: 5000英文單字學習）
-- [sw.js](sw.js) — Service Worker，支援離線使用（目前版本：`vocab-app-v91`）
+- [sw.js](sw.js) — Service Worker，支援離線使用（目前版本：`vocab-app-v92`）
 - [icon-192.png](icon-192.png) / [icon-512.png](icon-512.png) — Wisdom logo 圖示
 
 ### 功能
@@ -62,11 +62,13 @@
 - **句子填空題目**以 `vocab_quiz_{word}` 為 key 存入 localStorage（客戶端題庫快取，疊加在 Firebase 共享快取之上）：`startQuiz()` sentence 模式出題前先讀本地快取，只對未快取單字呼叫 `generateVocabQuiz`，回傳後寫回；**已練過的單字離線也能複習**（fetch 失敗時若有部分本地快取則用快取題目，全無才報錯）
 - 自訂單字以 `vocab_custom_words` 為 key 存入 localStorage（JSON array，格式：`{word, pos, zh, custom:true}`）
 - **學習統計 localStorage keys**：
-  - `vocab_streak`：`{streak, best, lastDate}` 連續打卡天數
+  - `vocab_streak`：`{streak, best, lastDate}` 連續打卡天數（**2026-06-13 起也同步至 Firestore `users/{uid}.streak`**，見下方雲端同步）
   - `vocab_daily`：`{date, count, goal}` 今日答題數／目標
   - `vocab_heatmap`：`{"YYYY-MM-DD": count, ...}` 每日答題熱力圖（保留 90 天）
   - `vocab_accuracy`：`{correct, total}` 累計正確率
   - `vocab_mastery`：`{word: "unfamiliar"|"moderate"}` 單字卡熟悉度標記
+  - `vocab_settings`：`{haptics}` App 設定（觸感回饋開關，預設 `true`；側邊欄「⚙️ 設定」可切換）
+- **觸感回饋（haptics，2026-06-13）**：`haptic(pattern)` helper 包 `navigator.vibrate()`，受 `appSettings.haptics` 控制；在 `answerQ()`/`submitSpelling()`（答對 `18`、答錯 `[0,25,40,25]` 雙震）與 `rateFc()`（`12` 輕震）呼叫。**Android Chrome 支援；iOS Safari 網頁版不支援 Vibration API，會靜默略過**（屬瀏覽器限制，非 bug）。開關存 `vocab_settings`，`setHaptics(on)` 寫入
 - 所有 Cloud Run 服務已設定 `allUsers` `roles/run.invoker`（允許未登入呼叫）
 - **新增 Cloud Function 規範**：函式宣告需加 `invoker: "public"`（`onRequest({ cors: true, invoker: "public" }, ...)`）才能公開訪問。第一次 deploy 輸出 CF URL，第二次 deploy 才顯示 Cloud Run URL（`{name}-gtlccx6nka-uc.a.run.app`）
 - **密碼保護**：首次開啟需輸入授權密碼，通過後以 SHA-256 hash 存入 localStorage（key：`vocab_auth_v1`）；更換密碼只需在 `index.html` 更新 `AUTH_HASH` 常數即可強制所有用戶重新驗證（詳見 memory）
@@ -92,7 +94,7 @@
   - 底部固定導覽（`#bottomNav`，76px）：首頁／單字／測驗／我的單字／進度 共 5 個 tab
   - `body` 設 `padding-top:52px; padding-bottom:76px`
   - `switchTab(tab)` 控制各 section 顯示隱藏；預設顯示 `homeSection`
-- **側邊欄 `#sideDrawer`**（右側滑入）順序：帳號同步 → 👤 我的資料（登入後）→ 更新公告 → 其他功能（段落理解）→ 學習資源
+- **側邊欄 `#sideDrawer`**（右側滑入）順序：帳號同步 → 👤 我的資料（登入後）→ 更新公告 → 其他功能（段落理解）→ ⚙️ 設定（觸感回饋開關 `#hapticToggle`）→ 學習資源
 - **詞性標籤分色**（`.pos-tag` + class）：
   - `n.` → 綠（`.pos-n`，`#6ecf88`）
   - `v.` → 藍（`.pos-v`，`#5bc0de`）
@@ -162,14 +164,17 @@
 - **Firebase 專案**：`news-english-ef2e4`（與 LINE Bot 共用）
 - **SDK**：Firebase Compat v10（`<script>` 標記，非 ESM），載入 Auth + Firestore
 - **Authentication**：Google Sign-In，授權網域需包含 `wisdomenglish.github.io`
-- **Firestore 路徑**：`users/{uid}` 文件，含三個欄位：
+- **Firestore 路徑**：`users/{uid}` 文件，含以下欄位：
   - `customWords`（陣列）：自訂單字庫 `[{word, pos, zh, custom:true}]`
   - `markedWords`（陣列）：⭐ 星號複習清單 `["word1", "word2", ...]`
   - `folders`（陣列）：單字/片語資料夾 `[{id, name, words:[], phrases:[]}]`（見「單字資料夾架構」）
+  - `streak`（物件，2026-06-13 新增）：連續打卡 `{streak, best, lastDate}`，解決跨裝置打卡日期不一致
+  - `stats` / `profile`：答題統計與個人資料
 - **Security Rules**：只允許 `auth.uid === userId` 讀寫自己的文件
 - **`saveCustomWords()`**：同時寫入 localStorage 和 Firestore `{ merge: true }`（已登入時）
 - **`saveMark()`**：每次加/取消星號同時寫入 localStorage 和 Firestore `{ merge: true }`
-- **`syncFromCloud()`**：登入時雲端優先覆蓋本地；舊帳號若雲端缺少 `markedWords` 欄位，自動上傳本地星號
+- **`saveStreak(s)`**：`touchStreak()` 每次打卡後寫入 Firestore `users/{uid}.streak`（已登入時）
+- **`syncFromCloud()`**：登入時雲端優先覆蓋本地；舊帳號若雲端缺少 `markedWords` 欄位，自動上傳本地星號。**連續打卡採「取較大次數」合併**：`streak=max(本地,雲端)`、`best=max(全部)`、`lastDate` 取較新者，合併後寫回雲端讓兩裝置一致（符合「從多數那個次數計算起」）
 - **登入流程**：`onAuthStateChanged` → `syncFromCloud(uid)` → 雲端優先覆蓋本地 → 刷新 UI
 - Tab 列右側顯示 **☁ 同步** 按鈕（未登入）或大頭貼＋登出按鈕（已登入）（按鈕位於 ☰ 側邊欄）
 - **未登入**：行為與之前相同，純 localStorage
@@ -764,7 +769,7 @@ python3 -m notebooklm login
 - **Cloud Function 架構**：每個 export 函式自帶 `require('@anthropic-ai/sdk')` 和 client 實例，不依賴模組頂層共用物件（避免 Cloud Run 作用域問題）
 - **generateVocabQuiz max_tokens**：必須設為 `4096`（非 1024），10 道題目的 JSON 約需 2500–3000 tokens，1024 會截斷 → `Unexpected end of JSON input` → 500 錯誤
 - **generateVocabQuiz 共享題庫快取（2026-06-12，省 token）**：出題前先用 `quizCacheKey(word)`（小寫、非英數轉 `_`）查 Firebase Realtime DB `/quiz-cache/{key}`，只對「未快取」的單字呼叫 Claude，生成後寫回；跨所有學生每個單字題目只生成一次，命中快取 0 token、約 9 倍快。`initializeFirebase()` 取得 `dbRef`；Firebase 連不上時 fallback 為原本即時生成（不會壞）。回傳依原請求順序合併「快取 + 新生成」。無 TTL（句子不會過期）。若日後啟用 `cefrLevel`，key 會加 `__{cefr}` 後綴避免混用。客戶端 `QUIZ_FN_URL` 打的是 base `generateVocabQuiz`（非 V2/V3）
-- **Service Worker 快取版本**：更動 `index.html` 或 `vocabulary-data.js` 需同步升版 `sw.js` 的 `CACHE` 常數（目前 `vocab-app-v91`），否則舊使用者看不到更新
+- **Service Worker 快取版本**：更動 `index.html` 或 `vocabulary-data.js` 需同步升版 `sw.js` 的 `CACHE` 常數（目前 `vocab-app-v92`），否則舊使用者看不到更新
 - **檔案編碼**：`functions/index.js` 和 `package.json` 必須存為 UTF-8（無 BOM），Windows PowerShell redirect 可能產生 UTF-16 BOM 導致部署失敗
 - **行事曆 iCal 日期格式化**：`formatCalendarEvents` 使用 `evt.start`（YYYY-MM-DD 字串）手動格式化日期，不使用 `toLocaleDateString`（Cloud Run 環境下對 Invalid Date 輸出字串 "Invalid Date"）；`startObj` 存為毫秒 timestamp（`getTime()`），用 `getUTC*` 方法讀取時間
 - **iCal 折疊（folding）**：iCal 超過 75 字元的行會折疊（`CRLF + 空格`），解析前必須先 unfolding（`icalText.replace(/\r\n[ \t]/g, "")...`），否則長標題（如 `[Sammy, Frank, Ivy] 考猜試教@ 府中`）會被截斷、名字解析失敗
