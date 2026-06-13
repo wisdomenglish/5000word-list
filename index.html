@@ -753,7 +753,7 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
     <div class="setting-row">
       <div class="setting-text">
         <div class="setting-title">📳 觸感回饋</div>
-        <div class="setting-sub">答題時震動回饋（Android 支援；iPhone 網頁版受 Safari 限制）</div>
+        <div class="setting-sub">答題時震動／觸感回饋（Android 完整震動；iPhone 為 iOS 17.4+ 輕觸感）</div>
       </div>
       <label class="switch">
         <input type="checkbox" id="hapticToggle" onchange="setHaptics(this.checked); if(this.checked) haptic(18);">
@@ -905,8 +905,8 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
         <div class="news-detail">
           <ul class="news-list">
             <li><strong>連續打卡雲端同步</strong>：登入 Google 帳號後，連續打卡天數會同步到雲端。換手機或用不同裝置時，會以「天數較多」的那筆為準，不再因為裝置不同而打卡天數對不上。</li>
-            <li><strong>答題觸感回饋</strong>：測驗答題、單字卡評分時會有輕微震動回饋（答對短震、答錯雙震）。可在右上角 <strong>☰ 選單 → ⚙️ 設定</strong> 開關。</li>
-            <li><strong>說明</strong>：觸感回饋在 Android 手機支援；iPhone 因 Safari 網頁版限制目前無法震動。</li>
+            <li><strong>答題觸感回饋</strong>：測驗答題、單字卡評分時會有震動／觸感回饋。可在右上角 <strong>☰ 選單 → ⚙️ 設定</strong> 開關。</li>
+            <li><strong>說明</strong>：Android 手機為完整震動（答對短震、答錯雙震）；iPhone（iOS 17.4 以上）為系統輕觸感。</li>
           </ul>
         </div>
       </div>
@@ -1825,8 +1825,33 @@ const HEATMAP_KEY  = 'vocab_heatmap';
 const ACCURACY_KEY = 'vocab_accuracy';
 const SETTINGS_KEY = 'vocab_settings';
 let appSettings = (()=>{ try{ return Object.assign({haptics:true}, JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}')); }catch(e){ return {haptics:true}; } })();
-/* 觸感回饋：Android Chrome 支援 navigator.vibrate；iOS Safari 網頁版不支援（會靜默略過）*/
-function haptic(pattern){ try{ if(appSettings.haptics && navigator.vibrate) navigator.vibrate(pattern); }catch(e){} }
+/* 觸感回饋：Android 走 navigator.vibrate；iOS 17.4+ 走隱藏 <input switch> 的系統觸感 hack（只有一種輕觸） */
+function _isIOS(){
+  return /iP(hone|od|ad)/.test(navigator.userAgent) ||
+         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+let _iosHapticEl = null;
+function iosHaptic(){
+  try{
+    if(!_iosHapticEl){
+      const l = document.createElement('label');
+      const i = document.createElement('input');
+      i.type = 'checkbox'; i.setAttribute('switch','');
+      l.appendChild(i);
+      l.style.cssText = 'position:absolute;width:0;height:0;opacity:0;pointer-events:none;overflow:hidden';
+      document.body.appendChild(l);
+      _iosHapticEl = l;
+    }
+    _iosHapticEl.click(); // 切換 switch → 觸發系統觸感（須在 user gesture 同步流程內）
+  }catch(e){}
+}
+function haptic(pattern){
+  try{
+    if(!appSettings.haptics) return;
+    if(navigator.vibrate){ navigator.vibrate(pattern); return; }  // Android 等支援 Vibration API
+    if(_isIOS()) iosHaptic();                                      // iPhone：借 switch 觸感
+  }catch(e){}
+}
 function setHaptics(on){ appSettings.haptics = !!on; localStorage.setItem(SETTINGS_KEY, JSON.stringify(appSettings)); }
 /* 連續打卡雲端同步（登入時取較大次數，避免跨裝置日期不一致）*/
 function saveStreak(s){

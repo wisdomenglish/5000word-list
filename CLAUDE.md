@@ -27,7 +27,7 @@
 - [vocabulary-data.js](vocabulary-data.js) — 外部單字庫（4,549 字，格式：`{w, z, p}`；2026-06-11 由 4,391 擴充至 5,565 後，2026-06-12 精簡純變化形回 4,549，並 AI 校正中文釋義標點，保留原形＋真形容詞/獨立詞）
 - [phrases-data.js](phrases-data.js) — 外部片語庫（1,125 條，格式：`{p, z}`）
 - [manifest.json](manifest.json) — PWA 設定（name: 5000英文單字學習）
-- [sw.js](sw.js) — Service Worker，支援離線使用（目前版本：`vocab-app-v92`）
+- [sw.js](sw.js) — Service Worker，支援離線使用（目前版本：`vocab-app-v93`）
 - [icon-192.png](icon-192.png) / [icon-512.png](icon-512.png) — Wisdom logo 圖示
 
 ### 功能
@@ -68,7 +68,9 @@
   - `vocab_accuracy`：`{correct, total}` 累計正確率
   - `vocab_mastery`：`{word: "unfamiliar"|"moderate"}` 單字卡熟悉度標記
   - `vocab_settings`：`{haptics}` App 設定（觸感回饋開關，預設 `true`；側邊欄「⚙️ 設定」可切換）
-- **觸感回饋（haptics，2026-06-13）**：`haptic(pattern)` helper 包 `navigator.vibrate()`，受 `appSettings.haptics` 控制；在 `answerQ()`/`submitSpelling()`（答對 `18`、答錯 `[0,25,40,25]` 雙震）與 `rateFc()`（`12` 輕震）呼叫。**Android Chrome 支援；iOS Safari 網頁版不支援 Vibration API，會靜默略過**（屬瀏覽器限制，非 bug）。開關存 `vocab_settings`，`setHaptics(on)` 寫入
+- **觸感回饋（haptics，2026-06-13）**：`haptic(pattern)` helper 受 `appSettings.haptics` 控制；在 `answerQ()`/`submitSpelling()`（答對 `18`、答錯 `[0,25,40,25]` 雙震）與 `rateFc()`（`12` 輕震）呼叫。開關存 `vocab_settings`，`setHaptics(on)` 寫入
+  - **平台分流**：`navigator.vibrate` 存在（Android 等）→ 用 Vibration API 完整震動；否則 `_isIOS()` 為真 → `iosHaptic()` 借 iOS 17.4+ 的 `<input type="checkbox" switch>` 系統觸感（建立一個隱藏 label，`.click()` 切換 switch 觸發觸感；`_iosHapticEl` 重用同一元素）
+  - **iOS 限制**：只有一種輕觸（無法分答對/答錯強弱）、需 iOS 17.4+、屬非官方行為（Apple 可能改掉）、須在 user gesture 同步流程內呼叫（答題點擊符合）。失效時自動靜默。要完整 Taptic 需包原生殼（Capacitor `@capacitor/haptics`）
 - 所有 Cloud Run 服務已設定 `allUsers` `roles/run.invoker`（允許未登入呼叫）
 - **新增 Cloud Function 規範**：函式宣告需加 `invoker: "public"`（`onRequest({ cors: true, invoker: "public" }, ...)`）才能公開訪問。第一次 deploy 輸出 CF URL，第二次 deploy 才顯示 Cloud Run URL（`{name}-gtlccx6nka-uc.a.run.app`）
 - **密碼保護**：首次開啟需輸入授權密碼，通過後以 SHA-256 hash 存入 localStorage（key：`vocab_auth_v1`）；更換密碼只需在 `index.html` 更新 `AUTH_HASH` 常數即可強制所有用戶重新驗證（詳見 memory）
@@ -769,7 +771,7 @@ python3 -m notebooklm login
 - **Cloud Function 架構**：每個 export 函式自帶 `require('@anthropic-ai/sdk')` 和 client 實例，不依賴模組頂層共用物件（避免 Cloud Run 作用域問題）
 - **generateVocabQuiz max_tokens**：必須設為 `4096`（非 1024），10 道題目的 JSON 約需 2500–3000 tokens，1024 會截斷 → `Unexpected end of JSON input` → 500 錯誤
 - **generateVocabQuiz 共享題庫快取（2026-06-12，省 token）**：出題前先用 `quizCacheKey(word)`（小寫、非英數轉 `_`）查 Firebase Realtime DB `/quiz-cache/{key}`，只對「未快取」的單字呼叫 Claude，生成後寫回；跨所有學生每個單字題目只生成一次，命中快取 0 token、約 9 倍快。`initializeFirebase()` 取得 `dbRef`；Firebase 連不上時 fallback 為原本即時生成（不會壞）。回傳依原請求順序合併「快取 + 新生成」。無 TTL（句子不會過期）。若日後啟用 `cefrLevel`，key 會加 `__{cefr}` 後綴避免混用。客戶端 `QUIZ_FN_URL` 打的是 base `generateVocabQuiz`（非 V2/V3）
-- **Service Worker 快取版本**：更動 `index.html` 或 `vocabulary-data.js` 需同步升版 `sw.js` 的 `CACHE` 常數（目前 `vocab-app-v92`），否則舊使用者看不到更新
+- **Service Worker 快取版本**：更動 `index.html` 或 `vocabulary-data.js` 需同步升版 `sw.js` 的 `CACHE` 常數（目前 `vocab-app-v93`），否則舊使用者看不到更新
 - **檔案編碼**：`functions/index.js` 和 `package.json` 必須存為 UTF-8（無 BOM），Windows PowerShell redirect 可能產生 UTF-16 BOM 導致部署失敗
 - **行事曆 iCal 日期格式化**：`formatCalendarEvents` 使用 `evt.start`（YYYY-MM-DD 字串）手動格式化日期，不使用 `toLocaleDateString`（Cloud Run 環境下對 Invalid Date 輸出字串 "Invalid Date"）；`startObj` 存為毫秒 timestamp（`getTime()`），用 `getUTC*` 方法讀取時間
 - **iCal 折疊（folding）**：iCal 超過 75 字元的行會折疊（`CRLF + 空格`），解析前必須先 unfolding（`icalText.replace(/\r\n[ \t]/g, "")...`），否則長標題（如 `[Sammy, Frank, Ivy] 考猜試教@ 府中`）會被截斷、名字解析失敗
