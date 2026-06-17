@@ -43,6 +43,10 @@ input[type=search]::placeholder{color:var(--muted);}
 .lvl-btn.active{background:var(--lvc,var(--accent));border-color:var(--lvc,var(--accent));color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.18);}
 .lvl-btn.active small{color:rgba(255,255,255,.9);}
 .lvl-btn.all{border-top-color:var(--border);}
+/* 級別徽章（卡片 + Modal），顏色依 LEVEL_COLORS */
+.lv-badge{display:inline-block;vertical-align:middle;color:#fff;font-size:0.6rem;font-weight:700;padding:2px 7px;border-radius:8px;font-family:'DM Sans',sans-serif;letter-spacing:.3px;line-height:1.45;white-space:nowrap;}
+.card .word .lv-badge{margin-left:7px;}
+#modalLvBadge{font-size:0.72rem;padding:3px 9px;align-self:center;margin-left:10px;flex-shrink:0;}
 .stats-bar{padding:8px 18px;color:var(--muted);font-size:0.78rem;border-bottom:1px solid var(--border);background:var(--bg);}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;padding:14px 16px;}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 18px;position:relative;overflow:hidden;box-shadow:var(--shadow);}
@@ -1289,6 +1293,7 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
     <button class="modal-close" onclick="closeWordModal()">✕</button>
     <div class="modal-header">
       <div class="modal-word-text" id="modalWord"></div>
+      <span class="lv-badge" id="modalLvBadge" style="display:none"></span>
       <button class="speak-btn" id="modalSpeakBtn" onclick="speak(document.getElementById('modalWord').textContent,this)">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
@@ -1967,6 +1972,7 @@ function getPosClass(pos){
   if(p.startsWith('adv')) return 'pos-adv';
   return 'pos-other';
 }
+function lvBadge(lv){ return lv?`<span class="lv-badge" style="background:${LEVEL_COLORS[lv]}">Lv${lv}</span>`:''; }
 function getZhDef(zh) {
   if (!zh) return '';
   const parts = zh.split('；');
@@ -2004,7 +2010,7 @@ function update(){
       <div class="card${selectMode&&selectedCards.has(w.word)?' selected':''}" data-word="${w.word.replace(/"/g,'&quot;')}" onclick="onCardClick('${w.word.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}')">
         <div class="card-check">${selectMode&&selectedCards.has(w.word)?'✓':''}</div>
         <div class="card-top">
-          <div class="word">${w.word}${w.custom?'<span class="custom-badge">自訂</span>':''}</div>
+          <div class="word">${w.word}${w.custom?'<span class="custom-badge">自訂</span>':''}${lvBadge(w.lv)}</div>
           <button class="speak-btn" data-word="${w.word}" onclick="event.stopPropagation();speak(this.dataset.word,this)">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
@@ -4162,6 +4168,9 @@ function openWordModal(word) {
   currentModalWord = word;
 
   document.getElementById('modalWord').textContent = w.word;
+  const _lb = document.getElementById('modalLvBadge');
+  if(w.lv){ _lb.textContent='Lv'+w.lv; _lb.style.background=LEVEL_COLORS[w.lv]; _lb.style.display=''; }
+  else { _lb.style.display='none'; _lb.textContent=''; }
   document.getElementById('modalPos').textContent  = w.pos || '';
   document.getElementById('modalZh').textContent   = w.zh || '';
   updateModalMarkBtn();
