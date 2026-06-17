@@ -27,7 +27,7 @@
 - [vocabulary-data.js](vocabulary-data.js) — 外部單字庫（4,549 字，格式：`{w, z, p}`；2026-06-11 由 4,391 擴充至 5,565 後，2026-06-12 精簡純變化形回 4,549，並 AI 校正中文釋義標點，保留原形＋真形容詞/獨立詞）
 - [phrases-data.js](phrases-data.js) — 外部片語庫（1,125 條，格式：`{p, z}`）
 - [manifest.json](manifest.json) — PWA 設定（name: 5000英文單字學習）
-- [sw.js](sw.js) — Service Worker，支援離線使用（目前版本：`vocab-app-v93`）
+- [sw.js](sw.js) — Service Worker，支援離線使用（目前版本：`vocab-app-v94`）
 - [icon-192.png](icon-192.png) / [icon-512.png](icon-512.png) — Wisdom logo 圖示
 
 ### 功能
@@ -77,8 +77,9 @@
 
 ### vocabulary-data.js 架構
 
-- 格式：`const WORDS = [{w, z, p}, ...]`（w=英文, z=中文, p=詞性）
-- `index.html` 在 `<head>` 載入後，緊接一行 adapter：`WORDS.forEach(o=>{o.word=o.w;o.zh=o.z;o.pos=o.p||'';});`
+- 格式：`const WORDS = [{w, z, p, lv?}, ...]`（w=英文, z=中文, p=詞性, lv=大考中心參考詞彙表級別 1–6）
+- **`lv` 級別欄（2026-06-17）**：對照大考中心《高中英文參考詞彙表》(111起) 標上 Level 1–6。**官方表查無的字不加 `lv` 欄**（非標 0），App 視為「未分級／超綱」。4,134 字有級別、415 字未分級。建表工具：`build-levels.mjs`（讀 `level-ref.txt` 官方對照表 5,991 筆，含 lemmatize 讓規則衍生形繼承字根級別），可重跑；產 `level-report.txt` 核對報告
+- `index.html` 在 `<head>` 載入後，緊接一行 adapter：`WORDS.forEach(o=>{o.word=o.w;o.zh=o.z;o.pos=o.p||'';});`（`lv` 直接用 `w.lv`，不需 adapter）
   → 其餘程式碼繼續用 `w.word / w.zh / w.pos`，不需改動
 - **重複字清除規則**：刪除 -s/-ed/-ing 衍生形，條件為 zh 相同且 pos 相同（跨詞性保留）
 - **getZhDef() 邏輯**：若第一段（`；` 前）≤ 2 字，自動合併第二段，避免擷取到語境詞（如「飛機」）而非完整解釋
@@ -105,6 +106,7 @@
   - 其他 → 粉紅（`.pos-other`，`--accent2`）
   - `getPosClass(pos)` helper 依前綴判斷（`n`→n, `v`→v, `adj`→adj, `adv`→adv）
 - **A–Z 篩選列**（`.alpha-bar`）：`flex-wrap:nowrap;overflow-x:auto` 橫向滾動，按鈕 40×40px，`flex-shrink:0` 防止壓縮
+- **篩選模式切換（字母 / 級別，2026-06-17）**：字典頁搜尋列下有 `.filter-mode-toggle`（`🔤 字母` / `📊 級別`兩顆 `.fm-btn`），`setFilterMode('alpha'|'level')` 切換。**A–Z 列（`#alphaBar`）與級別列（`#levelBar`）互斥，只顯示其一**（切換時 `display` 互換並清掉另一種選取，避免隱藏條件）。級別列 `buildLevelBar()` 產生 `全部 / Lv1–6 / 未分級` 按鈕（`.lvl-btn`，各級用 `LEVEL_COLORS` 上緣色條 + 字數），`setLevel(n)` 切換 `selectedLevels`（0=未分級）。`update()` 依 `filterMode` 套用字母或級別過濾
 - **「＋ 新增」按鈕**：以固定 FAB（`#fabAddWord`，`position:fixed;bottom:24px;right:20px`）取代 controls 內的按鈕；`updateFabVisibility()` 控制只在字典 + 單字模式時顯示
 - **`dictMode`**：必須宣告在 `buildAlphaBar()` 呼叫之前（否則 TDZ 錯誤），預設值 `'word'`
 - **觸控熱區**：星號 `.mark-btn` 加 `padding:10px` 擴大熱區；FAB 52×52px 圓形
@@ -259,7 +261,8 @@ hero-english/src/
 │   ├── LearningTab.jsx              # 學習 tab（答題/測驗）
 │   ├── VocabBookTab.jsx             # 詞彙本
 │   ├── TaiwanMapWorld.jsx           # 角色走動場景（台灣地圖世界）
-│   ├── ChibiCharacter.jsx           # Q 版 SVG 角色（2026-06-12 取代像素圖，會眨眼/彈跳 + Tier 特效）
+│   ├── ChibiCharacter.jsx           # Q 版 SVG 角色（2026-06-12 取代像素圖，會眨眼/彈跳/走路 + Tier 特效）
+│   ├── CapybaraCompanion.jsx        # 水豚夥伴「卡比」SVG（2026-06-14 卡比巴拉風吉祥物，頭頂柚子、會眨眼/走路/表情）
 │   ├── PixelCharacter.jsx           # （舊）像素角色，已無人引用，保留備用
 │   ├── LevelUpModal.jsx             # 升級彈窗
 │   ├── CharacterUnboxingModal.jsx   # Tier 里程碑進化演出（Lv.10/20/30）
@@ -352,7 +355,13 @@ hero-english/src/
 
 ### UI 設計規範（hero-english）
 
-- **色彩主題**：深色（`#0F0F14` 背景），主色 `#7C3AED`（紫）/ `#A78BFA`（淺紫），行動色 `#F59E0B`（琥珀）/ `#F97316`（橘）
+- **色彩主題（2026-06-14 卡比巴拉暖色療癒改版）**：全站從深紫科技感翻成米色療癒亮系。CSS 變數定義於 [index.css](hero-english/src/index.css) `:root`：`--cozy-bg-top:#FFF6E6`／`--cozy-bg-bot:#FBE9CC`（奶油漸層底，掛在 `#root`）、`--cozy-panel:#FFFCF5`（暖白卡）、`--cozy-panel-2:#FBF1DD`（次級暖面）、`--cozy-ink:#4A3A2A`／`--cozy-ink-soft:#8A7860`／`--cozy-ink-faint:#B0A088`（暖墨三階文字）、`--cozy-border:#EBDABB`、`--cozy-shadow*`（暖棕柔影）、點綴色 `--cozy-grass:#7FB069`／`--cozy-sun:#F6A94C`／`--cozy-sky:#6FB5D9`／`--cozy-berry:#E68BA6`／`--cozy-capy:#C68A4E`。四職業 `primaryColor`（紅/紫/綠/琥珀）保留為角色識別，在暖底上當點綴
+  - **全域文字覆蓋**：index.css 用 `body .text-gray-400/500/600 { color: var(--cozy-ink-*) }` 一次把多數 muted 灰字翻暖（比 Tailwind 單一 class 高一階特異性）；亮卡上原本 `text-white` 的文字改用 `.text-ink`／`.text-ink-soft` 工具類；彩色漸層按鈕/徽章上的白字維持 `#fff`
+  - **舊深色色票對照**（沿用於改其他元件時）：`#1A1B2E`→`var(--cozy-panel)`、`#12131F`→panel、`rgba(255,255,255,0.0X)` 表面→`rgba(140,100,55,0.0X)` 或 `--cozy-panel-2`、白色 rgba 文字→`--cozy-ink*`
+- **共用樣式（index.css）**：`.game-panel`（暖白卡＋上緣亮邊＋暖棕柔影）、`.game-btn`（3D 糖果按鈕，`--btn-edge`/`--btn-glow`）、`.game-section-title`（emoji 標題＋暖色分隔線）、`.text-ink`/`.text-ink-soft`（暖墨文字）、`.cozy-surface`
+- **答題療癒回饋（LearningTab，2026-06-14）**：答對時 `RewardBurst` 元件浮出 — 金幣 🪙 上浮（`coinPop`）＋「+XP」分數彈跳（`scorePop`）＋橘色光環擴散（`correctBurst`），keyframes 定義於 index.css
+- **水豚夥伴「卡比」**：`CapybaraCompanion.jsx`，卡比巴拉風吉祥物（圓 loaf 身、頭頂柚子、會眨眼/走路/`content·happy·sleepy` 表情）。用於 ① CharacterTab 的 `MentorTip`（取代舊「🧙 智慧法師」，依體力/連續天數給療癒口吻提示）② TaiwanMapWorld 地圖上跟在英雄旁邊一起走（`walking`）
+- **（已淘汰）舊深色主題**：`#0F0F14` 背景＋紫色 `#7C3AED` 主色
 - **字體**：標題 Playfair Display，內文 DM Sans + Tailwind CSS utility classes
 - **StudyCta 按鈕**：happiness < 30 → 紅色；xpProgress.percent ≥ 75 → 職業主色；其他 → 橘黃漸層（皆為 `.game-btn` 3D 糖果款）
 - **最小字體**：game UI 標籤最小 `0.65rem`（0.5rem 以下不可用）
@@ -771,7 +780,7 @@ python3 -m notebooklm login
 - **Cloud Function 架構**：每個 export 函式自帶 `require('@anthropic-ai/sdk')` 和 client 實例，不依賴模組頂層共用物件（避免 Cloud Run 作用域問題）
 - **generateVocabQuiz max_tokens**：必須設為 `4096`（非 1024），10 道題目的 JSON 約需 2500–3000 tokens，1024 會截斷 → `Unexpected end of JSON input` → 500 錯誤
 - **generateVocabQuiz 共享題庫快取（2026-06-12，省 token）**：出題前先用 `quizCacheKey(word)`（小寫、非英數轉 `_`）查 Firebase Realtime DB `/quiz-cache/{key}`，只對「未快取」的單字呼叫 Claude，生成後寫回；跨所有學生每個單字題目只生成一次，命中快取 0 token、約 9 倍快。`initializeFirebase()` 取得 `dbRef`；Firebase 連不上時 fallback 為原本即時生成（不會壞）。回傳依原請求順序合併「快取 + 新生成」。無 TTL（句子不會過期）。若日後啟用 `cefrLevel`，key 會加 `__{cefr}` 後綴避免混用。客戶端 `QUIZ_FN_URL` 打的是 base `generateVocabQuiz`（非 V2/V3）
-- **Service Worker 快取版本**：更動 `index.html` 或 `vocabulary-data.js` 需同步升版 `sw.js` 的 `CACHE` 常數（目前 `vocab-app-v93`），否則舊使用者看不到更新
+- **Service Worker 快取版本**：更動 `index.html` 或 `vocabulary-data.js` 需同步升版 `sw.js` 的 `CACHE` 常數（目前 `vocab-app-v94`），否則舊使用者看不到更新
 - **檔案編碼**：`functions/index.js` 和 `package.json` 必須存為 UTF-8（無 BOM），Windows PowerShell redirect 可能產生 UTF-16 BOM 導致部署失敗
 - **行事曆 iCal 日期格式化**：`formatCalendarEvents` 使用 `evt.start`（YYYY-MM-DD 字串）手動格式化日期，不使用 `toLocaleDateString`（Cloud Run 環境下對 Invalid Date 輸出字串 "Invalid Date"）；`startObj` 存為毫秒 timestamp（`getTime()`），用 `getUTC*` 方法讀取時間
 - **iCal 折疊（folding）**：iCal 超過 75 字元的行會折疊（`CRLF + 空格`），解析前必須先 unfolding（`icalText.replace(/\r\n[ \t]/g, "")...`），否則長標題（如 `[Sammy, Frank, Ivy] 考猜試教@ 府中`）會被截斷、名字解析失敗

@@ -1,0 +1,801 @@
+# 5000單字 vs 大考中心參考詞彙表(111起) 核對報告
+
+官方對照表載入 entry 數: 5993（展開後 key 數: 6153）
+App 單字總數: 4549
+
+## 各級別分佈（含衍生形繼承字根級別）
+Level 1: 150
+Level 2: 553
+Level 3: 654
+Level 4: 898
+Level 5: 973
+Level 6: 906
+未列入官方表(lv=0): 415
+
+## 衍生形對應字根 (369)
+abbreviated  ←  abbreviate
+absorbed  ←  absorb
+accelerated  ←  accelerate
+according  ←  accord
+acquainted  ←  acquaint
+actively  ←  active
+addicted  ←  addict
+additionally  ←  additional
+adopted  ←  adopt
+affected  ←  affect
+affordable  ←  afford
+aggressively  ←  aggressive
+alienated  ←  alienate
+aliens  ←  alien
+alternatively  ←  alternative
+animated  ←  animate
+annoyed  ←  annoy
+annoying  ←  annoy
+anxiously  ←  anxious
+apparently  ←  apparent
+appealing  ←  appeal
+approximately  ←  approximate
+assured  ←  assure
+astonished  ←  astonish
+attractiveness  ←  attractive
+awareness  ←  aware
+baiting  ←  bait
+bargaining  ←  bargain
+battered  ←  batter
+bearing  ←  bear
+biased  ←  bias
+blasted  ←  blast
+blazing  ←  blaze
+bleached  ←  bleach
+blended  ←  blend
+blessed  ←  bless
+blooming  ←  bloom
+blurred  ←  blur
+bonds  ←  bond
+breasts  ←  breast
+breathless  ←  breath
+briefly  ←  brief
+broadly  ←  broad
+calculated  ←  calculate
+captioned  ←  caption
+careless  ←  care
+celebrated  ←  celebrate
+certainly  ←  certain
+certified  ←  certify
+charmed  ←  charm
+cheerfully  ←  cheerful
+chemicals  ←  chemical
+chipped  ←  chip
+circulars  ←  circular
+civilized  ←  civilize
+classics  ←  classic
+colonies  ←  colony
+combined  ←  combine
+comforting  ←  comfort
+commercially  ←  commercial
+committed  ←  commit
+commonly  ←  common
+comparatively  ←  comparative
+completely  ←  complete
+complicated  ←  complicate
+composed  ←  compose
+computerized  ←  computerize
+concerned  ←  concern
+condensed  ←  condense
+confused  ←  confuse
+confusing  ←  confuse
+consciousness  ←  conscious
+consequently  ←  consequent
+considering  ←  consider
+constantly  ←  constant
+contaminated  ←  contaminate
+contents  ←  content
+continuously  ←  continuous
+convinced  ←  convince
+convincing  ←  convince
+counselling  ←  counsel
+countless  ←  count
+cracked  ←  crack
+crawler  ←  crawl
+creditable  ←  credit
+crippled  ←  cripple
+crippling  ←  cripple
+crowded  ←  crowd
+crushing  ←  crush
+cultivated  ←  cultivate
+currently  ←  current
+defined  ←  define
+definitely  ←  definite
+deliberately  ←  deliberate
+delighted  ←  delight
+demanding  ←  demand
+dependable  ←  depend
+depressed  ←  depress
+depressing  ←  depress
+deprived  ←  deprive
+derived  ←  derive
+deserted  ←  desert
+determined  ←  determine
+developing  ←  develop
+devoted  ←  devote
+dimly  ←  dim
+disabled  ←  disable
+disappearance  ←  appearance
+disappointed  ←  disappoint
+discouraged  ←  discourage
+disgusted  ←  disgust
+disgusting  ←  disgust
+displace  ←  place
+displacement  ←  placement
+disposables  ←  disposable
+distinctly  ←  distinct
+distressed  ←  distress
+disturbed  ←  disturb
+disturbing  ←  disturb
+dominantly  ←  dominant
+doubtless  ←  doubt
+dweller  ←  dwell
+earnestly  ←  earnest
+editorials  ←  editorial
+effects  ←  effect
+enclosed  ←  enclose
+endangered  ←  endanger
+engaged  ←  engage
+enormously  ←  enormous
+entertaining  ←  entertain
+equals  ←  equal
+evenly  ←  even
+eventually  ←  eventual
+evidently  ←  evident
+exhausted  ←  exhaust
+extended  ←  extend
+extremely  ←  extreme
+faculties  ←  faculty
+faithfully  ←  faithful
+fascinated  ←  fascinate
+fateful  ←  fate
+fatigued  ←  fatigue
+figures  ←  figure
+financially  ←  financial
+firmly  ←  firm
+flattered  ←  flatter
+fleeting  ←  fleet
+flushed  ←  flush
+forceful  ←  force
+formally  ←  formal
+formerly  ←  former
+fractured  ←  fracture
+frequently  ←  frequent
+frustrated  ←  frustrate
+fundamentally  ←  fundamental
+funds  ←  fund
+furiously  ←  furious
+generally  ←  general
+genuinely  ←  genuine
+glaring  ←  glare
+glowing  ←  glow
+gradually  ←  gradual
+grounded  ←  ground
+harmless  ←  harm
+horizontally  ←  horizontal
+illogical  ←  logical
+illustrated  ←  illustrate
+immediately  ←  immediate
+impressed  ←  impress
+impurity  ←  purity
+inclined  ←  incline
+incoming  ←  income
+incorporates  ←  incorporate
+individually  ←  individual
+infancy  ←  fancy
+infected  ←  infect
+inferiors  ←  inferior
+informed  ←  inform
+inhabited  ←  inhabit
+initially  ←  initial
+initials  ←  initial
+innocently  ←  innocent
+inspiring  ←  inspire
+insure  ←  sure
+intake  ←  take
+interviewer  ←  interview
+intimidating  ←  intimidate
+involuntary  ←  voluntary
+irritated  ←  irritate
+isolated  ←  isolate
+jointly  ←  joint
+legitimately  ←  legitimate
+liberally  ←  liberal
+liberated  ←  liberate
+lingering  ←  linger
+literally  ←  literal
+located  ←  locate
+logically  ←  logical
+loosely  ←  loose
+manageable  ←  manage
+manners  ←  manner
+meaningfully  ←  meaningful
+meaningless  ←  meaning
+medalled  ←  medal
+merely  ←  mere
+minerals  ←  mineral
+miraculously  ←  miraculous
+mixed  ←  mix
+modernized  ←  modernize
+morally  ←  moral
+motionless  ←  motion
+motivated  ←  motivate
+murmuring  ←  murmur
+mutually  ←  mutual
+mysteriously  ←  mysterious
+narrowly  ←  narrow
+naturally  ←  natural
+necessarily  ←  necessary
+noted  ←  not
+nourishing  ←  nourish
+obediently  ←  obedient
+obliged  ←  oblige
+obsessed  ←  obsess
+obviously  ←  obvious
+occasionally  ←  occasional
+occupied  ←  occupy
+offended  ←  offend
+officially  ←  official
+oppressed  ←  oppress
+ordered  ←  order
+organized  ←  organize
+owing  ←  owe
+panelled  ←  panel
+particularly  ←  particular
+passer  ←  pass
+permanently  ←  permanent
+persevering  ←  persevere
+persistently  ←  persistent
+physically  ←  physical
+pleased  ←  please
+pointed  ←  point
+poisoned  ←  poison
+polished  ←  polish
+polluted  ←  pollute
+populated  ←  populate
+precisely  ←  precise
+predictable  ←  predict
+preferable  ←  prefer
+prejudiced  ←  prejudice
+primarily  ←  primary
+primitives  ←  primitive
+proceeding  ←  proceed
+progressively  ←  progressive
+pronounced  ←  pronounce
+properly  ←  proper
+provided  ←  provide
+pumps  ←  pump
+qualified  ←  qualify
+randomly  ←  random
+rapidly  ←  rapid
+rarely  ←  rare
+recast  ←  cast
+recharge  ←  charge
+redefine  ←  define
+redistribute  ←  distribute
+refined  ←  refine
+regain  ←  gain
+regretful  ←  regret
+rehearsed  ←  rehearse
+reinforcement  ←  reinforce
+relatively  ←  relative
+relatives  ←  relative
+relevantly  ←  relevant
+relieved  ←  relieve
+relocation  ←  location
+reluctantly  ←  reluctant
+remains  ←  remain
+renewable  ←  renew
+renewed  ←  renew
+replaceable  ←  replace
+representatives  ←  representative
+required  ←  require
+reserved  ←  reserve
+resigned  ←  resign
+resolved  ←  resolve
+respecting  ←  respect
+restricted  ←  restrict
+retailer  ←  retail
+reversed  ←  reverse
+rising  ←  rise
+rushed  ←  rush
+satisfied  ←  satisfy
+scattered  ←  scatter
+scrambled  ←  scramble
+seasoned  ←  season
+seasoning  ←  season
+separated  ←  separate
+severely  ←  severe
+shattered  ←  shatter
+significantly  ←  significant
+similarly  ←  similar
+slightly  ←  slight
+socially  ←  social
+solidly  ←  solid
+solitarily  ←  solitary
+soothing  ←  soothe
+soulful  ←  soul
+spirits  ←  spirit
+spotted  ←  spot
+startling  ←  startle
+steadily  ←  steady
+strained  ←  strain
+stripes  ←  strip
+stunned  ←  stun
+stunning  ←  stun
+subsequently  ←  subsequent
+subsidized  ←  subsidize
+suffering  ←  suffer
+suspiciously  ←  suspicious
+swiftest  ←  swift
+swiftly  ←  swift
+tailored  ←  tailor
+temporarily  ←  temporary
+tempting  ←  tempt
+tenderly  ←  tender
+tentatively  ←  tentative
+terms  ←  term
+terrified  ←  terrify
+theoretically  ←  theoretical
+thoroughly  ←  thorough
+thoughtfully  ←  thoughtful
+threatening  ←  threaten
+thrilled  ←  thrill
+thrilling  ←  thrill
+tilted  ←  tilt
+timer  ←  time
+training  ←  train
+troops  ←  troop
+tutoring  ←  tutor
+twister  ←  twist
+typically  ←  typical
+ultimately  ←  ultimate
+uncertain  ←  certain
+unconventional  ←  conventional
+uneven  ←  even
+universally  ←  universal
+unnecessary  ←  necessary
+unpleasant  ←  pleasant
+unrealistic  ←  realistic
+unstable  ←  stable
+untangle  ←  tangle
+unusual  ←  usual
+urgently  ←  urgent
+utterly  ←  utter
+valueless  ←  value
+varied  ←  vary
+verbally  ←  verbal
+violently  ←  violent
+virtually  ←  virtual
+vividly  ←  vivid
+wanderer  ←  wander
+wandering  ←  wander
+weaker  ←  weak
+weakness  ←  weak
+widely  ←  wide
+winded  ←  wind
+wireless  ←  wire
+yearning  ←  yearn
+zoomed  ←  zoom
+
+## 官方表查無、未標級別的單字 (415)
+abbreviation
+abolition
+aborigine
+absorption
+acidity
+acknowledgment
+acoustic
+acoustics
+acute
+admonition
+adoption
+adoptions
+adversity
+aerial
+affectation
+aground
+air-conditioned
+altar
+alternation
+aluminium
+appetizer
+appreciative
+aptitude
+aptitudes
+aquatic
+archipelago
+arid
+aroma
+arose
+artery
+ascendant
+assassination
+assertion
+attentive
+automatically
+automotive
+availability
+babysit
+babysitter
+bandwagon
+banquet
+basically
+beaten
+behavioral
+besiege
+betrayal
+biodegradable
+blackout
+blare
+blown
+bony
+brag
+braid
+braided
+brand-new
+breathtaking
+buckle
+buddha
+buddhism
+bulge
+bulging
+bumpy
+camouflage
+capativated
+captivate
+captivating
+carelessness
+carnivore
+cassette
+caught
+causal
+certification
+chaotic
+chatter
+childlike
+chronological
+citation
+clan
+cling
+clinic
+clinical
+clip
+clung
+clutter
+cluttered
+coastal
+coexist
+cognition
+coherence
+coincide
+collide
+colonist
+commence
+commencement
+commend
+commercialize
+complementary
+completion
+complimentary
+compress
+conditional
+confirmation
+considerably
+conspicuous
+conspire
+contamination
+contemplation
+contradictory
+cornerstone
+coronation
+correlate
+correlated
+cost-effective
+cowardice
+craze
+crept
+crevice
+crisp
+culinary
+cultivation
+cumulate
+curative
+curricular
+customize
+customized
+dampen
+deceit
+decency
+decorative
+defective
+deficiency
+deficient
+dementia
+dependence
+desperation
+destine
+devastate
+devastated
+dimple
+dismantle
+disputable
+distort
+divinity
+domesticate
+domesticated
+dominance
+domination
+drastically
+dressy
+droplet
+dynamite
+earworm
+effortlessly
+eligibly
+elite
+embark
+empathy
+empirical
+encroachment
+enzyme
+eschew
+estimation
+evoluation
+exhibitor
+eyesore
+fanatic
+favorably
+feasible
+fianc
+fictional
+flammable
+fled
+focal
+forbidden
+formalize
+froze
+frugal
+glamor
+glorify
+gourmet
+governmental
+handcrafted
+handle's
+harmonious
+hazardous
+healthcare
+held
+hid
+hideaway
+hinder
+hindrance
+hoax
+hospitably
+humiliation
+hung
+hydrate
+hydrated
+hypotheses
+illustrator
+imitative
+immunity
+incidental
+inclination
+indicator
+individualism
+indulgence
+industrialization
+industrious
+inevitably
+inspirational
+instrumental
+insured
+intentional
+interactive
+intermix
+internal
+intoxicate
+intricate
+itchy
+justification
+kidnapper
+laborious
+laid
+lament
+landfill
+led
+leftover
+legislate
+lifeline
+livelihood
+lunatic
+lyric
+magnificence
+manifestation
+marital
+maximize
+mediator
+medicinal
+melancholic
+merciful
+merciless
+migrate
+migratory
+millennia
+millennium
+mistook
+mockery
+moderation
+momentary
+monitoringhis
+nausea
+neuter
+nobility
+nominator
+novelty
+numb
+nutritional
+nutritionist
+obligatory
+observance
+observant
+observatory
+obsession
+overcame
+overheard
+overtaken
+overthrew
+oxidation
+paralysis
+parole
+passer-by
+perceptual
+perfectionist
+periodic
+periodically
+perseverance
+pesticide
+pilotage
+pitiful
+pollutant
+populous
+precedence
+preferably
+preservative
+prestigious
+pretense
+pretentious
+primal
+proficient
+projector
+proponent
+racist
+rarity
+ration
+receptionist
+recess
+relativity
+reluctance
+removable
+repel
+repent
+repentant
+repetitive
+residual
+responsive
+retention
+ridicule
+rite
+rumours
+scarcity
+seasonal
+seemingly
+seizure
+sensational
+sensibly
+sensory
+sequent
+serenity
+severity
+shelves
+showcase
+shrill
+sideways
+signify
+situate
+situated
+slew
+sling
+smother
+snort
+snuck
+sociological
+sodium
+sophisticate
+specification
+speculation
+spoilt
+spongy
+spotlit
+sprain
+sprang
+sprint
+ssel
+stank
+static
+stimulant
+strove
+stuck
+stuffy
+substantiate
+suffice
+sufficiency
+suicidal
+suitability
+suppression
+sustenance
+swa
+swarm
+swollen
+synthesis
+systematically
+tedium
+temperament
+temperate
+terminate
+termination
+testament
+theorize
+thunderous
+thunderstorm
+tore
+torturous
+transcribe
+transcription
+transparency
+traumatic
+trench
+trickery
+trustworthy
+tumour
+twirl
+unbiased
+understandably
+underwent
+undoubted
+unemployed
+unlimited
+unprecedented
+up-to-date
+upbeat
+urine
+utterance
+vaccinate
+vaccinated
+variance
+variant
+vegan
+verge
+versatility
+vibrant
+vicarious
+vicariously
+virtuous
+visionary
+visualize
+vocalize
+vulnerability
+warden
+wasteland
+wept
+withdrawn
+woven
+zip
+zoologist
+zoology
