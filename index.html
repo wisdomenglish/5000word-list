@@ -405,6 +405,17 @@ header{top:52px!important;}
 /* ── Add Word Modal (reuses wordModal layout) ── */
 #addWordModal{position:fixed;inset:0;z-index:500;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);}
 @media(min-width:600px){#addWordModal{align-items:center;}}
+/* ── 回報問題 Modal ── */
+#reportModal{position:fixed;inset:0;z-index:500;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);}
+@media(min-width:600px){#reportModal{align-items:center;}}
+.report-textarea{width:100%;min-height:110px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:11px 13px;font-size:0.9rem;outline:none;resize:vertical;font-family:inherit;line-height:1.5;-webkit-appearance:none;}
+.report-textarea:focus{border-color:var(--accent);}
+.report-drop{margin-top:12px;border:1.5px dashed var(--border);border-radius:12px;padding:16px;text-align:center;color:var(--muted);font-size:0.82rem;cursor:pointer;transition:all .15s;}
+.report-drop:hover{border-color:var(--accent);color:var(--accent);}
+.report-preview-wrap{margin-top:12px;position:relative;display:none;}
+.report-preview-wrap img{width:100%;border-radius:12px;border:1px solid var(--border);display:block;max-height:280px;object-fit:contain;background:var(--bg);}
+.report-preview-remove{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.65);color:#fff;border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:0.9rem;}
+.report-hint{color:var(--muted);font-size:0.72rem;margin-top:10px;line-height:1.5;}
 /* ── Word of the Day Modal ── */
 #wotdModal{position:fixed;inset:0;z-index:600;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.78);backdrop-filter:blur(8px);padding:20px;}
 .wotd-card{background:var(--surface);border:1px solid var(--border);border-radius:24px;width:100%;max-width:420px;overflow:hidden;box-shadow:0 12px 48px rgba(0,0,0,.18);animation:wotdIn .32s cubic-bezier(.34,1.56,.64,1);}
@@ -779,6 +790,10 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
       </label>
     </div>
   </div>
+  <div class="drawer-section">
+    <div class="drawer-section-label">意見回饋</div>
+    <button class="drawer-nav-btn" onclick="openReportModal()">🛟 回報問題</button>
+  </div>
   <div class="drawer-section" style="border-bottom:none;">
     <div class="drawer-section-label">學習資源</div>
     <a class="drawer-nav-btn" href="https://drive.google.com/drive/folders/1eHS-Swd7QaOA24xN9JfNlcysx1eK33uJ?usp=drive_link" target="_blank" rel="noopener" style="text-decoration:none;">📁 學習歷程 <span style="font-size:0.7rem;color:var(--muted);margin-left:auto;">↗</span></a>
@@ -918,6 +933,24 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
     <!-- ══ 更新紀錄索引 ══ -->
     <div class="news-index-section">
       <div class="news-index-section-title">📋 更新紀錄</div>
+
+      <!-- 2026-06-25 連續播放 + 回報問題 + 測驗修正 -->
+      <div class="news-index-entry">
+        <div class="news-index-item" onclick="toggleNewsDetail(this.parentElement)">
+          <span class="news-date">2026-06-25</span>
+          <span class="news-type feature">新功能</span>
+          <span class="news-type fix">修正</span>
+          <span class="ni-title">🔊 單字連續播放・🛟 回報問題・測驗詳解修正</span>
+          <span class="news-arrow">›</span>
+        </div>
+        <div class="news-detail">
+          <ul class="news-list">
+            <li><strong>🔊 連續播放</strong>：字典頁選好字母或級別後，統計列右側點「連續播放」即可一字一字依序朗讀整個範圍。同一顆按鈕可暫停／從原處繼續，方便邊聽邊背。</li>
+            <li><strong>🛟 回報問題</strong>：右上角 <strong>☰ 選單 → 意見回饋 → 回報問題</strong>，可輸入文字並附上截圖（支援直接貼上剪貼簿圖片），遇到 bug、單字錯誤或建議都能直接回報給我們。</li>
+            <li><strong>測驗詳解修正</strong>：修正部分句子填空題「下方詳解講的單字不在選項裡」的問題，正解選項現在一定對應到被考的單字。</li>
+          </ul>
+        </div>
+      </div>
 
       <!-- 2026-06-13 連續打卡雲端同步 + 觸感回饋 -->
       <div class="news-index-entry">
@@ -1290,6 +1323,28 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
     </div>
     <div id="awmErr" style="color:var(--accent2);font-size:0.8rem;min-height:18px;margin-bottom:10px"></div>
     <button class="quiz-start-btn" onclick="saveWordFromModal()">儲存單字</button>
+  </div>
+</div>
+
+<!-- 回報問題 Modal -->
+<div id="reportModal" style="display:none" onclick="if(event.target===this)closeReportModal()">
+  <div class="modal-box" style="max-height:88vh">
+    <div class="modal-drag"></div>
+    <button class="modal-close" onclick="closeReportModal()">✕</button>
+    <div style="font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--text);margin-bottom:4px">🛟 回報問題</div>
+    <div style="color:var(--muted);font-size:0.82rem;margin-bottom:16px">遇到 bug、單字錯誤或任何建議都可以告訴我們，可附上截圖 📷</div>
+    <textarea class="report-textarea" id="reportMsg" placeholder="請描述你遇到的問題或建議…（例如：某個單字解釋怪怪的、某個按鈕沒反應）"></textarea>
+    <input type="file" id="reportFileInput" accept="image/*" style="display:none" onchange="onReportFilePick(event)">
+    <div class="report-drop" id="reportDrop" onclick="document.getElementById('reportFileInput').click()">
+      📎 點此選擇截圖，或直接「貼上」剪貼簿圖片（Ctrl/⌘+V）
+    </div>
+    <div class="report-preview-wrap" id="reportPreviewWrap">
+      <img id="reportPreviewImg" alt="預覽">
+      <button class="report-preview-remove" onclick="removeReportImage()">✕</button>
+    </div>
+    <div id="reportErr" style="color:var(--accent2);font-size:0.8rem;min-height:18px;margin-top:10px"></div>
+    <button class="quiz-start-btn" id="reportSubmitBtn" onclick="submitReport()">送出回報</button>
+    <div class="report-hint">送出後會通知管理員。我們可能看到你的暱稱（若已登入）與裝置型號，以便重現問題。</div>
   </div>
 </div>
 
@@ -2548,7 +2603,19 @@ function goPhrasePage(n){ phrasePage = n; window.scrollTo({top: 0, behavior: 'sm
 // ─── 複習清單 & AI 測驗 ───
 const QUIZ_FN_URL = 'https://generatevocabquiz-gtlccx6nka-uc.a.run.app';
 const PHRASE_QUIZ_FN_URL = 'https://generatephrasequiz-gtlccx6nka-uc.a.run.app';
+/* 驗證句子填空題：正解選項必須等於被考單字，否則視為壞題（回 null）→ 重新抓題覆蓋。
+   解決 Claude 把正解換成同義詞（考 familiar 卻用 well-known）導致詳解的字不在選項。*/
+function _fixQuizQ(q){
+  if(!q||typeof q!=='object'||!q.word||!Array.isArray(q.options)||q.options.length<2) return null;
+  if(typeof q.sentence!=='string'||!q.sentence.includes('______')) return null;
+  const norm=s=>String(s).toLowerCase().trim();
+  const idx=q.options.findIndex(o=>norm(o)===norm(q.word));
+  if(idx===-1) return null;          // 正解單字不在選項裡 → 壞題，丟棄
+  q.answer=idx;                       // 順手修正 shuffle 後 index 不一致
+  return q;
+}
 const PARAGRAPH_FN_URL = 'https://us-central1-news-english-ef2e4.cloudfunctions.net/generateParagraph';
+const REPORT_FN_URL = 'https://submitreport-gtlccx6nka-uc.a.run.app';
 let markedWords = new Set(JSON.parse(localStorage.getItem('vocab_marked') || '[]'));
 let paraMode = 'story';
 let qSource = 'unfamiliar';
@@ -3248,7 +3315,14 @@ async function startQuiz(){
   // ── 客戶端題庫快取（localStorage）：已快取的題目免再呼叫 CF，離線也能複習 ──
   const cachedQ = {};   // word -> question
   selected.forEach(w => {
-    try { const c = localStorage.getItem('vocab_quiz_' + w.word); if(c) cachedQ[w.word] = JSON.parse(c); } catch(e){}
+    try {
+      const c = localStorage.getItem('vocab_quiz_' + w.word);
+      if(c){
+        const q = _fixQuizQ(JSON.parse(c));
+        if(q) cachedQ[w.word] = q;                       // 壞題不採用 → 落入 needGen 重抓
+        else localStorage.removeItem('vocab_quiz_' + w.word);
+      }
+    } catch(e){}
   });
   const needGen = selected.filter(w => !cachedQ[w.word]);
 
@@ -3267,7 +3341,7 @@ async function startQuiz(){
       });
       if(!resp.ok) throw new Error(`伺服器錯誤 (HTTP ${resp.status})`);
       const data=await resp.json();
-      fetched=Array.isArray(data)?data:(data.questions||[]);
+      fetched=(Array.isArray(data)?data:(data.questions||[])).map(_fixQuizQ).filter(Boolean);
       // 寫入客戶端快取（對應回原單字，避免大小寫不符）
       const normToOrig={}; needGen.forEach(w=>{ normToOrig[w.word.toLowerCase().trim()]=w.word; });
       fetched.forEach(q=>{
@@ -4570,6 +4644,101 @@ function _runAutoLookup(enId, zhId, posId, statusId, ref){
 function newWordAutoLookup(){ _runAutoLookup('newWordEn','newWordZh','newWordPos','newWordLookupStatus', _newWordTimerRef); }
 
 function awmAutoLookup(){ _runAutoLookup('awmWordEn','awmWordZh','awmWordPos','awmLookupStatus', _awmTimerRef); }
+
+/* ── 回報問題 ── */
+let _reportImage = null;   // 壓縮後的 dataURL（含圖才有值）
+
+function openReportModal(){
+  closeDrawer();
+  document.getElementById('reportMsg').value = '';
+  document.getElementById('reportErr').textContent = '';
+  removeReportImage();
+  const btn = document.getElementById('reportSubmitBtn');
+  btn.disabled = false; btn.textContent = '送出回報';
+  document.getElementById('reportModal').style.display = 'flex';
+  document.addEventListener('paste', _reportPasteHandler);
+}
+function closeReportModal(){
+  document.getElementById('reportModal').style.display = 'none';
+  document.removeEventListener('paste', _reportPasteHandler);
+}
+function removeReportImage(){
+  _reportImage = null;
+  document.getElementById('reportPreviewWrap').style.display = 'none';
+  document.getElementById('reportPreviewImg').src = '';
+  const fi = document.getElementById('reportFileInput'); if(fi) fi.value = '';
+}
+function _reportPasteHandler(e){
+  const items = (e.clipboardData && e.clipboardData.items) || [];
+  for(const it of items){
+    if(it.type && it.type.indexOf('image') === 0){
+      const blob = it.getAsFile();
+      if(blob){ e.preventDefault(); _compressReportImage(blob); return; }
+    }
+  }
+}
+function onReportFilePick(e){
+  const f = e.target.files && e.target.files[0];
+  if(f) _compressReportImage(f);
+}
+/* 壓成 ≤1080px 寬的 JPEG，控制體積（base64 經 RTDB / push 都要小） */
+function _compressReportImage(fileOrBlob){
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      const max = 1080;
+      let w = img.width, h = img.height;
+      if(w > max){ h = Math.round(h * max / w); w = max; }
+      const cv = document.createElement('canvas');
+      cv.width = w; cv.height = h;
+      cv.getContext('2d').drawImage(img, 0, 0, w, h);
+      _reportImage = cv.toDataURL('image/jpeg', 0.72);
+      document.getElementById('reportPreviewImg').src = _reportImage;
+      document.getElementById('reportPreviewWrap').style.display = 'block';
+      document.getElementById('reportErr').textContent = '';
+    };
+    img.onerror = () => { document.getElementById('reportErr').textContent = '圖片讀取失敗，請換一張'; };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(fileOrBlob);
+}
+async function submitReport(){
+  const msg = document.getElementById('reportMsg').value.trim();
+  const errEl = document.getElementById('reportErr');
+  if(!msg && !_reportImage){ errEl.textContent = '請輸入問題描述，或附上一張截圖'; return; }
+  const btn = document.getElementById('reportSubmitBtn');
+  btn.disabled = true; btn.textContent = '送出中…';
+  errEl.textContent = '';
+  const u = window._fbUser || null;
+  const payload = {
+    message: msg,
+    image: _reportImage || '',
+    user: u ? { uid: u.uid || '', name: u.displayName || '', email: u.email || '' } : null,
+    nickname: (typeof userProfile === 'object' && userProfile && userProfile.nickname) ? userProfile.nickname : '',
+    meta: {
+      ua: navigator.userAgent,
+      url: location.href,
+      screen: `${window.screen.width}x${window.screen.height}`,
+      lang: navigator.language || '',
+      ts: new Date().toISOString()
+    }
+  };
+  try{
+    const resp = await fetch(REPORT_FN_URL, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    errEl.style.color = 'var(--accent)';
+    errEl.textContent = '✅ 已送出，感謝你的回報！';
+    setTimeout(()=>{ errEl.style.color = ''; closeReportModal(); }, 1200);
+  }catch(e){
+    errEl.style.color = '';
+    errEl.textContent = '送出失敗，請稍後再試（'+e.message+'）';
+    btn.disabled = false; btn.textContent = '送出回報';
+  }
+}
 
 function openAddWordModal(prefill){
   const _awmPh = {awmWordEn:'英文單字 *', awmWordPos:'詞性（選填）', awmWordZh:'中文解釋 *'};
