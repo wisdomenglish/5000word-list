@@ -55,6 +55,8 @@
 | `generateVocabQuiz` | `https://generatevocabquiz-gtlccx6nka-uc.a.run.app` | 單字 AI 測驗（句子填空）|
 | `generateWordDefinition` | `https://generateworddefinition-gtlccx6nka-uc.a.run.app` | 查詢單字中文意思與詞性（新增單字用）|
 | `generatePhraseQuiz` | `https://generatephrasequiz-gtlccx6nka-uc.a.run.app` | 片語 AI 測驗（句子填空）|
+| `submitReport` | `https://submitreport-gtlccx6nka-uc.a.run.app` | 學生問題回報（寫 RTDB + 推播給綁定的管理員 LINE）|
+| `reportImage` | `https://reportimage-gtlccx6nka-uc.a.run.app` | 以 HTTPS 提供回報截圖（供 LINE 圖片訊息抓取）|
 
 - 例句結果以 `vocab_ex_{word}` 為 key 存入 localStorage（快取）
 - 字根結果以 `vocab_etym_{word}` 為 key 存入 localStorage（快取）
@@ -213,6 +215,28 @@
   - **iOS gesture 重點**：圖片在 `renderWotdEx()` 結尾就用 `prepareWotdShareImage()` 預先產生並存 `_wotdShareFile`，這樣 `shareWotdImage()` 能**同步**呼叫 `navigator.share({files})`，不會因 await 失去 user activation
   - 分享路徑：`navigator.canShare({files})` 為真 → `navigator.share`（手機跳系統選單選 IG/FB）；否則 fallback 下載 PNG（桌機）。使用者取消為 `AbortError`，靜默處理
   - 字型：畫圖前 `await document.fonts.ready`，font stack 用 `"Playfair Display"`（單字）/ `"DM Sans","Noto Sans TC","PingFang TC","Microsoft JhengHei"`（中文）
+- **兩種分享並存（2026-06-25）**：WOTD footer 兩排 — 第一排 `⭐ 加入我的單字`；第二排 `📤 單字卡`（`#wotdShareBtn`→`shareWotdImage()`，完整卡）｜ `🎨 例句`（`#wotdExShareBtn`→`openExShare()`）｜ `✕`。footer `flex-wrap`，mark-btn `flex:1 1 100%`
+- **分享例句限動圖（`openExShare`，2026-06-25）**：只放**英文例句 + 中文翻譯**的純淨直式圖（大引號 + 細分隔線），給 IG 限動用。`#exShareModal` 內含預覽 `#exSharePreview` + 風格列 `#exStyleRow`
+  - **4 種字型風格** `EX_STYLES`（`優雅` Playfair／`現代` DM Sans 深藍底白字／`手寫` Caveat 暖底／`透明` 去背）；`setExStyle(i)` 即時重畫預覽。手寫字型 **Caveat** 由 `<head>` Google Fonts 載入
+  - **透明風格**（`transparent:true`）：`buildExShareImage()` 走 `clearRect`（去背），文字加 `shadowColor` 陰影確保疊在任何照片上可讀，**且不放浮水印**（其餘三風格保留底部品牌）；學生疊圖用：IG 限動先放自己的照片 → 加貼圖選這張透明 PNG。預覽用 `.exs-preview-wrap.is-transparent` 深色棋盤底才看得到白字
+  - **iOS gesture**：`refreshExPreview()` 每次切風格就預先產生 `_exShareFile`，`shareExImage()` 才能同步呼叫 `navigator.share({files})`
+  - 共用 `#shareCanvas`、`_shWrap`/`getTWDateDisplay`；例句來源讀 `localStorage['vocab_wotd_ex_'+word]`
+
+### 字典頁連續播放（2026-06-25）
+
+- 字典頁統計列（`#statsBar`）右側 `#playAllBtn`（`playAllWords()`）：依目前篩選清單 `filtered`（字母/級別/搜尋皆通用）一字一字連續朗讀
+- **同一鍵三態**：閒置→播放、播放→暫停（`pausePlayAll`，保留 `_playAllIdx`）、暫停→從原位置續播。`updatePlayAllBtn()` 切換顯示（`🔊 連續播放(N)`／`⏸ 暫停(i/N)`／`▶ 繼續`）
+- 核心 `_ttsSeq` 用 Web Speech API（離線同步），有快取 MP3（`audioCache`）優先；`onend` 串接下一字 + watchdog 防 Chrome 長序列卡住 + `_startKeepAlive` pause/resume 保活
+- `_resetPlayAllOnRangeChange()` 在 `setLetter`/`setLevel`/`setFilterMode`/`setSort`/搜尋時呼叫，更換範圍即停止重置；`switchTab`/`setDictMode`/`speak`（點單字）也會停掉連續播放
+
+### 問題回報架構（2026-06-25）
+
+- **入口**：側邊欄 ☰ →「意見回饋 → 🛟 回報問題」（`openReportModal()`）；`#reportModal` 文字框 + 截圖（支援剪貼簿貼上 `_reportPasteHandler` 或選檔），`_compressReportImage()` 壓成 ≤1080px JPEG
+- **一次性公告彈窗**：`maybeShowAnnounce()`（key `vocab_announce_report_v1`）在 `showWotdIfNeeded()` 開頭呼叫，**優先於每日一字**，看過一次不再出現
+- **送出**：`submitReport` CF → 寫 RTDB `/app-reports/{id}`（message/user/nickname/meta/image(base64)/createdAt），並 push 給所有 `/report-recipients`
+- **收件人綁定**：對任一 LINE Bot 傳「**綁定回報**」→ `handleReportBind()` 存 `/report-recipients/{userId} = {boundAt, tokenEnvVar, botName}`；「**解除回報**」移除。**`tokenEnvVar` 記住在哪支 bot 綁的**（LINE userId 分頻道，push 必須用同一支 token）；`submitReport` 依此挑 token 推播
+- **目前收件 bot**：**English Calendar（Bot 2，destination `U45ed153…`，LINE 顯示名稱為「Wisdom Assistant」）** — 詳見 LINE Bot 章節的命名說明
+- **圖片**：`reportImage?id={id}` 把該筆 base64 以 `image/jpeg` 吐回 → LINE 圖片訊息用此 URL（省去啟用 Firebase Storage）
 
 ### 更新公告頁
 
@@ -416,13 +440,17 @@ line-bot-firebase/
 
 | | Bot 1 | Bot 2 | Bot 3 |
 |--|-------|-------|-------|
-| **名稱** | Frank Line英語教室 v2 | Ivy's English Calendar | Wisdom AI Teacher |
+| **名稱（程式 config）** | Frank Line英語教室 v2 | Ivy's English Calendar | Wisdom AI Teacher |
+| **LINE 顯示名稱** | Frank Line英語教室 | **Wisdom Assistant** | Wisdom AI Teacher |
 | **Channel ID** | `2009816850` | `2009819826` | `2009871968` |
 | **LINE User ID（destination）** | `Ubf2dcf1c5ebd1103328a7af4e9d7aee7` | `U45ed153ac9a4c65ec21dc3eb446649c1` | `U47f8478ef76c01abaf8a136b1ab80bbf` |
 | **角色** | 英文教學助手 | Google 行事曆提醒 | 英文教學助手＋圖片改寫 |
 | **Webhook** | 共用 `lineWebhook` URL | 共用 `lineWebhook` URL | 共用 `lineWebhook` URL |
 
 Bot 透過 `event.destination`（LINE User ID）自動識別並套用對應憑證。
+
+- **⚠️ 命名陷阱**：Bot 2 的程式 config `name` 仍是 `Ivy's English Calendar`，但它在 LINE 的**顯示名稱是「Wisdom Assistant」**，也是**問題回報的收件 bot**（不是 Bot 3）。Bot 3 才是「Wisdom AI Teacher」。談「Wisdom Assistant」時指的是 Bot 2。
+- **問題回報指令（任何 bot 皆可）**：傳「綁定回報」→ `handleReportBind` 把該 userId + 綁定當下的 `tokenEnvVar` 存入 `/report-recipients`；傳「解除回報」移除。webhook 文字分派在最前面攔截這兩個指令（早於行事曆 / rewrite 分支）。詳見 PWA「問題回報架構」
 
 ### 環境變數（firebase.json 內硬編碼）
 
@@ -466,6 +494,8 @@ node line-bot-firebase/setup-rich-menu.js
 - **群組支援**：只回應被 @提及的訊息
 - **Firebase Realtime DB 快取**：MD5 key、7天 TTL
 - **回覆格式**：分隔線（━━━━）+ emoji，無粗體
+- **圖片解題**（`imageMode: "solve"`）：直接傳圖 → `handleFrankImageMessage` 解英文題（選擇/填空/閱讀等）；群組需先 @Bot 提及（`/pending-frank-image` 3 分鐘旗標）
+- **作文批改／改寫（2026-06-23，同步自 Wisdom）**：底部 Rich Menu「✍️ 作文功能」tab（3 格 postback：`essay_mode=批改/初階/進階`）。點選 → `handleEssayModeSelect` 寫入 `/pending-rewrite/{userId}`（5 分鐘）+ 提示傳照片 → 傳圖時 Frank image 分支偵測到 pending 即走 `handleImageMessage`（用 Frank 的 `anthropic` client，`getEssayClient()` 選 client），否則維持解題。批改/初階/進階共用 Wisdom 的 system prompt（`level` 為 `批改` 時走 feedback else 分支）。建選單：`node setup-rich-menu-frank.js`（讀 `rich-menu-frank-design.html`，用 `LINE_CHANNEL_ACCESS_TOKEN`）。**不影響原解題**：素圖（無 pending）仍解題
 
 **Bot 2（行事曆）：**
 - 查詢今日 / 明日 / 本週 / 下週 / 本月行程
@@ -504,6 +534,8 @@ node line-bot-firebase/setup-rich-menu.js
 | `/teacher-mapping/{name}` | 老師名稱 → `{ userId }` 對照表 |
 | `/task-reports/{YYYY-MM-DD}/{userId}/{safeTitle}` | 工作回報記錄（完成／未完成） |
 | `/pending-rewrite/{userId}` | Bot 3 圖片改寫等待指令（`{level, expiresAt}`，5分鐘 TTL） |
+| `/app-reports/{id}` | PWA 問題回報（`{message, user, nickname, meta, hasImage, imageMime, image(base64), createdAt, status}`）；`submitReport` 寫入、`reportImage` 讀圖 |
+| `/report-recipients/{userId}` | 接收回報的管理員（`{boundAt, tokenEnvVar, botName}`）；`tokenEnvVar` 記住綁在哪支 bot，push 時用對應 token。目前綁在 Bot 2（Wisdom Assistant）|
 
 ### Google Calendar 事件命名慣例
 
