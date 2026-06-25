@@ -434,6 +434,7 @@ header{top:52px!important;}
 .exs-sub{color:var(--muted);font-size:0.8rem;margin-bottom:14px;}
 .exs-preview-wrap{width:100%;display:flex;justify-content:center;margin-bottom:14px;}
 .exs-preview-wrap img{width:auto;max-width:62%;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.22);background:var(--bg);}
+.exs-preview-wrap.is-transparent img{background-color:#6b7280;background-image:linear-gradient(45deg,rgba(0,0,0,.18) 25%,transparent 25%),linear-gradient(-45deg,rgba(0,0,0,.18) 25%,transparent 25%),linear-gradient(45deg,transparent 75%,rgba(0,0,0,.18) 75%),linear-gradient(-45deg,transparent 75%,rgba(0,0,0,.18) 75%);background-size:24px 24px;background-position:0 0,0 12px,12px -12px,-12px 0;}
 .exs-styles{display:flex;gap:8px;margin-bottom:16px;}
 .exs-style-btn{flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:10px 6px;cursor:pointer;text-align:center;transition:all .15s;-webkit-tap-highlight-color:transparent;}
 .exs-style-btn.active{border-color:var(--accent);background:rgba(67,97,238,.08);}
@@ -5115,6 +5116,8 @@ const EX_STYLES = [
     enFont:s=>`700 ${s}px "DM Sans",sans-serif`, zhFont:s=>`500 ${s}px "Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif`, dark:true },
   { name:'手寫', bg:['#FFF6E6','#FBE4C4'], orb:'rgba(224,138,60,.12)', ink:'#4A3A2A', sub:'#9A7B52', accent:'#E08A3C',
     enFont:s=>`700 ${s}px "Caveat","Playfair Display",cursive`, zhFont:s=>`500 ${s}px "Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif`, dark:false },
+  { name:'透明', transparent:true, ink:'#FFFFFF', sub:'rgba(255,255,255,.95)', accent:'#FFFFFF',
+    enFont:s=>`700 ${s}px "DM Sans",sans-serif`, zhFont:s=>`500 ${s}px "Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif`, dark:true },
 ];
 let _exStyle = 0, _exShareFile = null, _exPreviewUrl = null;
 
@@ -5138,6 +5141,8 @@ function setExStyle(i){
   refreshExPreview();
 }
 async function refreshExPreview(){
+  const wrap=document.querySelector('.exs-preview-wrap');
+  if(wrap) wrap.classList.toggle('is-transparent', !!(EX_STYLES[_exStyle] && EX_STYLES[_exStyle].transparent));
   const blob=await buildExShareImage(_exStyle);
   if(!blob) return;
   if(_exPreviewUrl) URL.revokeObjectURL(_exPreviewUrl);
@@ -5151,11 +5156,18 @@ async function buildExShareImage(styleIdx){
   const st=EX_STYLES[styleIdx]||EX_STYLES[0];
   const cv=document.getElementById('shareCanvas'); const W=1080,H=1920; cv.width=W; cv.height=H;
   const ctx=cv.getContext('2d');
-  const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,st.bg[0]); g.addColorStop(1,st.bg[1]);
-  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-  ctx.fillStyle=st.orb;
-  ctx.beginPath();ctx.arc(880,300,260,0,7);ctx.fill();
-  ctx.beginPath();ctx.arc(160,1650,320,0,7);ctx.fill();
+  ctx.shadowColor='transparent'; ctx.shadowBlur=0; ctx.shadowOffsetX=0; ctx.shadowOffsetY=0;  // 重置（canvas 跨次共用）
+  ctx.clearRect(0,0,W,H);
+  if(st.transparent){
+    // 去背：不畫底，文字加陰影確保疊在任何照片上都清楚
+    ctx.shadowColor='rgba(0,0,0,.6)'; ctx.shadowBlur=20; ctx.shadowOffsetY=4;
+  } else {
+    const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,st.bg[0]); g.addColorStop(1,st.bg[1]);
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle=st.orb;
+    ctx.beginPath();ctx.arc(880,300,260,0,7);ctx.fill();
+    ctx.beginPath();ctx.arc(160,1650,320,0,7);ctx.fill();
+  }
   // 頂部標籤
   ctx.textAlign='center';
   ctx.fillStyle=st.sub; ctx.font='700 34px "DM Sans","Noto Sans TC",sans-serif';
