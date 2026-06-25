@@ -440,6 +440,8 @@ header{top:52px!important;}
 .exs-style-btn.active{border-color:var(--accent);background:rgba(67,97,238,.08);}
 .exs-style-name{font-size:0.82rem;font-weight:700;color:var(--text);}
 .exs-style-eg{font-size:1rem;color:var(--muted);margin-top:2px;line-height:1;}
+.exs-hint{margin-top:12px;font-size:0.74rem;line-height:1.6;color:var(--muted);background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;}
+.exs-hint strong{color:var(--accent);}
 /* ── Word of the Day Modal ── */
 #wotdModal{position:fixed;inset:0;z-index:600;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.78);backdrop-filter:blur(8px);padding:20px;}
 .wotd-card{background:var(--surface);border:1px solid var(--border);border-radius:24px;width:100%;max-width:420px;overflow:hidden;box-shadow:0 12px 48px rgba(0,0,0,.18);animation:wotdIn .32s cubic-bezier(.34,1.56,.64,1);}
@@ -1505,6 +1507,7 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
     <div class="exs-preview-wrap"><img id="exSharePreview" alt="例句圖片預覽"></div>
     <div class="exs-styles" id="exStyleRow"></div>
     <button class="quiz-start-btn" id="exShareGo" onclick="shareExImage()">📤 分享 / 下載</button>
+    <div class="exs-hint" id="exShareHint"></div>
   </div>
 </div>
 
@@ -5142,8 +5145,17 @@ function setExStyle(i){
   refreshExPreview();
 }
 async function refreshExPreview(){
+  const isTrans = !!(EX_STYLES[_exStyle] && EX_STYLES[_exStyle].transparent);
   const wrap=document.querySelector('.exs-preview-wrap');
-  if(wrap) wrap.classList.toggle('is-transparent', !!(EX_STYLES[_exStyle] && EX_STYLES[_exStyle].transparent));
+  if(wrap) wrap.classList.toggle('is-transparent', isTrans);
+  const hint=document.getElementById('exShareHint');
+  const go=document.getElementById('exShareGo');
+  if(hint){
+    hint.innerHTML = isTrans
+      ? '想疊在自己的照片上？<strong>請先「儲存圖片」</strong>，再到 IG 限動：① 選自己的照片當底 → ② 點 <strong>貼圖工具</strong>（笑臉方框）→ ③ 選「<strong>照片</strong>」貼圖 → ④ 從相簿挑這張，就能自由移動、縮放 🎯<br><span style="opacity:.8">（直接「分享 → 限動」會變成滿版背景、不能移動，那是 IG 的限制）</span>'
+      : '點「分享」會跳系統選單，選 Instagram → 限時動態即可發佈。';
+  }
+  if(go) go.textContent = isTrans ? '💾 儲存圖片' : '📤 分享 / 下載';
   const blob=await buildExShareImage(_exStyle);
   if(!blob) return;
   if(_exPreviewUrl) URL.revokeObjectURL(_exPreviewUrl);
