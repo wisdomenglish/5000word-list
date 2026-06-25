@@ -416,6 +416,17 @@ header{top:52px!important;}
 .report-preview-wrap img{width:100%;border-radius:12px;border:1px solid var(--border);display:block;max-height:280px;object-fit:contain;background:var(--bg);}
 .report-preview-remove{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.65);color:#fff;border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:0.9rem;}
 .report-hint{color:var(--muted);font-size:0.72rem;margin-top:10px;line-height:1.5;}
+/* ── 新功能公告 Modal ── */
+#announceModal{position:fixed;inset:0;z-index:540;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);padding:20px;}
+.announce-card{background:var(--surface);border:1px solid var(--border);border-radius:22px;max-width:380px;width:100%;padding:26px 24px 22px;text-align:center;position:relative;animation:slideUp .24s ease;box-shadow:0 12px 40px rgba(0,0,0,.18);}
+.announce-emoji{font-size:2.6rem;line-height:1;margin-bottom:8px;}
+.announce-badge{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:0.68rem;font-weight:700;letter-spacing:.08em;padding:4px 12px;border-radius:999px;margin-bottom:12px;}
+.announce-title{font-family:'Playfair Display',serif;font-size:1.35rem;color:var(--text);margin-bottom:10px;}
+.announce-body{color:var(--muted);font-size:0.9rem;line-height:1.7;margin-bottom:20px;}
+.announce-body strong{color:var(--text);}
+.announce-actions{display:flex;flex-direction:column;gap:9px;}
+.announce-primary{background:linear-gradient(135deg,var(--accent),#7B9EFF);color:#fff;border:none;border-radius:12px;padding:13px;font-size:0.95rem;font-weight:700;cursor:pointer;}
+.announce-secondary{background:none;border:none;color:var(--muted);font-size:0.85rem;padding:6px;cursor:pointer;}
 /* ── Word of the Day Modal ── */
 #wotdModal{position:fixed;inset:0;z-index:600;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.78);backdrop-filter:blur(8px);padding:20px;}
 .wotd-card{background:var(--surface);border:1px solid var(--border);border-radius:24px;width:100%;max-width:420px;overflow:hidden;box-shadow:0 12px 48px rgba(0,0,0,.18);animation:wotdIn .32s cubic-bezier(.34,1.56,.64,1);}
@@ -1345,6 +1356,23 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
     <div id="reportErr" style="color:var(--accent2);font-size:0.8rem;min-height:18px;margin-top:10px"></div>
     <button class="quiz-start-btn" id="reportSubmitBtn" onclick="submitReport()">送出回報</button>
     <div class="report-hint">送出後會通知管理員。我們可能看到你的暱稱（若已登入）與裝置型號，以便重現問題。</div>
+  </div>
+</div>
+
+<!-- 新功能公告 Modal -->
+<div id="announceModal" style="display:none">
+  <div class="announce-card">
+    <div class="announce-emoji">🛟</div>
+    <div class="announce-badge">新功能</div>
+    <div class="announce-title">遇到問題，跟我們說！</div>
+    <div class="announce-body">
+      發現 <strong>bug</strong>、<strong>單字解釋怪怪的</strong>，或有任何建議嗎？<br>
+      現在可從右上角 <strong>☰ 選單 → 🛟 回報問題</strong> 直接告訴我們，還能<strong>附上截圖</strong> 📷
+    </div>
+    <div class="announce-actions">
+      <button class="announce-primary" onclick="openReportFromAnnounce()">立即試試 →</button>
+      <button class="announce-secondary" onclick="closeAnnounce()">知道了</button>
+    </div>
   </div>
 </div>
 
@@ -4823,7 +4851,24 @@ function getWotdWord(){
   return WORDS[idx];
 }
 
+/* 新功能公告（一次性）：優先於每日一字顯示，避免兩個彈窗疊在一起 */
+const ANNOUNCE_KEY = 'vocab_announce_report_v1';
+function maybeShowAnnounce(){
+  if(localStorage.getItem(ANNOUNCE_KEY)) return false;
+  document.getElementById('announceModal').style.display = 'flex';
+  return true;
+}
+function closeAnnounce(){
+  localStorage.setItem(ANNOUNCE_KEY, '1');
+  document.getElementById('announceModal').style.display = 'none';
+}
+function openReportFromAnnounce(){
+  closeAnnounce();
+  openReportModal();
+}
+
 function showWotdIfNeeded(){
+  if(maybeShowAnnounce()) return;   // 本次開啟先看新功能公告，每日一字改下次再出現
   if(localStorage.getItem(WOTD_SHOWN_KEY) === getTWDate()) return;
   showWotd();
 }
