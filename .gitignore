@@ -8,6 +8,7 @@ yarn.lock
 *.log
 line-bot-firebase/.firebaserc
 line-bot-firebase/firebase.json
+**/.firebase/
 
 # Environment variables (contain API keys)
 **/.env
