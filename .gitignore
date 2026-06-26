@@ -22,7 +22,8 @@ line-bot-firebase/firebase.json
 skills-lock.json
 
 # LINE Bot utility & debug scripts
-line-bot-firebase/debug-ical.js
+line-bot-firebase/debug-*.js
+line-bot-firebase/check-*.js
 line-bot-firebase/apr_events.json
 
 # OS
@@ -37,3 +38,6 @@ Thumbs.db
 .tmp/
 temp/
 upscayl-2.15.0-win.exe
+*.backup
+*.bak
+plan-*.md
