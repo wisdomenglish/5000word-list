@@ -22,28 +22,28 @@ export default function ProfileSetupModal({ heroName, existingProfile, onSave, o
       <div
         className="w-full rounded-t-3xl px-5 pt-5 pb-10"
         style={{
-          background: '#12131F',
-          borderTop: '1px solid rgba(255,255,255,0.1)',
+          background: 'var(--cozy-panel)',
+          borderTop: '1px solid var(--cozy-border)',
           maxWidth: '480px',
         }}
       >
         {/* Handle */}
-        <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'rgba(255,255,255,0.2)' }} />
+        <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'var(--cozy-border)' }} />
 
-        <div className="text-lg font-bold text-white mb-1">設定個人資料</div>
+        <div className="text-lg font-bold text-ink mb-1">設定個人資料</div>
         <div className="text-xs text-gray-500 mb-5">資料將用於排行榜顯示，可隨時在選單中修改</div>
 
         {/* Nickname */}
         <div className="mb-4">
           <div className="text-xs text-gray-400 mb-1.5 font-medium">排行榜暱稱 *</div>
-          <div className="rounded-xl px-3 py-2.5" style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <div className="rounded-xl px-3 py-2.5" style={{ background: 'rgba(140,100,55,0.1)', border: '1px solid var(--cozy-border)' }}>
             <input
               type="text"
               value={nickname}
               onChange={e => { setNickname(e.target.value); setError(''); }}
               placeholder="輸入你的暱稱"
               maxLength={16}
-              className="w-full bg-transparent text-sm text-white placeholder-gray-500 outline-none"
+              className="w-full bg-transparent text-sm text-ink placeholder-gray-500 outline-none"
               autoComplete="off"
             />
           </div>
@@ -60,9 +60,9 @@ export default function ProfileSetupModal({ heroName, existingProfile, onSave, o
                 onClick={() => { setGrade(g); setError(''); }}
                 className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
                 style={{
-                  background: grade === g ? 'rgba(99,102,241,1)' : 'rgba(255,255,255,0.07)',
-                  color: grade === g ? '#fff' : 'rgba(255,255,255,0.5)',
-                  border: grade === g ? '1px solid transparent' : '1px solid rgba(255,255,255,0.08)',
+                  background: grade === g ? 'rgba(99,102,241,1)' : 'rgba(140,100,55,0.1)',
+                  color: grade === g ? '#fff' : 'var(--cozy-ink-soft)',
+                  border: grade === g ? '1px solid transparent' : '1px solid var(--cozy-border)',
                 }}
               >
                 {g}
@@ -74,14 +74,14 @@ export default function ProfileSetupModal({ heroName, existingProfile, onSave, o
         {/* School */}
         <div className="mb-5">
           <div className="text-xs text-gray-400 mb-1.5 font-medium">學校（選填）</div>
-          <div className="rounded-xl px-3 py-2.5" style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <div className="rounded-xl px-3 py-2.5" style={{ background: 'rgba(140,100,55,0.1)', border: '1px solid var(--cozy-border)' }}>
             <input
               type="text"
               value={school}
               onChange={e => setSchool(e.target.value)}
               placeholder="輸入學校名稱"
               maxLength={20}
-              className="w-full bg-transparent text-sm text-white placeholder-gray-500 outline-none"
+              className="w-full bg-transparent text-sm text-ink placeholder-gray-500 outline-none"
               autoComplete="off"
             />
           </div>

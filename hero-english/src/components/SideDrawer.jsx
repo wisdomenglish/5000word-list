@@ -19,8 +19,8 @@ export default function SideDrawer({ open, onClose, user, authLoading, onSignIn,
         style={{
           position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 55,
           width: '272px',
-          background: '#12131F',
-          borderLeft: '1px solid rgba(255,255,255,0.08)',
+          background: 'var(--cozy-panel)',
+          borderLeft: '1px solid rgba(140,100,55,0.1)',
           display: 'flex',
           flexDirection: 'column',
           transform: open ? 'translateX(0)' : 'translateX(100%)',
@@ -32,14 +32,14 @@ export default function SideDrawer({ open, onClose, user, authLoading, onSignIn,
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '20px 18px 16px',
-          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          borderBottom: '1px solid rgba(140,100,55,0.1)',
         }}>
-          <span style={{ fontSize: '0.95rem', fontWeight: '700', color: '#E8E8F0' }}>選單</span>
+          <span style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--cozy-ink)' }}>選單</span>
           <button
             onClick={onClose}
             style={{
-              background: 'rgba(255,255,255,0.06)', border: 'none',
-              color: 'rgba(255,255,255,0.5)', width: '28px', height: '28px',
+              background: 'rgba(140,100,55,0.1)', border: 'none',
+              color: 'var(--cozy-ink-soft)', width: '28px', height: '28px',
               borderRadius: '50%', cursor: 'pointer', fontSize: '0.85rem',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
@@ -47,15 +47,15 @@ export default function SideDrawer({ open, onClose, user, authLoading, onSignIn,
         </div>
 
         {/* Profile section (always shown) */}
-        <div style={{ padding: '16px 18px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-          <div style={{ fontSize: '0.65rem', fontWeight: '700', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '10px' }}>
+        <div style={{ padding: '16px 18px', borderBottom: '1px solid rgba(140,100,55,0.1)' }}>
+          <div style={{ fontSize: '0.65rem', fontWeight: '700', color: 'var(--cozy-ink-soft)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '10px' }}>
             排行榜個人資料
           </div>
           {profile?.nickname ? (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '0.88rem', fontWeight: '600', color: '#E8E8F0' }}>{profile.nickname}</div>
-                <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)' }}>
+                <div style={{ fontSize: '0.88rem', fontWeight: '600', color: 'var(--cozy-ink)' }}>{profile.nickname}</div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--cozy-ink-soft)' }}>
                   {profile.grade}{profile.school ? ` · ${profile.school}` : ''}
                 </div>
               </div>
@@ -63,7 +63,7 @@ export default function SideDrawer({ open, onClose, user, authLoading, onSignIn,
                 onClick={() => { onEditProfile?.(); onClose(); }}
                 style={{
                   padding: '6px 10px', borderRadius: '8px', border: 'none',
-                  background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.5)',
+                  background: 'rgba(140,100,55,0.1)', color: 'var(--cozy-ink-soft)',
                   fontSize: '0.72rem', cursor: 'pointer', flexShrink: 0,
                 }}
               >
@@ -74,8 +74,8 @@ export default function SideDrawer({ open, onClose, user, authLoading, onSignIn,
             <button
               onClick={() => { onEditProfile?.(); onClose(); }}
               style={{
-                width: '100%', padding: '9px', borderRadius: '10px', border: '1px dashed rgba(255,255,255,0.15)',
-                background: 'transparent', color: 'rgba(255,255,255,0.4)',
+                width: '100%', padding: '9px', borderRadius: '10px', border: '1px dashed var(--cozy-border)',
+                background: 'transparent', color: 'var(--cozy-ink-soft)',
                 fontSize: '0.78rem', cursor: 'pointer', textAlign: 'center',
               }}
             >
@@ -85,13 +85,13 @@ export default function SideDrawer({ open, onClose, user, authLoading, onSignIn,
         </div>
 
         {/* Auth section */}
-        <div style={{ padding: '16px 18px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-          <div style={{ fontSize: '0.65rem', fontWeight: '700', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '10px' }}>
+        <div style={{ padding: '16px 18px', borderBottom: '1px solid rgba(140,100,55,0.1)' }}>
+          <div style={{ fontSize: '0.65rem', fontWeight: '700', color: 'var(--cozy-ink-soft)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '10px' }}>
             帳號與雲端同步
           </div>
 
           {authLoading ? (
-            <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.3)', padding: '8px 0' }}>載入中…</div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--cozy-ink-faint)', padding: '8px 0' }}>載入中…</div>
           ) : user ? (
             <>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
@@ -99,21 +99,21 @@ export default function SideDrawer({ open, onClose, user, authLoading, onSignIn,
                   <img
                     src={user.photoURL}
                     referrerPolicy="no-referrer"
-                    style={{ width: '36px', height: '36px', borderRadius: '50%', border: '2px solid rgba(255,255,255,0.15)' }}
+                    style={{ width: '36px', height: '36px', borderRadius: '50%', border: '2px solid var(--cozy-border)' }}
                     alt=""
                   />
                 )}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: '0.82rem', fontWeight: '600', color: '#E8E8F0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <div style={{ fontSize: '0.82rem', fontWeight: '600', color: 'var(--cozy-ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {user.displayName}
                   </div>
-                  <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.35)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--cozy-ink-soft)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {user.email}
                   </div>
                 </div>
               </div>
 
-              <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', marginBottom: '10px', minHeight: '16px' }}>
+              <div style={{ fontSize: '0.72rem', color: 'var(--cozy-ink-soft)', marginBottom: '10px', minHeight: '16px' }}>
                 {syncStatus}
               </div>
 
@@ -122,7 +122,7 @@ export default function SideDrawer({ open, onClose, user, authLoading, onSignIn,
                   onClick={onManualSync}
                   style={{
                     flex: 1, padding: '8px 0', borderRadius: '10px', border: 'none',
-                    background: 'rgba(255,255,255,0.08)', color: '#E8E8F0',
+                    background: 'rgba(140,100,55,0.1)', color: 'var(--cozy-ink)',
                     fontSize: '0.78rem', fontWeight: '600', cursor: 'pointer',
                   }}
                 >
@@ -132,7 +132,7 @@ export default function SideDrawer({ open, onClose, user, authLoading, onSignIn,
                   onClick={onSignOut}
                   style={{
                     padding: '8px 14px', borderRadius: '10px', border: 'none',
-                    background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)',
+                    background: 'rgba(140,100,55,0.08)', color: 'var(--cozy-ink-soft)',
                     fontSize: '0.78rem', cursor: 'pointer',
                   }}
                 >
@@ -142,16 +142,16 @@ export default function SideDrawer({ open, onClose, user, authLoading, onSignIn,
             </>
           ) : (
             <>
-              <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.5, marginBottom: '12px' }}>
+              <p style={{ fontSize: '0.78rem', color: 'var(--cozy-ink-soft)', lineHeight: 1.5, marginBottom: '12px' }}>
                 登入後可在不同裝置間同步學習進度與自訂單字庫
               </p>
               <button
                 onClick={onSignIn}
                 style={{
                   width: '100%', padding: '11px', borderRadius: '12px',
-                  background: 'rgba(255,255,255,0.08)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  color: '#E8E8F0', fontSize: '0.85rem', fontWeight: '600',
+                  background: 'rgba(140,100,55,0.1)',
+                  border: '1px solid var(--cozy-border)',
+                  color: 'var(--cozy-ink)', fontSize: '0.85rem', fontWeight: '600',
                   cursor: 'pointer', display: 'flex', alignItems: 'center',
                   justifyContent: 'center', gap: '8px',
                 }}
@@ -169,7 +169,7 @@ export default function SideDrawer({ open, onClose, user, authLoading, onSignIn,
         </div>
 
         {/* Footer */}
-        <div style={{ marginTop: 'auto', padding: '18px', fontSize: '0.65rem', color: 'rgba(255,255,255,0.2)', textAlign: 'center' }}>
+        <div style={{ marginTop: 'auto', padding: '18px', fontSize: '0.65rem', color: 'var(--cozy-ink-faint)', textAlign: 'center' }}>
           Hero's English Journey
         </div>
       </div>

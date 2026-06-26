@@ -119,6 +119,11 @@ const body = WORDS.map(o => {
 }).join(',');
 fs.writeFileSync(VOCAB, 'const WORDS = [' + body + '];\n', 'utf8');
 
+// ---- 5b. 輸出 levels-data.js 供 App 端查表（自訂單字自動標級別）----
+const levelsObj = {};
+for (const [k, v] of level) levelsObj[k] = v;
+fs.writeFileSync('levels-data.js', 'const LEVELS = ' + JSON.stringify(levelsObj) + ';\n', 'utf8');
+
 // ---- 6. 寫報告 ----
 const lines = [];
 lines.push('# 5000單字 vs 大考中心參考詞彙表(111起) 核對報告');

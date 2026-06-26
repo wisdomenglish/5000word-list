@@ -115,8 +115,8 @@ function QuestCard({ quest, progress, classData, onStart }) {
     <div
       className="rounded-2xl p-4 mb-3"
       style={{
-        background: isDone ? 'rgba(34,197,94,0.08)' : '#1A1B2E',
-        border: isDone ? '1px solid rgba(34,197,94,0.3)' : '1px solid rgba(255,255,255,0.06)',
+        background: isDone ? 'rgba(34,197,94,0.08)' : 'var(--cozy-panel)',
+        border: isDone ? '1px solid rgba(34,197,94,0.3)' : '1px solid var(--cozy-border)',
         opacity: isLocked ? 0.5 : 1,
       }}
     >
@@ -129,7 +129,7 @@ function QuestCard({ quest, progress, classData, onStart }) {
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
-            <span className="text-sm font-bold text-white truncate">{quest.title}</span>
+            <span className="text-sm font-bold text-ink truncate">{quest.title}</span>
             {isDone && <span className="text-xs text-green-400">✓ 今日已完成</span>}
           </div>
           <div className="text-xs text-gray-400 mb-2">{quest.detail}</div>
@@ -141,7 +141,7 @@ function QuestCard({ quest, progress, classData, onStart }) {
                 <span>{progress.current}/{progress.target}</span>
                 <span>{pct}%</span>
               </div>
-              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
+              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(140,100,55,0.12)' }}>
                 <div
                   className="h-full rounded-full"
                   style={{ width: `${pct}%`, background: classData.primaryColor }}

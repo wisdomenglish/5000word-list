@@ -53,7 +53,7 @@ function parseIcal(text) {
     else if (line === "END:VEVENT" && cur) { events.push(cur); cur = null; }
     else if (cur) {
       if (line.startsWith("DTSTART")) cur.start = line.substring(line.indexOf(":") + 1).trim();
-      if (line.startsWith("SUMMARY:")) cur.summary = line.substring(8).replace(/\\,/g, ",").replace(/\\\\/g, "\\");
+      if (line.startsWith("SUMMARY:")) cur.summary = line.substring(8).replace(/\\n/g, " ").replace(/\\,/g, ",").replace(/\\\\/g, "\\");
       if (line.startsWith("UID:")) cur.uid = line.substring(4).trim();
       if (line.startsWith("LOCATION:")) cur.location = line.substring(9).replace(/\\n/g, "\n").replace(/\\,/g, ",");
       if (line.startsWith("DESCRIPTION:")) cur.description = line.substring(12).replace(/\\n/g, "\n").replace(/\\,/g, ",");
@@ -166,12 +166,16 @@ function rruleOccursOn(rawDtstart, rruleStr, exdates, targetDateStr) {
 // Returns { names: string[] | null, cleanTitle: string }
 // names=null means "everyone" ([全部] or no bracket)
 function parseEventTarget(title) {
-  // Normalize full-width brackets (e.g. ［Frank］ or [Frank］) to ASCII
-  const normalized = title.replace(/［/g, "[").replace(/］/g, "]");
+  // Normalize full-width brackets (［］ U+FF3B/FF3D, 【】 U+3010/U+3011) and strip residual iCal \n escapes
+  const normalized = title
+    .replace(/［/g, "[").replace(/］/g, "]")
+    .replace(/【/g, "[").replace(/】/g, "]")
+    .replace(/\\n/g, " ")
+    .trim();
   const m = normalized.match(/^\[([^\]]+)\]\s*(.*)/);
-  if (!m) return { names: null, cleanTitle: title };
+  if (!m) return { names: null, cleanTitle: normalized };
   const inside = m[1].trim();
-  const cleanTitle = m[2].trim() || title;
+  const cleanTitle = m[2].trim() || normalized;
   if (inside === "全部") return { names: null, cleanTitle };
   const names = inside.split(/[,，]\s*/).map(n => n.trim()).filter(Boolean);
   return { names, cleanTitle };

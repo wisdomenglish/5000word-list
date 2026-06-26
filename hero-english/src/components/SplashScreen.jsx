@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import ChibiCharacter from './ChibiCharacter';
 
 const CSS = `
 @keyframes ss-twinkle { 0%,100%{opacity:.2;transform:scale(.6)} 50%{opacity:1;transform:scale(1.3)} }
@@ -36,10 +37,10 @@ const SPARKLES = [
 ];
 
 const CLASSES = [
-  { emoji:'⚔️', label:'劍士',  color:'#A78BFA', glow:'rgba(167,139,250,' },
-  { emoji:'🔮', label:'法師',  color:'#60A5FA', glow:'rgba(96,165,250,'  },
-  { emoji:'🐾', label:'馴獸師',color:'#34D399', glow:'rgba(52,211,153,'  },
-  { emoji:'🥊', label:'鬥士',  color:'#F87171', glow:'rgba(248,113,113,' },
+  { id:'swordsman',  label:'劍士',  color:'#A78BFA', glow:'rgba(167,139,250,' },
+  { id:'mage',       label:'法師',  color:'#60A5FA', glow:'rgba(96,165,250,'  },
+  { id:'beastTamer', label:'馴獸師',color:'#34D399', glow:'rgba(52,211,153,'  },
+  { id:'fighter',    label:'鬥士',  color:'#F87171', glow:'rgba(248,113,113,' },
 ];
 
 const TUFTS = Array.from({ length: 24 }, (_, i) => ({
@@ -168,16 +169,17 @@ export default function SplashScreen({ onDone }) {
           {CLASSES.map((c, i) => (
             <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
               <div style={{
-                width: 54, height: 54,
+                width: 62, height: 70,
                 background: `${c.glow}0.10)`,
                 border: `2px solid ${c.glow}0.32)`,
                 borderRadius: 14,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '1.8rem',
                 boxShadow: `0 0 14px ${c.glow}0.22)`,
                 animation: `ss-float ${2 + i * .22}s ${i * .28}s ease-in-out infinite`,
-              }}>{c.emoji}</div>
-              <span style={{ fontSize: '.68rem', color: 'rgba(255,255,255,.3)', fontWeight: 600 }}>{c.label}</span>
+              }}>
+                <ChibiCharacter classId={c.id} level={12} scale={3.2} animate={false} />
+              </div>
+              <span style={{ fontSize: '.68rem', color: 'rgba(255,255,255,.45)', fontWeight: 600 }}>{c.label}</span>
             </div>
           ))}
         </div>
@@ -188,7 +190,7 @@ export default function SplashScreen({ onDone }) {
           color: 'rgba(255,255,255,.45)', fontSize: '.84rem',
           marginTop: 22, textAlign: 'center', lineHeight: 1.75,
         }}>
-          像素世界，英文大冒險！
+          召喚你的英雄，英文大冒險！
         </div>
 
         {/* Tap hint */}

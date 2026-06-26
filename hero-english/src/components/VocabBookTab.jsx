@@ -24,7 +24,7 @@ function highlightWord(sentence, word) {
   const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return sentence.replace(
     new RegExp(`\\b(${escaped}\\w*)\\b`, 'gi'),
-    '<strong style="color:#fff">$1</strong>'
+    '<strong style="color:#C9742A">$1</strong>'
   );
 }
 
@@ -71,14 +71,14 @@ function WordCard({ item, isPhrase, isMastered, isCustom, primaryColor, onDelete
     <div
       className="rounded-2xl p-4 mb-3"
       style={{
-        background: '#1A1B2E',
-        border: isMastered ? `1px solid ${primaryColor}40` : '1px solid rgba(255,255,255,0.06)',
+        background: 'var(--cozy-panel)',
+        border: isMastered ? `1px solid ${primaryColor}40` : '1px solid rgba(140,100,55,0.1)',
       }}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline gap-2 flex-wrap mb-0.5">
-            <span className="text-base font-bold text-white">{wordText}</span>
+            <span className="text-base font-bold text-ink">{wordText}</span>
             {!isPhrase && item.phonetic && (
               <span className="text-xs text-gray-400">{kkToIPA(item.phonetic)}</span>
             )}
@@ -92,12 +92,12 @@ function WordCard({ item, isPhrase, isMastered, isCustom, primaryColor, onDelete
           <div className="flex items-center gap-1.5 flex-wrap">
             <span
               className="text-xs px-2 py-0.5 rounded-full"
-              style={{ background: isPhrase ? '#8B5CF622' : '#3B82F622', color: isPhrase ? '#A78BFA' : '#93C5FD' }}
+              style={{ background: isPhrase ? '#8B5CF622' : '#3B82F622', color: isPhrase ? '#7C3AED' : '#2563EB' }}
             >
               {isPhrase ? '片語' : '單字'}
             </span>
             {!isPhrase && item.grade && (
-              <span className="text-xs px-2 py-0.5 rounded-full text-gray-400" style={{ background: 'rgba(255,255,255,0.06)' }}>
+              <span className="text-xs px-2 py-0.5 rounded-full text-gray-400" style={{ background: 'rgba(140,100,55,0.1)' }}>
                 Grade {item.grade}
               </span>
             )}
@@ -118,8 +118,8 @@ function WordCard({ item, isPhrase, isMastered, isCustom, primaryColor, onDelete
               onClick={loadExample}
               className="text-xs px-2 py-0.5 rounded-full transition-all"
               style={{
-                background: exOpen ? `${primaryColor}22` : 'rgba(255,255,255,0.06)',
-                color: exOpen ? primaryColor : 'rgba(255,255,255,0.35)',
+                background: exOpen ? `${primaryColor}22` : 'rgba(140,100,55,0.1)',
+                color: exOpen ? primaryColor : 'var(--cozy-ink-faint)',
               }}
             >
               💬 例句
@@ -131,7 +131,7 @@ function WordCard({ item, isPhrase, isMastered, isCustom, primaryColor, onDelete
           <button
             onClick={() => speakWord(wordText)}
             className="w-9 h-9 rounded-full flex items-center justify-center text-lg transition-all active:scale-90"
-            style={{ background: 'rgba(255,255,255,0.06)' }}
+            style={{ background: 'rgba(140,100,55,0.1)' }}
             aria-label="播放發音"
           >
             🔊
@@ -140,7 +140,7 @@ function WordCard({ item, isPhrase, isMastered, isCustom, primaryColor, onDelete
             <button
               onClick={() => onDelete(wordText)}
               className="w-7 h-7 rounded-full flex items-center justify-center text-xs transition-all active:scale-90"
-              style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.3)' }}
+              style={{ background: 'rgba(140,100,55,0.06)', color: 'var(--cozy-ink-faint)' }}
               aria-label="刪除"
             >
               ✕
@@ -150,7 +150,7 @@ function WordCard({ item, isPhrase, isMastered, isCustom, primaryColor, onDelete
       </div>
 
       {exOpen && (
-        <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(140,100,55,0.1)' }}>
           {exState === 'loading' && (
             <div className="flex items-center gap-2 text-xs text-gray-400">
               <div className="w-3 h-3 rounded-full border border-gray-400 border-t-transparent animate-spin" />
@@ -161,7 +161,7 @@ function WordCard({ item, isPhrase, isMastered, isCustom, primaryColor, onDelete
             <div>
               <div
                 className="text-sm leading-relaxed"
-                style={{ color: '#C4C4D4' }}
+                style={{ color: 'var(--cozy-ink)' }}
                 dangerouslySetInnerHTML={{ __html: highlightWord(exData.sentence || '', wordText) }}
               />
               <div className="text-xs text-gray-500 mt-1">{exData.translation || ''}</div>
@@ -170,7 +170,7 @@ function WordCard({ item, isPhrase, isMastered, isCustom, primaryColor, onDelete
           {exState === 'error' && (
             <div className="flex items-center gap-3">
               <span className="text-xs text-gray-500">例句生成失敗</span>
-              <button onClick={retryExample} className="text-xs" style={{ color: '#93C5FD' }}>🔄 重試</button>
+              <button onClick={retryExample} className="text-xs" style={{ color: '#2563EB' }}>🔄 重試</button>
             </div>
           )}
         </div>
@@ -223,14 +223,14 @@ function AddWordSheet({ visible, onClose, onSave, existingCustom }) {
       const ctrl = new AbortController();
       ctrlRef.current = ctrl;
       setLookupStatus('AI 查詢中…');
-      setLookupColor('rgba(255,255,255,0.35)');
+      setLookupColor('var(--cozy-ink-faint)');
       try {
         const data = await lookupDefinition(word, ctrl.signal);
         if (data.zh) {
           setWordZh(prev => prev || data.zh);
           setWordPos(prev => prev || data.pos || '');
           setLookupStatus('✨ AI 已自動填入，可自行修改');
-          setLookupColor('#93C5FD');
+          setLookupColor('#2563EB');
         } else {
           setLookupStatus('');
         }
@@ -267,26 +267,26 @@ function AddWordSheet({ visible, onClose, onSave, existingCustom }) {
     >
       <div
         className="w-full rounded-t-2xl p-5 pb-10"
-        style={{ background: '#1A1B2E', borderTop: '1px solid rgba(255,255,255,0.1)', maxWidth: '480px', margin: '0 auto' }}
+        style={{ background: 'var(--cozy-panel)', borderTop: '1px solid var(--cozy-border)', maxWidth: '480px', margin: '0 auto' }}
       >
-        <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: 'rgba(255,255,255,0.2)' }} />
+        <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: 'var(--cozy-border)' }} />
 
         <div className="flex items-center justify-between mb-1">
-          <div className="font-bold text-white text-base">＋ 新增單字</div>
+          <div className="font-bold text-ink text-base">＋ 新增單字</div>
           <button onClick={onClose} className="text-gray-500 text-xl leading-none">✕</button>
         </div>
         <div className="text-xs text-gray-500 mb-4">加入自訂單字庫，可搜尋、發音、生成 AI 例句</div>
 
         <div
           className="rounded-xl px-3 py-2.5 mb-1"
-          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
+          style={{ background: 'rgba(140,100,55,0.1)', border: '1px solid var(--cozy-border)' }}
         >
           <input
             type="text"
             value={wordEn}
             onChange={e => handleWordEnChange(e.target.value)}
             placeholder="英文單字 *"
-            className="w-full bg-transparent text-sm text-white placeholder-gray-500 outline-none"
+            className="w-full bg-transparent text-sm text-ink placeholder-gray-500 outline-none"
             autoComplete="off"
             autoCapitalize="none"
           />
@@ -300,27 +300,27 @@ function AddWordSheet({ visible, onClose, onSave, existingCustom }) {
         <div className="flex gap-2 mb-3">
           <div
             className="rounded-xl px-3 py-2.5"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', width: '100px' }}
+            style={{ background: 'rgba(140,100,55,0.1)', border: '1px solid var(--cozy-border)', width: '100px' }}
           >
             <input
               type="text"
               value={wordPos}
               onChange={e => setWordPos(e.target.value)}
               placeholder="詞性（選填）"
-              className="w-full bg-transparent text-sm text-white placeholder-gray-500 outline-none"
+              className="w-full bg-transparent text-sm text-ink placeholder-gray-500 outline-none"
               autoComplete="off"
             />
           </div>
           <div
             className="rounded-xl px-3 py-2.5 flex-1"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
+            style={{ background: 'rgba(140,100,55,0.1)', border: '1px solid var(--cozy-border)' }}
           >
             <input
               type="text"
               value={wordZh}
               onChange={e => setWordZh(e.target.value)}
               placeholder="中文解釋 *"
-              className="w-full bg-transparent text-sm text-white placeholder-gray-500 outline-none"
+              className="w-full bg-transparent text-sm text-ink placeholder-gray-500 outline-none"
               autoComplete="off"
             />
           </div>
@@ -400,7 +400,7 @@ export default function VocabBookTab({ mastery, classData, customWords = [], onA
   return (
     <div className="pb-24">
       {/* Sticky header — top:48px accounts for GlobalTopBar */}
-      <div className="pt-5 pb-3 px-4 sticky z-10" style={{ top: '48px', background: '#0F0F14' }}>
+      <div className="pt-5 pb-3 px-4 sticky z-10" style={{ top: '48px', background: 'var(--cozy-bg-top)' }}>
         {/* Title + total count */}
         <div className="flex items-center justify-between mb-3">
           <div className="text-xs text-gray-500 font-semibold tracking-widest uppercase">單字片語本</div>
@@ -414,7 +414,7 @@ export default function VocabBookTab({ mastery, classData, customWords = [], onA
         {/* Search */}
         <div
           className="flex items-center gap-2 rounded-xl px-3 py-2.5 mb-3"
-          style={{ background: '#1A1B2E', border: '1px solid rgba(255,255,255,0.08)' }}
+          style={{ background: 'var(--cozy-panel)', border: '1px solid rgba(140,100,55,0.12)' }}
         >
           <span className="text-gray-500 text-sm">🔍</span>
           <input
@@ -422,7 +422,7 @@ export default function VocabBookTab({ mastery, classData, customWords = [], onA
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="搜尋單字或片語..."
-            className="flex-1 bg-transparent text-sm text-white placeholder-gray-500 outline-none"
+            className="flex-1 bg-transparent text-sm text-ink placeholder-gray-500 outline-none"
           />
           {query && (
             <button onClick={() => setQuery('')} className="text-gray-500 text-xs">✕</button>
@@ -438,8 +438,8 @@ export default function VocabBookTab({ mastery, classData, customWords = [], onA
             onClick={() => setLetter(null)}
             className="flex-shrink-0 text-xs px-2.5 py-1.5 rounded-lg font-medium transition-all"
             style={{
-              background: letter === null ? classData.primaryColor : 'rgba(255,255,255,0.06)',
-              color: letter === null ? '#fff' : 'rgba(255,255,255,0.4)',
+              background: letter === null ? classData.primaryColor : 'rgba(140,100,55,0.1)',
+              color: letter === null ? '#fff' : 'var(--cozy-ink-faint)',
             }}
           >
             全
@@ -452,8 +452,8 @@ export default function VocabBookTab({ mastery, classData, customWords = [], onA
               style={{
                 width: '28px',
                 height: '28px',
-                background: letter === l ? classData.primaryColor : 'rgba(255,255,255,0.06)',
-                color: letter === l ? '#fff' : 'rgba(255,255,255,0.4)',
+                background: letter === l ? classData.primaryColor : 'rgba(140,100,55,0.1)',
+                color: letter === l ? '#fff' : 'var(--cozy-ink-faint)',
               }}
             >
               {l}
@@ -469,8 +469,8 @@ export default function VocabBookTab({ mastery, classData, customWords = [], onA
               onClick={() => setFilter(f.id)}
               className="flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-medium transition-all"
               style={{
-                background: filter === f.id ? classData.primaryColor : 'rgba(255,255,255,0.06)',
-                color: filter === f.id ? '#fff' : 'rgba(255,255,255,0.5)',
+                background: filter === f.id ? classData.primaryColor : 'rgba(140,100,55,0.1)',
+                color: filter === f.id ? '#fff' : 'var(--cozy-ink-soft)',
               }}
             >
               {f.label}
@@ -526,6 +526,7 @@ export default function VocabBookTab({ mastery, classData, customWords = [], onA
           height: '52px',
           background: `linear-gradient(135deg, ${classData.gradientFrom}, ${classData.gradientTo})`,
           boxShadow: `0 4px 20px ${classData.glowColor}`,
+          color: '#fff',
         }}
       >
         ＋

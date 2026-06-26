@@ -24,6 +24,8 @@ export const DEFAULT_STATS = {
   weekendSessions: 0,
   nightSessions: 0,
   morningSessions: 0,
+  listeningCorrect: 0,
+  listeningTotal: 0,
 };
 
 export function loadHero() {

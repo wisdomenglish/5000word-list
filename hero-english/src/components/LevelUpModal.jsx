@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import PixelCharacter from './PixelCharacter';
+import ChibiCharacter from './ChibiCharacter';
 import { isTierMilestone, getSkinTier, TIER_META } from '../utils/characterTier';
 import { playLevelUp } from '../utils/soundFX';
 
@@ -97,7 +97,7 @@ export default function LevelUpModal({ newLevel, prevLevel = null, classData, on
           /* Before → After comparison */
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 12 }}>
             <div style={{ textAlign: 'center', opacity: 0.65 }}>
-              <PixelCharacter classId={classData.id} level={prevLevel} scale={4} animate={false} grayscale />
+              <ChibiCharacter classId={classData.id} level={prevLevel} scale={4} animate={false} grayscale />
               <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.6rem', marginTop: 4 }}>
                 {TIER_META[getSkinTier(prevLevel)]?.label}
               </div>
@@ -105,7 +105,7 @@ export default function LevelUpModal({ newLevel, prevLevel = null, classData, on
             <div style={{ color: '#fff', fontSize: '1.5rem', opacity: 0.8 }}>→</div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ animation: 'float 1.5s ease-in-out infinite' }}>
-                <PixelCharacter classId={classData.id} level={newLevel} scale={5} animate={false} />
+                <ChibiCharacter classId={classData.id} level={newLevel} scale={5} animate={false} />
               </div>
               <div style={{ color: tierMeta.color, fontSize: '0.65rem', fontWeight: 700, marginTop: 4 }}>
                 {tierMeta.icon} {tierMeta.label}

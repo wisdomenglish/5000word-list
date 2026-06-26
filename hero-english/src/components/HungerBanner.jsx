@@ -24,9 +24,9 @@ export default function HungerBanner({ hero, classData, happiness, onGoTrain }) 
 
   if (!mounted) return null;
 
-  const bgColor = isCritical ? '#3B0000' : '#1A1200';
-  const borderColor = isCritical ? '#DC2626' : '#F59E0B';
-  const accentColor = isCritical ? '#EF4444' : '#F59E0B';
+  const bgColor = isCritical ? '#FFF1F1' : '#FFF6E2';
+  const borderColor = isCritical ? '#F0A3A3' : '#F0C46B';
+  const accentColor = isCritical ? '#DC2626' : '#B45309';
 
   const dismiss = () => {
     setVisible(false);
@@ -81,7 +81,7 @@ export default function HungerBanner({ hero, classData, happiness, onGoTrain }) 
           <div style={{ fontSize: 12, fontWeight: 700, color: accentColor, marginBottom: 2 }}>
             {isCritical ? '⚠️ 危急！英雄體力耗盡！' : `🍖 ${daysSince}天沒練習！英雄餓了！`}
           </div>
-          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <div style={{ fontSize: 11, color: 'var(--cozy-ink-soft)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             答題幫助活化角色，恢復體力！
           </div>
         </div>
@@ -113,7 +113,7 @@ export default function HungerBanner({ hero, classData, happiness, onGoTrain }) 
             flexShrink: 0,
             background: 'none',
             border: 'none',
-            color: 'rgba(255,255,255,0.3)',
+            color: 'var(--cozy-ink-faint)',
             cursor: 'pointer',
             fontSize: 16,
             padding: '4px',

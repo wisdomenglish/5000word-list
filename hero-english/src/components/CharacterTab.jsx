@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { BookOpen, Headphones, Mic, PenLine, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react';
 import { MOOD_CONFIG } from '../data/classes';
 import TaiwanMapWorld from './TaiwanMapWorld';
+import ChibiCharacter from './ChibiCharacter';
+import CapybaraCompanion from './CapybaraCompanion';
 import LeaderboardSection from './LeaderboardSection';
 import { getSkinTier, TIER_META } from '../utils/characterTier';
 import { ACHIEVEMENTS, ACHIEVEMENT_TYPES, RARITY_META } from '../data/achievements';
@@ -75,7 +77,7 @@ function ActionPill({ icon, message, color, bg, onClick }) {
       aria-label={message}
     >
       <span style={{ fontSize: '1.1rem', lineHeight: 1, flexShrink: 0 }}>{icon}</span>
-      <span style={{ flex: 1, textAlign: 'left', fontSize: '0.875rem', fontWeight: 700, color: '#fff', lineHeight: 1.3 }}>
+      <span style={{ flex: 1, textAlign: 'left', fontSize: '0.875rem', fontWeight: 700, color: 'var(--cozy-ink)', lineHeight: 1.3 }}>
         {message}
       </span>
       <ChevronRight size={16} color={color} strokeWidth={2.5} style={{ flexShrink: 0 }} />
@@ -101,10 +103,10 @@ function StaminaBar({ happiness, lastStudied }) {
   const isHungry   = happiness < 50;
 
   return (
-    <div className="mx-4 mt-3 rounded-2xl p-4" style={{ background: '#1A1B2E' }}>
+    <div className="mx-4 mt-3 rounded-2xl p-4 game-panel">
       <div className="flex justify-between items-center mb-2">
         <div className="flex items-center gap-1.5 text-xs text-gray-400 font-semibold tracking-wide">
-          <span>體力值</span>
+          <span>❤️ 體力值</span>
         </div>
         <div className="flex items-center gap-1 text-xs font-semibold" style={{ color: lv.color }}>
           <span>{lv.icon}</span>
@@ -116,7 +118,7 @@ function StaminaBar({ happiness, lastStudied }) {
       </div>
 
       {/* Bar */}
-      <div className="relative h-3.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
+      <div className="relative h-3.5 rounded-full overflow-hidden" style={{ background: 'rgba(140,100,55,0.12)' }}>
         <div
           className="h-full rounded-full transition-all duration-1000"
           style={{
@@ -150,7 +152,7 @@ const ABILITY_CONFIG = [
   { key: 'writing',   label: '寫作',   color: '#22C55E', Icon: PenLine },
 ];
 
-const CEFR_COLOR = { A1:'#6B7280', A2:'#10B981', B1:'#3B82F6', B2:'#8B5CF6', C1:'#F59E0B', C2:'#EF4444' };
+const CEFR_COLOR = { A1:'#8A7860', A2:'#10B981', B1:'#3B82F6', B2:'#8B5CF6', C1:'#F59E0B', C2:'#EF4444' };
 
 const CLASS_SUBTITLE = {
   swordsman: 'Vocabulary Warrior',
@@ -183,8 +185,8 @@ function CollectionCard({ level, unlockedAchievements, classData }) {
   });
 
   return (
-    <div className="mx-4 mt-3 rounded-2xl overflow-hidden"
-      style={{ background: '#1A1B2E', border: `1px solid ${classData.primaryColor}25` }}>
+    <div className="mx-4 mt-3 rounded-2xl overflow-hidden game-panel"
+      style={{ border: `1px solid ${classData.primaryColor}35` }}>
       <style>{COLLECTION_CSS}</style>
 
       {/* Header strip */}
@@ -211,14 +213,14 @@ function CollectionCard({ level, unlockedAchievements, classData }) {
         {/* Two counters */}
         <div className="grid grid-cols-2 gap-3 mb-4">
           {/* Tiers */}
-          <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.05)' }}>
+          <div className="rounded-xl p-3" style={{ background: 'rgba(140,100,55,0.07)' }}>
             <div className="flex items-center justify-between mb-2">
-              <span style={{ color: '#9CA3AF', fontSize: '0.65rem', fontWeight: 600 }}>角色造型</span>
+              <span style={{ color: 'var(--cozy-ink-soft)', fontSize: '0.65rem', fontWeight: 600 }}>角色造型</span>
               <span style={{ color: classData.primaryColor, fontWeight: 800, fontSize: '0.9rem' }}>
                 {tiersUnlocked}/{totalTiers}
               </span>
             </div>
-            <div style={{ height: 5, background: 'rgba(255,255,255,0.07)', borderRadius: 3, overflow: 'hidden' }}>
+            <div style={{ height: 5, background: 'rgba(140,100,55,0.12)', borderRadius: 3, overflow: 'hidden' }}>
               <div style={{
                 height: '100%', borderRadius: 3,
                 width: `${pct}%`,
@@ -226,20 +228,20 @@ function CollectionCard({ level, unlockedAchievements, classData }) {
                 transition: 'width 0.8s ease',
               }} />
             </div>
-            <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.65rem', marginTop: 4 }}>
+            <div style={{ color: 'rgba(160,140,110,0.85)', fontSize: '0.65rem', marginTop: 4 }}>
               {TIER_META[tier]?.label} 造型解鎖中
             </div>
           </div>
 
           {/* Achievements */}
-          <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.05)' }}>
+          <div className="rounded-xl p-3" style={{ background: 'rgba(140,100,55,0.07)' }}>
             <div className="flex items-center justify-between mb-2">
-              <span style={{ color: '#9CA3AF', fontSize: '0.65rem', fontWeight: 600 }}>成就解鎖</span>
+              <span style={{ color: 'var(--cozy-ink-soft)', fontSize: '0.65rem', fontWeight: 600 }}>成就解鎖</span>
               <span style={{ color: '#F59E0B', fontWeight: 800, fontSize: '0.9rem' }}>
                 {achUnlocked}/{achTotal}
               </span>
             </div>
-            <div style={{ height: 5, background: 'rgba(255,255,255,0.07)', borderRadius: 3, overflow: 'hidden' }}>
+            <div style={{ height: 5, background: 'rgba(140,100,55,0.12)', borderRadius: 3, overflow: 'hidden' }}>
               <div style={{
                 height: '100%', borderRadius: 3,
                 width: `${Math.round((achUnlocked / achTotal) * 100)}%`,
@@ -247,7 +249,7 @@ function CollectionCard({ level, unlockedAchievements, classData }) {
                 transition: 'width 0.8s ease',
               }} />
             </div>
-            <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.65rem', marginTop: 4 }}>
+            <div style={{ color: 'rgba(160,140,110,0.85)', fontSize: '0.65rem', marginTop: 4 }}>
               {achTotal - achUnlocked} 個待解鎖
             </div>
           </div>
@@ -263,8 +265,8 @@ function CollectionCard({ level, unlockedAchievements, classData }) {
                 width: 40, height: 40, borderRadius: 10,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '1.3rem',
-                background: unlocked ? `${m.color}18` : 'rgba(255,255,255,0.03)',
-                border: unlocked ? `1.5px solid ${m.color}50` : '1.5px solid rgba(255,255,255,0.06)',
+                background: unlocked ? `${m.color}18` : 'rgba(140,100,55,0.04)',
+                border: unlocked ? `1.5px solid ${m.color}50` : '1.5px solid rgba(140,100,55,0.1)',
                 filter: unlocked ? 'none' : 'grayscale(1) opacity(0.25)',
                 boxShadow: tier === t ? `0 0 12px ${m.color}50` : undefined,
               }}>
@@ -281,11 +283,11 @@ function CollectionCard({ level, unlockedAchievements, classData }) {
 function EvolutionRoadmap({ level, primaryColor }) {
   const currentTier = getSkinTier(level);
   return (
-    <div className="mx-4 mt-3 rounded-2xl p-5" style={{ background: '#1A1B2E' }}>
-      <div className="text-xs font-semibold text-gray-400 mb-4 tracking-wide">進化路線</div>
+    <div className="mx-4 mt-3 rounded-2xl p-5 game-panel">
+      <div className="game-section-title mb-4">🧬 進化路線</div>
 
       {/* Progress bar */}
-      <div className="relative h-1.5 rounded-full mb-4 overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
+      <div className="relative h-1.5 rounded-full mb-4 overflow-hidden" style={{ background: 'rgba(140,100,55,0.12)' }}>
         <div
           className="h-full rounded-full transition-all duration-700"
           style={{
@@ -320,8 +322,8 @@ function EvolutionRoadmap({ level, primaryColor }) {
                 background: isCur
                   ? `${meta.color}20`
                   : unlocked
-                  ? 'rgba(255,255,255,0.04)'
-                  : 'rgba(255,255,255,0.02)',
+                  ? 'rgba(140,100,55,0.05)'
+                  : 'rgba(140,100,55,0.03)',
                 border: isCur ? `1px solid ${meta.color}60` : '1px solid transparent',
                 boxShadow: isCur ? `0 0 10px ${meta.color}30` : undefined,
                 transition: 'all 0.3s',
@@ -332,11 +334,11 @@ function EvolutionRoadmap({ level, primaryColor }) {
               </div>
               <div
                 className="text-xs font-bold text-center leading-tight"
-                style={{ color: isCur ? meta.color : unlocked ? '#E5E7EB' : '#4B5563' }}
+                style={{ color: isCur ? meta.color : unlocked ? 'var(--cozy-ink)' : 'var(--cozy-ink-faint)' }}
               >
                 {meta.label}
               </div>
-              <div className="text-xs text-center" style={{ color: unlocked ? '#9CA3AF' : '#374151', fontSize: '0.65rem' }}>
+              <div className="text-xs text-center" style={{ color: unlocked ? 'var(--cozy-ink-soft)' : 'var(--cozy-ink-faint)', fontSize: '0.65rem' }}>
                 {unlocked ? '✓' : `Lv.${reqLv}`}
               </div>
             </div>
@@ -359,10 +361,10 @@ function AchievementSection({ unlockedAchievements, primaryColor, progressData }
   const toggleCat = (cat) => setCollapsed(p => ({ ...p, [cat]: !p[cat] }));
 
   return (
-    <div className="mx-4 mt-3 rounded-2xl p-5" style={{ background: '#1A1B2E' }}>
+    <div className="mx-4 mt-3 rounded-2xl p-5 game-panel">
       <style>{ACH_SECTION_CSS}</style>
       <div className="flex items-center justify-between mb-4">
-        <div className="text-xs font-semibold text-gray-400 tracking-wide">成就系統</div>
+        <div className="game-section-title" style={{ flex: 1, marginRight: 10 }}>🏅 成就系統</div>
         <div className="text-xs font-bold" style={{ color: primaryColor }}>
           {unlockedCount} / {totalCount}
         </div>
@@ -392,8 +394,8 @@ function AchievementSection({ unlockedAchievements, primaryColor, progressData }
                   <span className="text-xs text-gray-500">{unlockedInCat.length}/{catAchs.length}</span>
                 </div>
                 {isCollapsed
-                  ? <ChevronDown size={14} color="rgba(255,255,255,0.3)" />
-                  : <ChevronUp size={14} color="rgba(255,255,255,0.3)" />
+                  ? <ChevronDown size={14} color="rgba(160,140,110,0.85)" />
+                  : <ChevronUp size={14} color="rgba(160,140,110,0.85)" />
                 }
               </button>
 
@@ -414,12 +416,12 @@ function AchievementSection({ unlockedAchievements, primaryColor, progressData }
                         ? `${typeMeta.color}12`
                         : isLimitedOpen
                         ? 'rgba(239,68,68,0.08)'
-                        : 'rgba(255,255,255,0.03)',
+                        : 'rgba(140,100,55,0.04)',
                       border: isUnlocked
                         ? `1px solid ${rarityMeta.color}40`
                         : isLimitedOpen
                         ? `1px solid ${isSoon ? '#EF4444' : '#F59E0B'}50`
-                        : '1px solid rgba(255,255,255,0.05)',
+                        : '1px solid rgba(140,100,55,0.07)',
                       boxShadow: isUnlocked ? rarityMeta.glow : undefined,
                       opacity: !isUnlocked && tw && !isLimitedOpen ? 0.55 : 1,
                     }}>
@@ -428,7 +430,7 @@ function AchievementSection({ unlockedAchievements, primaryColor, progressData }
                         width: 36, height: 36, borderRadius: 10, flexShrink: 0,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: '1.3rem',
-                        background: isUnlocked ? typeMeta.bg : 'rgba(255,255,255,0.05)',
+                        background: isUnlocked ? typeMeta.bg : 'rgba(140,100,55,0.07)',
                         filter: isUnlocked || isLimitedOpen ? 'none' : 'grayscale(1) opacity(0.5)',
                         position: 'relative',
                       }}>
@@ -446,7 +448,7 @@ function AchievementSection({ unlockedAchievements, primaryColor, progressData }
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 1 }}>
                           <span style={{
-                            color: isUnlocked ? '#fff' : '#D1D5DB',
+                            color: 'var(--cozy-ink)',
                             fontWeight: 700, fontSize: '0.78rem',
                           }}>{ach.title}</span>
                           {/* Rarity badge */}
@@ -465,14 +467,14 @@ function AchievementSection({ unlockedAchievements, primaryColor, progressData }
                           )}
                         </div>
 
-                        <div style={{ color: '#6B7280', fontSize: '0.65rem', marginBottom: 3 }}>
+                        <div style={{ color: '#8A7860', fontSize: '0.65rem', marginBottom: 3 }}>
                           {ach.desc}
                         </div>
 
                         {/* Time window label (for locked time-limited) */}
                         {tw && !isUnlocked && (
                           <div style={{
-                            color: isLimitedOpen ? (isSoon ? '#EF4444' : '#F59E0B') : '#4B5563',
+                            color: isLimitedOpen ? (isSoon ? '#EF4444' : '#F59E0B') : 'var(--cozy-ink-faint)',
                             fontSize: '0.68rem', fontWeight: 600, marginBottom: 3,
                           }}>
                             ⏱ {tw.label}
@@ -483,14 +485,14 @@ function AchievementSection({ unlockedAchievements, primaryColor, progressData }
                         {!isUnlocked && progress && progress.target > 1 && (
                           <div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-                              <span style={{ color: '#6B7280', fontSize: '0.68rem' }}>
+                              <span style={{ color: '#8A7860', fontSize: '0.68rem' }}>
                                 {progress.current} / {progress.target}
                               </span>
                               <span style={{ color: typeMeta.color, fontSize: '0.68rem', fontWeight: 600 }}>
                                 {Math.round(progress.pct * 100)}%
                               </span>
                             </div>
-                            <div style={{ height: 4, background: 'rgba(255,255,255,0.07)', borderRadius: 2, overflow: 'hidden' }}>
+                            <div style={{ height: 4, background: 'rgba(140,100,55,0.12)', borderRadius: 2, overflow: 'hidden' }}>
                               <div style={{
                                 height: '100%', borderRadius: 2,
                                 width: `${Math.round(progress.pct * 100)}%`,
@@ -534,13 +536,13 @@ function AbilityBar({ label, Icon, value, color }) {
     <div className="flex items-center gap-3">
       <Icon size={16} color={color} aria-hidden="true" className="shrink-0" />
       <span className="text-sm text-gray-300 w-12 shrink-0">{label}</span>
-      <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
+      <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(140,100,55,0.12)' }}>
         <div
           className="h-full rounded-full transition-all duration-700"
           style={{ width: `${value}%`, background: color, boxShadow: `0 0 6px ${color}60` }}
         />
       </div>
-      <span className="text-sm font-bold text-white w-8 text-right">{value}</span>
+      <span className="text-sm font-bold text-ink w-8 text-right">{value}</span>
     </div>
   );
 }
@@ -548,69 +550,74 @@ function AbilityBar({ label, Icon, value, color }) {
 function StudyCta({ happiness, xpProgress, classData, onNavigate }) {
   const isUrgent = happiness < 30;
   const isNearLv = xpProgress?.percent >= 75;
-  let bg, label, sub, icon;
+  let bg, edge, glow, label, sub, icon;
   if (isUrgent) {
-    bg = 'linear-gradient(135deg,#EF4444,#DC2626)';
+    bg = 'linear-gradient(180deg,#F87171,#DC2626)'; edge = '#991B1B'; glow = 'rgba(239,68,68,0.45)';
     label = '英雄快沒體力了！'; sub = '立刻答題補充體力'; icon = '💀';
   } else if (isNearLv) {
-    bg = `linear-gradient(135deg,${classData.gradientFrom},${classData.primaryColor})`;
+    bg = `linear-gradient(180deg,${classData.primaryColor},${classData.gradientTo})`;
+    edge = classData.gradientFrom; glow = classData.glowColor;
     label = `快升到 Lv.${xpProgress.level + 1}！`;
     sub = `還差 ${xpProgress.xpNeeded - xpProgress.xpIntoLevel} XP`; icon = '⚡';
   } else {
-    bg = 'linear-gradient(135deg,#D97706,#F97316)';
+    bg = 'linear-gradient(180deg,#FBBF24,#F97316)'; edge = '#B45309'; glow = 'rgba(249,115,22,0.45)';
     label = '今日練習'; sub = '繼續你的英語冒險'; icon = '⚔️';
   }
-  const shadowColor = isUrgent ? '#EF4444' : isNearLv ? classData.primaryColor : '#F59E0B';
   return (
     <button
       onClick={() => onNavigate?.('learning')}
-      className="active:scale-[0.97] transition-transform"
+      className="game-btn"
       style={{
         display: 'flex', alignItems: 'center', gap: 12,
-        margin: '12px 16px 0', width: 'calc(100% - 32px)',
+        margin: '14px 16px 2px', width: 'calc(100% - 32px)',
         padding: '15px 18px',
-        background: bg, border: 'none', borderRadius: 18, cursor: 'pointer',
-        boxShadow: `0 4px 28px ${shadowColor}50, 0 2px 8px rgba(0,0,0,0.3)`,
+        background: bg, borderRadius: 18,
+        '--btn-edge': edge, '--btn-glow': glow,
       }}
     >
-      <span style={{ fontSize: '1.5rem', lineHeight: 1, flexShrink: 0 }}>{icon}</span>
+      <span style={{
+        fontSize: '1.5rem', lineHeight: 1, flexShrink: 0,
+        filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.3))',
+      }}>{icon}</span>
       <div style={{ flex: 1, textAlign: 'left' }}>
-        <div style={{ color: '#fff', fontWeight: 800, fontSize: '1rem', lineHeight: 1.3 }}>{label}</div>
-        <div style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.72rem' }}>{sub}</div>
+        <div style={{
+          color: '#fff', fontWeight: 900, fontSize: '1.05rem', lineHeight: 1.3,
+          textShadow: '0 1.5px 0 rgba(0,0,0,0.25)',
+        }}>{label}</div>
+        <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.72rem', fontWeight: 600 }}>{sub}</div>
       </div>
       <div style={{
-        background: 'rgba(0,0,0,0.2)', borderRadius: 10,
-        padding: '5px 12px', color: '#fff', fontWeight: 800, fontSize: '0.8rem',
+        background: 'rgba(0,0,0,0.25)', borderRadius: 12,
+        padding: '6px 13px', color: '#fff', fontWeight: 900, fontSize: '0.82rem',
+        boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)',
       }}>GO ›</div>
     </button>
   );
 }
 
 function MentorTip({ happiness, hero, xpProgress }) {
-  let tip;
-  if (happiness < 20)            tip = '體力危急！快去答題補血，別讓英雄倒下！';
-  else if (happiness < 40)       tip = '英雄有點餓了… 答題可以補充體力喔！';
-  else if (hero.streak >= 7)     tip = `連續 ${hero.streak} 天！你真的太強了，繼續衝！🏆`;
-  else if (xpProgress?.percent >= 80) tip = `再一點就升到 Lv.${xpProgress.level + 1} 了！加油！⚡`;
-  else if (hero.streak > 1)      tip = `連續 ${hero.streak} 天打卡，今天也繼續吧！💪`;
-  else                           tip = '今天要一起練英文嗎？每天一點，積少成多！📚';
+  let tip, capyMood = 'content';
+  if (happiness < 20)            { tip = '體力快不夠了…陪我去答幾題補體力好嗎？'; capyMood = 'sleepy'; }
+  else if (happiness < 40)       { tip = '肚子有點餓了～答題就能幫英雄補體力喔！'; capyMood = 'sleepy'; }
+  else if (hero.streak >= 7)     { tip = `連續 ${hero.streak} 天！你超棒的，一起泡在英文裡吧 🍊`; capyMood = 'happy'; }
+  else if (xpProgress?.percent >= 80) { tip = `再一點點就升到 Lv.${xpProgress.level + 1} 了，衝呀！`; capyMood = 'happy'; }
+  else if (hero.streak > 1)      { tip = `連續 ${hero.streak} 天打卡，今天也一起加油！`; capyMood = 'happy'; }
+  else                           { tip = '今天要一起學英文嗎？慢慢來，每天一點點就好～'; capyMood = 'content'; }
 
   return (
-    <div style={{ margin: '10px 16px 0', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+    <div style={{ margin: '12px 16px 0', display: 'flex', alignItems: 'flex-end', gap: 6 }}>
+      <div style={{ flexShrink: 0, marginBottom: -4 }}>
+        <CapybaraCompanion scale={3.4} mood={capyMood} />
+      </div>
       <div style={{
-        width: 38, height: 38, borderRadius: 12, flexShrink: 0,
-        background: 'linear-gradient(135deg,#5B21B6,#7C3AED)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: '1.25rem', boxShadow: '0 0 10px rgba(124,58,237,0.45)',
-      }}>🧙</div>
-      <div style={{
-        flex: 1, background: '#1E1B3A',
-        border: '1px solid rgba(167,139,250,0.22)',
-        borderRadius: '3px 14px 14px 14px',
-        padding: '8px 12px',
+        flex: 1, background: 'var(--cozy-panel)',
+        border: '1px solid var(--cozy-border)',
+        borderRadius: '4px 16px 16px 16px',
+        padding: '9px 13px',
+        boxShadow: '0 3px 8px var(--cozy-shadow-2)',
       }}>
-        <div style={{ color: '#A78BFA', fontSize: '0.62rem', fontWeight: 700, marginBottom: 3 }}>智慧法師</div>
-        <div style={{ color: '#D1D5DB', fontSize: '0.78rem', lineHeight: 1.55 }}>{tip}</div>
+        <div style={{ color: 'var(--cozy-capy)', fontSize: '0.62rem', fontWeight: 800, marginBottom: 3 }}>🍊 水豚夥伴・卡比</div>
+        <div style={{ color: 'var(--cozy-ink)', fontSize: '0.78rem', lineHeight: 1.55 }}>{tip}</div>
       </div>
     </div>
   );
@@ -627,28 +634,27 @@ function HeroSheet({ hero, classData, xpProgress, happiness, cefr, subtitle, mas
   const isCritical = happiness < 20;
 
   return (
-    <div className="mx-4 mt-3 rounded-2xl overflow-hidden"
-      style={{ background: '#1A1B2E', border: `1px solid ${classData.primaryColor}20` }}>
+    <div className="mx-4 mt-3 rounded-2xl overflow-hidden game-panel"
+      style={{ border: `1px solid ${classData.primaryColor}35` }}>
       <style>{HERO_SHEET_CSS}</style>
 
       <div style={{ display: 'flex' }}>
         {/* Portrait column */}
         <div style={{
-          width: 84, flexShrink: 0,
-          background: `linear-gradient(180deg,${classData.gradientFrom}45,${classData.gradientTo}25)`,
-          borderRight: '1px solid rgba(255,255,255,0.06)',
+          width: 104, flexShrink: 0,
+          background: `radial-gradient(circle at 50% 42%, ${classData.primaryColor}38 0%, transparent 68%), linear-gradient(180deg,${classData.gradientFrom}45,${classData.gradientTo}25)`,
+          borderRight: '1px solid rgba(140,100,55,0.1)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          padding: '16px 6px 12px', gap: 6,
+          padding: '14px 6px 10px', gap: 4,
+          position: 'relative',
         }}>
+          <ChibiCharacter classId={classData.id} level={xpProgress.level} scale={5} animate />
           <div style={{
-            fontSize: '2.3rem', lineHeight: 1,
-            filter: `drop-shadow(0 0 12px ${classData.primaryColor}80)`,
-            animation: 'charFloat 3s ease-in-out infinite',
-          }}>{classEmoji}</div>
-          <div style={{
-            color: classData.primaryColor, fontWeight: 800, fontSize: '0.6rem',
-            textAlign: 'center', lineHeight: 1.3, maxWidth: 70,
-          }}>{hero.name}</div>
+            color: '#fff', fontWeight: 800, fontSize: '0.66rem',
+            textAlign: 'center', lineHeight: 1.3, maxWidth: 92,
+            background: 'rgba(0,0,0,0.32)', borderRadius: 20, padding: '2px 10px',
+            border: `1px solid ${classData.primaryColor}55`,
+          }}>{classEmoji} {hero.name}</div>
         </div>
 
         {/* Stats column */}
@@ -656,8 +662,8 @@ function HeroSheet({ hero, classData, xpProgress, happiness, cefr, subtitle, mas
           {/* Level + CEFR */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
-              <span style={{ color: '#fff', fontWeight: 900, fontSize: '1.1rem', lineHeight: 1 }}>Lv.{xpProgress.level}</span>
-              <span style={{ color: '#6B7280', fontSize: '0.68rem' }}>{subtitle}</span>
+              <span style={{ color: 'var(--cozy-ink)', fontWeight: 900, fontSize: '1.1rem', lineHeight: 1 }}>Lv.{xpProgress.level}</span>
+              <span style={{ color: '#8A7860', fontSize: '0.68rem' }}>{subtitle}</span>
             </div>
             <div style={{
               fontSize: '0.68rem', fontWeight: 800, padding: '2px 8px', borderRadius: 20,
@@ -673,7 +679,7 @@ function HeroSheet({ hero, classData, xpProgress, happiness, cefr, subtitle, mas
               <span style={{ color: stLv.color, fontSize: '0.6rem', fontWeight: 700 }}>HP</span>
               <span style={{ color: stLv.color, fontSize: '0.6rem' }}>{happiness}% {stLv.icon}</span>
             </div>
-            <div style={{ height: 6, background: 'rgba(255,255,255,0.07)', borderRadius: 3, overflow: 'hidden' }}>
+            <div style={{ height: 6, background: 'rgba(140,100,55,0.12)', borderRadius: 3, overflow: 'hidden' }}>
               <div style={{
                 height: '100%', borderRadius: 3, width: `${happiness}%`,
                 background: `linear-gradient(90deg,${stLv.color}80,${stLv.color})`,
@@ -686,10 +692,10 @@ function HeroSheet({ hero, classData, xpProgress, happiness, cefr, subtitle, mas
           {/* XP bar */}
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-              <span style={{ color: '#A78BFA', fontSize: '0.6rem', fontWeight: 700 }}>XP</span>
-              <span style={{ color: '#6B7280', fontSize: '0.6rem' }}>{xpProgress.xpIntoLevel}/{xpProgress.xpNeeded} → Lv.{xpProgress.level + 1}</span>
+              <span style={{ color: 'var(--cozy-ink-soft)', fontSize: '0.6rem', fontWeight: 700 }}>XP</span>
+              <span style={{ color: '#8A7860', fontSize: '0.6rem' }}>{xpProgress.xpIntoLevel}/{xpProgress.xpNeeded} → Lv.{xpProgress.level + 1}</span>
             </div>
-            <div style={{ height: 6, background: 'rgba(255,255,255,0.07)', borderRadius: 3, overflow: 'hidden' }}>
+            <div style={{ height: 6, background: 'rgba(140,100,55,0.12)', borderRadius: 3, overflow: 'hidden' }}>
               <div style={{
                 height: '100%', borderRadius: 3, width: `${xpProgress.percent}%`,
                 background: `linear-gradient(90deg,${classData.gradientFrom},${classData.primaryColor})`,
@@ -701,7 +707,7 @@ function HeroSheet({ hero, classData, xpProgress, happiness, cefr, subtitle, mas
       </div>
 
       {/* Bottom resource strip */}
-      <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)' }}>
+      <div style={{ borderTop: '1px solid rgba(140,100,55,0.07)', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)' }}>
         {[
           { icon: '⭐', value: masteredCount, label: '已掌握', color: '#F59E0B' },
           { icon: '🔥', value: hero.streak,  label: '天連續', color: '#F97316' },
@@ -710,11 +716,11 @@ function HeroSheet({ hero, classData, xpProgress, happiness, cefr, subtitle, mas
           <div key={r.label} style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center',
             padding: '9px 4px 7px',
-            borderRight: i < 2 ? '1px solid rgba(255,255,255,0.05)' : undefined,
+            borderRight: i < 2 ? '1px solid rgba(140,100,55,0.07)' : undefined,
           }}>
             <span style={{ fontSize: '0.8rem', lineHeight: 1, marginBottom: 2 }}>{r.icon}</span>
             <span style={{ color: r.color, fontWeight: 800, fontSize: '0.9rem', lineHeight: 1 }}>{r.value}</span>
-            <span style={{ color: '#6B7280', fontSize: '0.58rem', marginTop: 2 }}>{r.label}</span>
+            <span style={{ color: '#8A7860', fontSize: '0.58rem', marginTop: 2 }}>{r.label}</span>
           </div>
         ))}
       </div>
@@ -777,8 +783,8 @@ export default function CharacterTab({ hero, classData, xpProgress, mood, happin
       />
 
       {/* Ability bars */}
-      <div className="mx-4 mt-3 rounded-2xl p-5" style={{ background: '#1A1B2E' }}>
-        <div className="text-xs font-semibold text-gray-400 mb-4 tracking-wide">能力值</div>
+      <div className="mx-4 mt-3 rounded-2xl p-5 game-panel">
+        <div className="game-section-title mb-4">📊 能力值</div>
         <div className="space-y-4">
           {ABILITY_CONFIG.map(({ key, label, color, Icon }) => (
             <AbilityBar key={key} label={label} color={color} Icon={Icon} value={abilities[key]} />

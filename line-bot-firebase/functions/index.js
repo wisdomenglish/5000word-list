@@ -19,7 +19,7 @@ const BOT_CONFIG = {
     imageMode: "solve",
     secretEnvVar: "LINE_CHANNEL_SECRET",
     tokenEnvVar: "LINE_CHANNEL_ACCESS_TOKEN",
-    joinMessage: `大家好！我是 Frank 老師的英文小幫手 👋\n\n我可以幫你：\n\n📚 文法問答、單字查詢、句子糾錯\n📝 作文批改、寫作範例、句子翻譯\n📷 傳照片解題（選擇題、填空題、閱讀測驗等）\n\n群組使用方式：\n1️⃣ 先傳文字：「@Bot 解題」\n2️⃣ 再傳圖片（3 分鐘內）\n\n一對一聊天：直接傳圖即可 📸\n\n期待為大家解答英文問題！😊`
+    joinMessage: `大家好！我是 Frank 老師的英文小幫手 👋\n\n我可以幫你：\n\n📚 文法問答、單字查詢、句子糾錯\n📝 作文批改、寫作範例、句子翻譯\n📷 傳照片解題（選擇題、填空題、閱讀測驗等）\n✍️ 作文批改／改寫：點下方「作文功能」選單 → 選「作文批改／初階改寫／進階改寫」→ 再傳照片\n\n群組解題方式：\n1️⃣ 先傳文字：「@Bot 解題」\n2️⃣ 再傳圖片（3 分鐘內）\n\n一對一聊天：直接傳圖即可 📸\n\n期待為大家解答英文問題！😊`
   },
   "U45ed153ac9a4c65ec21dc3eb446649c1": {
     name: "Ivy's English Calendar",
@@ -188,6 +188,71 @@ async function pushLineMessage(to, message, token) {
   });
 }
 
+// 一次 push 多則訊息（LINE 單次最多 5 則）
+async function pushLineMulti(to, messages, token) {
+  return new Promise((resolve, reject) => {
+    if (!token) return reject(new Error("LINE token is required"));
+    const data = JSON.stringify({ to, messages });
+    const options = {
+      hostname: "api.line.me", port: 443, path: "/v2/bot/message/push", method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Length": Buffer.byteLength(data, "utf8"),
+        "Authorization": `Bearer ${token}`
+      }
+    };
+    const req = https.request(options, (res) => {
+      let body = "";
+      res.on("data", (c) => { body += c; });
+      res.on("end", () => {
+        if (res.statusCode === 200) resolve(body);
+        else { console.error(`[ERROR] push multi: ${res.statusCode}`, body); reject(new Error(`HTTP ${res.statusCode}`)); }
+      });
+    });
+    req.on("error", reject);
+    req.write(data); req.end();
+  });
+}
+
+// 從 User-Agent 取出簡短裝置/瀏覽器字串，方便重現問題
+function shortDeviceFromUA(ua) {
+  if (!ua) return "";
+  let os = "";
+  if (/iPhone/.test(ua)) os = "iPhone";
+  else if (/iPad/.test(ua)) os = "iPad";
+  else if (/Android/.test(ua)) os = "Android";
+  else if (/Windows/.test(ua)) os = "Windows";
+  else if (/Mac OS X/.test(ua)) os = "Mac";
+  let br = "";
+  if (/Edg\//.test(ua)) br = "Edge";
+  else if (/CriOS|Chrome/.test(ua)) br = "Chrome";
+  else if (/FxiOS|Firefox/.test(ua)) br = "Firefox";
+  else if (/Safari/.test(ua)) br = "Safari";
+  return [os, br].filter(Boolean).join(" / ") || ua.slice(0, 40);
+}
+
+// 「綁定回報 / 解除回報」：記錄/移除接收回報的管理員 userId（任何 bot 皆可用）
+// 同時存下是在哪支 bot 綁的（tokenEnvVar）——LINE userId 分頻道，推播必須用同一支 token
+async function handleReportBind(bind, replyToken, token, userId, botConfig) {
+  try {
+    initializeFirebase();
+    if (bind) {
+      await dbRef.ref(`/report-recipients/${userId}`).set({
+        boundAt: Date.now(),
+        tokenEnvVar: (botConfig && botConfig.tokenEnvVar) || "LINE_CHANNEL_ACCESS_TOKEN_BOT2",
+        botName: (botConfig && botConfig.name) || ""
+      });
+      await replyLineMessage(replyToken, { type: "text", text: "✅ 已綁定問題回報\n\n日後同學在 App 點「🛟 回報問題」送出的內容（含截圖）都會推播到這裡。\n\n要停止接收請輸入「解除回報」。" }, token);
+    } else {
+      await dbRef.ref(`/report-recipients/${userId}`).remove();
+      await replyLineMessage(replyToken, { type: "text", text: "已解除問題回報通知，這裡將不再收到同學的回報。" }, token);
+    }
+  } catch (e) {
+    console.error("[ERROR] handleReportBind:", e.message);
+    try { await replyLineMessage(replyToken, { type: "text", text: "❌ 設定失敗，請稍後再試" }, token); } catch (_) {}
+  }
+}
+
 // ========== 快取 ==========
 function generateCacheKey(intent, text) {
   const input = `${intent}:${text.toLowerCase().trim()}`;
@@ -350,11 +415,12 @@ function generateSmartResponse(userMessage) {
   if (greetingPattern.test(userMessage.trim())) {
     return `嗨！我是 Frank Lin 老師的英文學習助手 😊\n\n我可以幫你：\n\n📚 文法問答\n例：is 和 are 的差別？\n\n📖 單字查詢\n例：單字: serendipity\n\n✏️ 句子糾錯\n例：糾錯: I go to school yesterday\n\n📝 作文批改\n例：批改: [貼上英文段落]\n\n🌐 句子翻譯\n例：翻譯: How are you?\n\n📷 傳照片解題\n選擇題、填空題、閱讀測驗都可以！\n直接拍照傳給我 📸\n\n有任何英文問題都可以問我！💪`;
   }
-  const englishKeywords = /英文|文法|單字|單词|詞彙|翻譯|句子|作文|文章|發音|例句|糾正|改正|寫作|批改|grammar|word|sentence|essay|writing|pronunciation/i;
-  if (!englishKeywords.test(userMessage)) {
+  // 只攔截明顯與英文學習完全無關的話題（天氣、餐廳、新聞…）
+  const clearlyOffTopic = /天氣|餐廳|美食|股票|政治|新聞|運動比賽|追劇|八卦/;
+  if (clearlyOffTopic.test(userMessage) && !/英文|文法|單字|翻譯|grammar|sentence|vocabulary/i.test(userMessage)) {
     return `抱歉，我是專門的英文學習助手。😅 這個問題不在我的專業範圍內。\n\n不過，如果你有英文學習的問題，我很樂意幫忙！✨\n\n你可以試試：\n\n📚 文法問答\n📖 單字查詢\n✏️ 句子糾錯\n📝 作文批改\n🌐 句子翻譯\n\n來問我英文問題吧！💪`;
   }
-  return `你想學英文的哪個部分呢？🤔\n\n我可以幫你：\n\n📚 文法解析\n例：什麼是現在完成式？\n\n📖 單字查詢\n例：單字: accommodate\n\n✏️ 句子糾錯\n例：糾錯: She don't like apples\n\n📝 作文批改\n直接貼上你的英文段落\n\n🌐 句子翻譯\n例：翻譯: I love learning English\n\n試試看問我一個具體的問題吧！😊`;
+  return `你想學英文的哪個部分呢？🤔\n\n我可以幫你：\n\n📚 文法解析\n例：什麼是現在完成式？\n\n📖 單字查詢\n例：serendipity 是什麼意思？\n\n✏️ 句子糾錯\n例：She don't like apples，這樣對嗎？\n\n📝 作文批改\n直接貼上你的英文段落\n\n🌐 句子翻譯\n例：翻譯: I love learning English\n\n試試看問我一個具體的問題吧！😊`;
 }
 
 function getHelpMessage() {
@@ -710,6 +776,7 @@ function detectCalendarIntent(text) {
   if (/提醒狀態|訂閱狀態|目前狀態|檢查提醒|確認提醒|提醒確認|提醒開了嗎|提醒關了嗎|我訂閱了嗎|我有訂閱嗎|訂閱了嗎/.test(text)) return "status";
   if (/開啟提醒|訂閱提醒|加入提醒|開始提醒/.test(text)) return "subscribe";
   if (/關閉提醒|取消提醒|退出提醒|停止提醒/.test(text)) return "unsubscribe";
+  if (/^行事曆$/.test(text.trim())) return "help";
   if (/^印刷單$/.test(text.trim())) return "print_form";
   if (/^公告$/.test(text.trim())) return "announcement";
   if (/重新整理|重整|refresh|清除快取|更新行事曆/.test(text)) return "refresh";
@@ -763,47 +830,52 @@ function buildCalendarHelpMessage() {
 }
 
 async function handlePrintFormSelection(replyToken, token) {
-  const message = {
-    type: "text",
-    text: "請選擇要填寫的印刷單類型 📋",
-    quickReply: {
-      items: [
-        {
-          type: "action",
-          action: {
-            type: "uri",
-            label: "教用版印刷單",
-            uri: "https://docs.google.com/forms/d/e/1FAIpQLSc5Bayi-T6-yCUo_kozyVfzl7bQ9u79oWCd2z7pbLeiO8ykOA/viewform"
+  try {
+    const message = {
+      type: "text",
+      text: "請選擇要填寫的印刷單類型 📋",
+      quickReply: {
+        items: [
+          {
+            type: "action",
+            action: {
+              type: "uri",
+              label: "教用版印刷單",
+              uri: "https://docs.google.com/forms/d/e/1FAIpQLSc5Bayi-T6-yCUo_kozyVfzl7bQ9u79oWCd2z7pbLeiO8ykOA/viewform"
+            }
+          },
+          {
+            type: "action",
+            action: {
+              type: "uri",
+              label: "國中部表單",
+              uri: "https://docs.google.com/forms/d/e/1FAIpQLSdwYxRUdXWL0eTr_6qmYdYE3yXZ3lMxcJhehPrdsklXKlRIoQ/viewform"
+            }
+          },
+          {
+            type: "action",
+            action: {
+              type: "uri",
+              label: "高中部表單",
+              uri: "https://docs.google.com/forms/d/e/1FAIpQLSex-trJIyfHgcoR4ttAh4yGMoldJ1KSR2Basz5UDYIxx55pvg/viewform"
+            }
+          },
+          {
+            type: "action",
+            action: {
+              type: "uri",
+              label: "檢定部表單",
+              uri: "https://docs.google.com/forms/d/e/1FAIpQLScKgVzyiC51UQ0rD_aYekrqMuEyaCe7tWWM-QtiTgvCqE93ww/viewform"
+            }
           }
-        },
-        {
-          type: "action",
-          action: {
-            type: "uri",
-            label: "國中部表單",
-            uri: "https://docs.google.com/forms/d/e/1FAIpQLSdwYxRUdXWL0eTr_6qmYdYE3yXZ3lMxcJhehPrdsklXKlRIoQ/viewform"
-          }
-        },
-        {
-          type: "action",
-          action: {
-            type: "uri",
-            label: "高中部表單",
-            uri: "https://docs.google.com/forms/d/e/1FAIpQLSex-trJIyfHgcoR4ttAh4yGMoldJ1KSR2Basz5UDYIxx55pvg/viewform"
-          }
-        },
-        {
-          type: "action",
-          action: {
-            type: "uri",
-            label: "檢定部表單",
-            uri: "https://docs.google.com/forms/d/e/1FAIpQLScKgVzyiC51UQ0rD_aYekrqMuEyaCe7tWWM-QtiTgvCqE93ww/viewform"
-          }
-        }
-      ]
-    }
-  };
-  await replyLineMessage(replyToken, message, token);
+        ]
+      }
+    };
+    await replyLineMessage(replyToken, message, token);
+  } catch (error) {
+    console.error("[ERROR] handlePrintFormSelection:", error.message);
+    await replyLineMessage(replyToken, { type: "text", text: "抱歉，無法顯示印刷單選項。請稍後再試。" }, token);
+  }
 }
 
 async function handleAnnouncement(replyToken, token) {
@@ -895,12 +967,16 @@ function formatCalendarEvents(events, label) {
 // Returns { names: string[] | null, cleanTitle: string }
 // names=null means "everyone" ([全部] or no bracket)
 function parseEventTarget(title) {
-  // Normalize full-width brackets (e.g. ［Frank］ or [Frank］) to ASCII
-  const normalized = title.replace(/［/g, "[").replace(/］/g, "]");
+  // Normalize full-width brackets (［］ U+FF3B/FF3D, 【】 U+3010/U+3011) and strip residual iCal \n escapes
+  const normalized = title
+    .replace(/［/g, "[").replace(/］/g, "]")
+    .replace(/【/g, "[").replace(/】/g, "]")
+    .replace(/\\n/g, " ")
+    .trim();
   const m = normalized.match(/^\[([^\]]+)\]\s*(.*)/);
-  if (!m) return { names: null, cleanTitle: title };
+  if (!m) return { names: null, cleanTitle: normalized };
   const inside = m[1].trim();
-  const cleanTitle = m[2].trim() || title;
+  const cleanTitle = m[2].trim() || normalized;
   if (inside === "全部") return { names: null, cleanTitle };
   const names = inside.split(/[,，]\s*/).map(n => n.trim()).filter(Boolean);
   return { names, cleanTitle };
@@ -1152,8 +1228,22 @@ async function handleTextMessage(userMessage, replyToken, token) {
     const subIntent = intentData.subIntent;
     const content = intentData.content;
     if (intent === "unknown") {
-      const smartResponse = generateSmartResponse(userMessage);
-      await replyLineMessage(replyToken, { type: "text", text: sanitizeTextForLine(smartResponse) }, token);
+      // 無法判斷意圖時，用通用英文老師 prompt 直接嘗試回答，不用關鍵字過濾擋掉
+      try {
+        const cacheKey = crypto.createHash("md5").update(`general:${userMessage}`).digest("hex");
+        let response = await getCachedResponse(cacheKey);
+        if (!response) {
+          const generalPrompt = buildPrompt("unknown"); // 回傳 baseSystem（英文老師人設）
+          response = await callClaude(generalPrompt, userMessage, 1024);
+          await setCachedResponse(cacheKey, response);
+        }
+        await replyLineMessage(replyToken, { type: "text", text: sanitizeTextForLine(response) }, token);
+      } catch (e) {
+        console.error("[ERROR] General Claude fallback failed:", e.message);
+        // Claude 也呼叫失敗才顯示說明選單
+        const smartResponse = generateSmartResponse(userMessage);
+        await replyLineMessage(replyToken, { type: "text", text: sanitizeTextForLine(smartResponse) }, token);
+      }
       return;
     }
     if (!content || content.trim().length === 0) {
@@ -1230,7 +1320,8 @@ async function handleRewriteRequest(level, replyToken, token, userId) {
 }
 
 // 收到圖片：若有等待改寫指令則改寫，否則給 Feedback
-async function handleImageMessage(messageId, replyToken, token, userId) {
+// client 可傳入指定的 Anthropic 實例（Frank 用 anthropic、Wisdom 用 anthropicWisdom）；未傳則預設 Wisdom
+async function handleImageMessage(messageId, replyToken, token, userId, client) {
   try {
     initializeFirebase();
     const snap = await dbRef.ref(`/pending-rewrite/${userId}`).get();
@@ -1314,9 +1405,12 @@ async function handleImageMessage(messageId, replyToken, token, userId) {
 格式規定：使用分隔線 ━━━━━━━━━━━━━━━━ 和 emoji，絕對不使用 ** 粗體標記。`;
     }
 
-    initializeAnthropicWisdom();
-    const userText = level ? `請提供${level}改寫` : "請給予作文批改 Feedback";
-    const message = await anthropicWisdom.messages.create({
+    if (!client) {
+      initializeAnthropicWisdom();
+      client = anthropicWisdom;
+    }
+    const userText = (level === "初階" || level === "進階") ? `請提供${level}改寫` : "請給予作文批改 Feedback";
+    const message = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 2048,
       system: systemPrompt,
@@ -1332,6 +1426,51 @@ async function handleImageMessage(messageId, replyToken, token, userId) {
   } catch (error) {
     console.error("[ERROR] handleImageMessage:", error.message);
     await replyLineMessage(replyToken, { type: "text", text: "抱歉，處理圖片時發生錯誤。請稍後再試。" }, token);
+  }
+}
+
+// 依 Bot 取得對應的 Anthropic 實例（Frank → student key、Wisdom → pwaprod key）
+function getEssayClient(botConfig) {
+  if (botConfig && botConfig.imageMode === "rewrite") {
+    initializeAnthropicWisdom();
+    return anthropicWisdom;
+  }
+  initializeAnthropic();
+  return anthropic;
+}
+
+// 作文功能選單（Quick Reply 三選項）— 點 Rich Menu 的「作文批改」tab 後回傳
+function essayMenuMessage() {
+  return {
+    type: "text",
+    text: "請選擇作文服務 ✍️\n選好後直接把照片傳給我即可 📸",
+    quickReply: {
+      items: [
+        { type: "action", action: { type: "postback", label: "📝 作文批改", data: "essay_mode=批改", displayText: "作文批改" } },
+        { type: "action", action: { type: "postback", label: "✏️ 初階改寫", data: "essay_mode=初階", displayText: "初階改寫" } },
+        { type: "action", action: { type: "postback", label: "🎯 進階改寫", data: "essay_mode=進階", displayText: "進階改寫" } }
+      ]
+    }
+  };
+}
+
+// 使用者選了作文模式（批改／初階／進階）→ 存等待圖片指令，提示傳圖
+async function handleEssayModeSelect(level, replyToken, token, userId) {
+  try {
+    initializeFirebase();
+    await dbRef.ref(`/pending-rewrite/${userId}`).set({
+      level,
+      expiresAt: Date.now() + 5 * 60 * 1000
+    });
+    const label = level === "批改" ? "作文批改" : `${level}改寫`;
+    const emoji = level === "進階" ? "🎯" : (level === "初階" ? "✏️" : "📝");
+    await replyLineMessage(replyToken, {
+      type: "text",
+      text: `好的！請把照片傳給我 📸\n\n我將為你進行${label} ${emoji}`
+    }, token);
+  } catch (error) {
+    console.error("[ERROR] handleEssayModeSelect:", error.message);
+    await replyLineMessage(replyToken, { type: "text", text: "抱歉，發生錯誤。請稍後再試。" }, token);
   }
 }
 
@@ -1523,7 +1662,11 @@ app.post("/", async (req, res) => {
             });
           }
         }
-        if (botConfig.role === "calendar") {
+        if (/^綁定回報$/.test(userMessage.trim())) {
+          await handleReportBind(true, event.replyToken, botCredentials.token, event.source.userId, botConfig);
+        } else if (/^解除回報$/.test(userMessage.trim())) {
+          await handleReportBind(false, event.replyToken, botCredentials.token, event.source.userId, botConfig);
+        } else if (botConfig.role === "calendar") {
           await handleCalendarMessage(userMessage, event.replyToken, botCredentials.token, event.source.userId);
         } else if (botConfig.imageMode === "rewrite" && /^(初階改寫|進階改寫)$/.test(userMessage.trim())) {
           const level = userMessage.trim().startsWith("進階") ? "進階" : "初階";
@@ -1537,22 +1680,42 @@ app.post("/", async (req, res) => {
         if (botConfig.imageMode === "rewrite") {
           await handleImageMessage(event.message.id, event.replyToken, botCredentials.token, event.source.userId);
         } else {
-          // Frank bot: in group/room chats, only process image if @Bot was recently mentioned
-          const imgSourceType = event.source.type;
-          const isImgGroup = imgSourceType === "group" || imgSourceType === "room";
-          if (isImgGroup) {
-            initializeFirebase();
-            const sourceId = event.source.groupId || event.source.roomId;
-            const flagKey = `${sourceId}_${event.source.userId}`;
-            const snap = await dbRef.ref(`/pending-frank-image/${flagKey}`).get();
-            if (!snap.exists() || snap.val().expiresAt < Date.now()) {
-              console.log("[INFO] Group image without pending @Bot mention, skipping");
-              continue;
+          // Frank bot: 若使用者剛從作文選單選了模式（pending-rewrite），走作文批改／改寫，否則維持解題
+          initializeFirebase();
+          const essaySnap = await dbRef.ref(`/pending-rewrite/${event.source.userId}`).get();
+          if (essaySnap.exists() && Date.now() < essaySnap.val().expiresAt) {
+            console.log("[INFO] Frank essay mode pending, processing as essay correction/rewrite");
+            await handleImageMessage(event.message.id, event.replyToken, botCredentials.token, event.source.userId, getEssayClient(botConfig));
+          } else {
+            // 解題：群組/聊天室僅在最近被 @Bot 提及時才處理圖片
+            const imgSourceType = event.source.type;
+            const isImgGroup = imgSourceType === "group" || imgSourceType === "room";
+            if (isImgGroup) {
+              const sourceId = event.source.groupId || event.source.roomId;
+              const flagKey = `${sourceId}_${event.source.userId}`;
+              const snap = await dbRef.ref(`/pending-frank-image/${flagKey}`).get();
+              if (!snap.exists() || snap.val().expiresAt < Date.now()) {
+                console.log("[INFO] Group image without pending @Bot mention, skipping");
+                continue;
+              }
+              await dbRef.ref(`/pending-frank-image/${flagKey}`).remove();
+              console.log("[INFO] Pending image flag cleared, processing Frank group image");
             }
-            await dbRef.ref(`/pending-frank-image/${flagKey}`).remove();
-            console.log("[INFO] Pending image flag cleared, processing Frank group image");
+            await handleFrankImageMessage(event.message.id, event.replyToken, botCredentials.token);
           }
-          await handleFrankImageMessage(event.message.id, event.replyToken, botCredentials.token);
+        }
+      } else if (event.type === "postback") {
+        const data = (event.postback && event.postback.data) || "";
+        if (data === "essay_menu") {
+          // 點 Rich Menu「作文批改」tab → 回傳三選項 Quick Reply
+          await replyLineMessage(event.replyToken, essayMenuMessage(), botCredentials.token);
+        } else if (data.startsWith("essay_mode=")) {
+          const level = data.split("=")[1]; // 批改 / 初階 / 進階
+          if (["批改", "初階", "進階"].includes(level)) {
+            await handleEssayModeSelect(level, event.replyToken, botCredentials.token, event.source.userId);
+          }
+        } else {
+          console.log("[INFO] Unhandled postback data:", data);
         }
       } else if (event.type === "join") {
         try {
@@ -1572,6 +1735,90 @@ app.post("/", async (req, res) => {
   }
 });
 
+// ========== generateListeningQuiz (simple generator + cache) ==========
+exports.generateListeningQuiz = onRequest({ cors: true, invoker: "public" }, async (req, res) => {
+  if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
+  try {
+    initializeFirebase();
+
+    const body = req.body || {};
+    const sessionId = body.sessionId || crypto.randomBytes(8).toString("hex");
+
+    // Simple local generator - replace with Claude generation later
+    const SAMPLE_WORDS = ["cat", "dog", "boy", "girl", "teacher", "bus", "park", "book", "phone", "apple"];
+
+    const makeChoices = (correct) => {
+      const set = new Set([correct]);
+      while (set.size < 4) {
+        const cand = SAMPLE_WORDS[Math.floor(Math.random() * SAMPLE_WORDS.length)];
+        set.add(cand);
+      }
+      const arr = Array.from(set);
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    };
+
+    const part1 = [];
+    for (let i = 0; i < 3; i++) {
+      const answer = SAMPLE_WORDS[Math.floor(Math.random() * SAMPLE_WORDS.length)];
+      const q = {
+        id: `p1_${i}`,
+        type: 'listening_image',
+        prompt: '看圖選出最符合的句子。',
+        imageQuery: answer,
+        imageUrl: `https://source.unsplash.com/featured/?${encodeURIComponent(answer)}`,
+        answer,
+        choices: makeChoices(answer),
+      };
+      part1.push(q);
+    }
+
+    const part2 = [];
+    for (let i = 0; i < 8; i++) {
+      const answer = SAMPLE_WORDS[Math.floor(Math.random() * SAMPLE_WORDS.length)];
+      const q = {
+        id: `p2_${i}`,
+        type: 'listening_qa',
+        prompt: `聽下面句子，選出正確的答案：Who has the ${answer}?`,
+        answer,
+        choices: makeChoices(answer),
+      };
+      part2.push(q);
+    }
+
+    const part3 = [];
+    for (let i = 0; i < 10; i++) {
+      const answer = SAMPLE_WORDS[Math.floor(Math.random() * SAMPLE_WORDS.length)];
+      const dialogue = `A: Hi, how are you?\nB: I'm fine, thanks. I have a ${answer}.`;
+      const q = {
+        id: `p3_${i}`,
+        type: 'listening_dialogue',
+        prompt: '聽短對話，選出正確答案。',
+        dialogueText: dialogue,
+        answer,
+        choices: makeChoices(answer),
+      };
+      part3.push(q);
+    }
+
+    // Generate simple Google Translate TTS URLs for each item (client can fetch/stream)
+    const audioUrls = {};
+    const ttsUrl = (text) => `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=en&client=tw-ob`;
+    part1.forEach(q => { audioUrls[q.id] = ttsUrl(`This is a picture of a ${q.answer}.`); });
+    part2.forEach(q => { audioUrls[q.id] = ttsUrl(q.prompt); });
+    part3.forEach(q => { audioUrls[q.id] = ttsUrl(q.dialogueText); });
+
+    const payload = { sessionId, part1, part2, part3, audioUrls, createdAt: Date.now() };
+    await dbRef.ref(`/listening-cache/${sessionId}`).set(payload);
+    res.json(payload);
+  } catch (e) {
+    console.error("[ERROR] generateListeningQuiz:", e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
 // ========== 行事曆定時提醒 ==========
 exports.calendarReminder = onSchedule({
   schedule: "0 8 * * *",
@@ -1937,6 +2184,21 @@ function quizCacheKey(word, cefrLevel) {
   return cefrLevel ? `${base}__${String(cefrLevel).toLowerCase()}` : base;
 }
 
+// 驗證並修正題目：正解選項必須「等於被考單字本身」，否則視為壞題（回傳 null 丟棄）
+// 解決 Claude 把正解換成同義詞（如考 familiar 卻用 well-known）導致詳解的字不在選項的問題
+function sanitizeQuizQuestion(q) {
+  if (!q || typeof q !== "object") return null;
+  if (!q.word || !Array.isArray(q.options) || q.options.length < 2) return null;
+  if (typeof q.sentence !== "string" || !q.sentence.includes("______")) return null;
+  const norm = (s) => String(s).toLowerCase().trim();
+  const target = norm(q.word);
+  // 被考單字必須出現在選項中，且 answer 指向它（順手修正 shuffle 後 index 不一致）
+  const idx = q.options.findIndex((o) => norm(o) === target);
+  if (idx === -1) return null;            // 正解單字根本不在選項裡 → 壞題，丟棄
+  q.answer = idx;
+  return q;
+}
+
 exports.generateVocabQuiz = onRequest({ cors: true, invoker: "public" }, async (req, res) => {
   if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
   const { words, cefrLevel } = req.body || {};
@@ -1956,7 +2218,8 @@ exports.generateVocabQuiz = onRequest({ cors: true, invoker: "public" }, async (
           const snap = await db.ref(`/quiz-cache/${quizCacheKey(w.word, cefrLevel)}`).get();
           if (snap.exists()) {
             const v = snap.val();
-            if (v && v.q && Array.isArray(v.q.options)) cachedByWord[w.word] = v.q;
+            // 舊的壞題（正解非被考單字）視為未快取，丟回去重新生成覆蓋
+            if (v && v.q && sanitizeQuizQuestion(v.q)) cachedByWord[w.word] = v.q;
           }
         } catch (e) { /* 單筆讀取失敗就當未快取 */ }
       }));
@@ -1994,6 +2257,8 @@ Respond ONLY with a valid JSON array, no markdown, no extra text:
 ]
 
 Rules:
+- CRITICAL: The correct option MUST be EXACTLY the tested word itself (the "word" value) — never a synonym, paraphrase, or different word form. The correct entry in "options" must equal "word" character-for-character. (e.g. if the word is "familiar", the correct option is "familiar", NOT "well-known".)
+- The only word that correctly fills the blank is the tested word, and "explanation" must explain that same tested word.
 - EVERY question MUST contain exactly two sentences. The blank (______) appears in the FIRST sentence. The SECOND sentence adds a specific context clue that rules out all distractors and makes only one answer correct.
 - Each sentence must use ______ (6 underscores) as the blank — only in the first sentence
 - "answer" is the index (0-3) of the correct option in "options"
@@ -2016,6 +2281,8 @@ ${cefrRule}
         raw = raw.replace(/^```json?\s*/, "").replace(/\s*```$/, "").trim();
       generated = JSON.parse(raw);
       if (!Array.isArray(generated)) generated = generated.questions || [];
+      // 過濾＋修正：正解必須等於被考單字，壞題直接丟棄（不快取、不回傳）
+      generated = generated.map(sanitizeQuizQuestion).filter(Boolean);
 
       // ── 3. 寫回共享快取 ──
       if (db) {
@@ -2046,6 +2313,96 @@ ${cefrRule}
   } catch (e) {
     console.error("[ERROR] generateVocabQuiz:", e.message);
     res.status(500).json({ error: e.message });
+  }
+});
+
+// ========== App 問題回報（PWA「🛟 回報問題」用）==========
+// reportImage 的公開 URL（同專案 Cloud Run 命名規則：{小寫函式名}-gtlccx6nka-uc.a.run.app）
+const REPORT_IMAGE_BASE = "https://reportimage-gtlccx6nka-uc.a.run.app";
+
+// 學生送出回報 → 寫 RTDB /app-reports/{id}，並 push 給已綁定的管理員（Wisdom Bot）
+exports.submitReport = onRequest({ cors: true, invoker: "public" }, async (req, res) => {
+  if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
+  try {
+    const { message, image, user, nickname, meta } = req.body || {};
+    const msg = (message || "").toString().slice(0, 2000);
+    if (!msg && !image) return res.status(400).json({ error: "Empty report" });
+
+    initializeFirebase();
+
+    // 解析 data URL 圖片
+    let imageData = null, imageMime = "image/jpeg";
+    if (typeof image === "string" && image.startsWith("data:image/")) {
+      const m = image.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
+      if (m) { imageMime = m[1]; imageData = m[2]; }
+    }
+
+    const ref = dbRef.ref("/app-reports").push();
+    const id = ref.key;
+    const record = {
+      message: msg,
+      user: user || null,
+      nickname: nickname || "",
+      meta: meta || null,
+      hasImage: !!imageData,
+      imageMime,
+      createdAt: Date.now(),
+      status: "new"
+    };
+    if (imageData) record.image = imageData;   // base64（不含 data: 前綴）
+    await ref.set(record);
+
+    // 推播給所有已綁定的管理員（每位用「他綁定時那支 bot」的 token，因為 LINE userId 分頻道）
+    const recSnap = await dbRef.ref("/report-recipients").get();
+    const recipients = recSnap.exists() ? recSnap.val() : {};
+    const uids = Object.keys(recipients);
+    if (uids.length) {
+      const who = (user && (user.name || user.email)) || nickname || "匿名同學";
+      const device = meta && meta.ua ? shortDeviceFromUA(meta.ua) : "";
+      const when = new Date(record.createdAt + 8 * 3600 * 1000).toISOString().replace("T", " ").slice(0, 16);
+      const textMsg = {
+        type: "text",
+        text: `🛟 App 問題回報\n━━━━━━━━\n👤 ${who}\n🕐 ${when}（台灣）\n📱 ${device}\n\n${msg || "（無文字，見下方圖片）"}`
+      };
+      const messages = [textMsg];
+      if (imageData) {
+        const url = `${REPORT_IMAGE_BASE}?id=${id}`;
+        messages.push({ type: "image", originalContentUrl: url, previewImageUrl: url });
+      }
+      await Promise.all(uids.map(uid => {
+        const envVar = (recipients[uid] && recipients[uid].tokenEnvVar) || "LINE_CHANNEL_ACCESS_TOKEN_BOT2";
+        const token = process.env[envVar];
+        if (!token) { console.error("[report push] missing token env:", envVar); return Promise.resolve(); }
+        return pushLineMulti(uid, messages, token).catch(e => console.error("[report push fail]", uid, e.message));
+      }));
+    } else {
+      console.log("[report] 尚無綁定的接收者（請對 bot 傳「綁定回報」）");
+    }
+
+    res.json({ ok: true, id });
+  } catch (e) {
+    console.error("[ERROR] submitReport:", e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// 以 HTTPS 提供回報圖片（供 LINE 圖片訊息抓取）
+exports.reportImage = onRequest({ cors: true, invoker: "public" }, async (req, res) => {
+  try {
+    const id = (req.query.id || "").toString();
+    if (!id) return res.status(400).send("Missing id");
+    initializeFirebase();
+    const snap = await dbRef.ref(`/app-reports/${id}`).get();
+    if (!snap.exists()) return res.status(404).send("Not found");
+    const v = snap.val();
+    if (!v.image) return res.status(404).send("No image");
+    const buf = Buffer.from(v.image, "base64");
+    res.set("Content-Type", v.imageMime || "image/jpeg");
+    res.set("Cache-Control", "public, max-age=86400");
+    res.send(buf);
+  } catch (e) {
+    console.error("[ERROR] reportImage:", e.message);
+    res.status(500).send("Error");
   }
 });
 
@@ -2242,6 +2599,72 @@ Return ONLY valid JSON, no markdown:
     res.json(data);
   } catch (e) {
     console.error("[ERROR] generateReadingQuiz:", e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+const { Anthropic: AnthropicListen } = require("@anthropic-ai/sdk");
+
+// 會考聽力測驗：Part 1 辨識句意(看圖) 3 題 / Part 2 基本問答 8 題 / Part 3 言談理解 10 題
+// 音檔 URL 由前端用 Google Translate TTS 依文字組出，本函式只負責生成題目文字
+exports.generateListeningQuiz = onRequest({ cors: true, invoker: "public" }, async (req, res) => {
+  if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
+
+  try {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY");
+    const client = new AnthropicListen({ apiKey });
+
+    const prompt = `You are an English listening test generator for Taiwanese junior high school students (台灣國中教育會考英語聽力, A2 level CEFR). Create ONE full listening test with three parts.
+
+Difficulty rules (A2):
+- Only common everyday vocabulary (top 2000 frequent words)
+- Short sentences (under 14 words), simple present/past tense, no idioms or complex clauses
+- Every English line must be natural spoken English
+
+PART 1 — 辨識句意 (3 questions): For each question, FIRST decide the correct sentence describing a simple everyday scene (a person doing an action, or an object in a place). Then provide "emoji": 1 to 3 emojis that clearly and unambiguously depict THAT correct scene (e.g. a woman cooking eggs → "👩‍🍳🍳", a boy playing soccer → "⚽👦", raining with umbrellas → "🌧️☂️"). Provide 4 short English sentences in "choices"; exactly ONE (the "answer") must match the emoji scene; the other 3 describe clearly DIFFERENT actions/objects/places (do not just change small details). The student sees only the emoji and picks the matching sentence, so the emoji and answer MUST agree.
+
+PART 2 — 基本問答 (8 questions): Each question is a single spoken question or statement ("question"). Provide 4 short English responses; exactly ONE is the natural, appropriate reply.
+
+PART 3 — 言談理解 (10 questions): Items 1-5 are short TWO-speaker dialogues, items 6-10 are short SINGLE-speaker talks/announcements. For each give a "scenario" (繁體中文場景，15字內), a "dialogue" (the spoken text; for two speakers prefix lines with "M:" / "W:" and join with \\n; for a single speaker just the talk), one comprehension "question" in English, and 4 English "choices" with exactly one correct "answer".
+
+Return ONLY valid JSON, no markdown:
+{
+  "part1": [
+    { "emoji": "1-3 emojis depicting the correct scene", "choices": ["Sentence A","Sentence B","Sentence C","Sentence D"], "answer": "exact text of correct sentence", "explanation": "一句繁體中文解釋" }
+  ],
+  "part2": [
+    { "question": "Spoken question?", "choices": ["Reply A","Reply B","Reply C","Reply D"], "answer": "exact correct reply", "explanation": "一句繁體中文解釋" }
+  ],
+  "part3": [
+    { "scenario": "繁體中文場景", "dialogue": "M: ...\\nW: ...", "question": "Comprehension question?", "choices": ["A","B","C","D"], "answer": "exact correct choice", "explanation": "一句繁體中文解釋" }
+  ]
+}
+
+Rules:
+- EXACTLY 3 part1, 8 part2, 10 part3 items
+- All English in choices/answer/question/dialogue; only "scenario" and "explanation" in Traditional Chinese (繁體中文, NOT 簡體)
+- "answer" must be character-for-character identical to one of the "choices"
+- Shuffle choices so the answer is not always first
+- Output ONLY the JSON object`;
+
+    const message = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 8192,
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    let raw = message.content[0].text.trim();
+    if (raw.startsWith("```"))
+      raw = raw.replace(/^```json?\s*/, "").replace(/\s*```$/, "").trim();
+
+    const data = JSON.parse(raw);
+    if (!Array.isArray(data.part1) || !Array.isArray(data.part2) || !Array.isArray(data.part3)) {
+      throw new Error("Invalid response structure");
+    }
+    res.json(data);
+  } catch (e) {
+    console.error("[ERROR] generateListeningQuiz:", e.message);
     res.status(500).json({ error: e.message });
   }
 });

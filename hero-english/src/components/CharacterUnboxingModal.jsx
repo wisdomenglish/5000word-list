@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import PixelCharacter from './PixelCharacter';
+import ChibiCharacter from './ChibiCharacter';
 import { TIER_META, getSkinTier } from '../utils/characterTier';
 import { playDrumRoll, playReveal } from '../utils/soundFX';
 
@@ -110,7 +110,7 @@ export default function CharacterUnboxingModal({ newLevel, classData, onDismiss 
               animation: 'silhouettePulse 1.6s ease-in-out infinite',
               filter: 'brightness(0.15)',
             }}>
-              <PixelCharacter classId={classData.id} level={newLevel} scale={7} animate={false} />
+              <ChibiCharacter classId={classData.id} level={newLevel} scale={7} animate={false} />
             </div>
           </div>
 
@@ -147,7 +147,7 @@ export default function CharacterUnboxingModal({ newLevel, classData, onDismiss 
             marginBottom: 20,
             filter: `drop-shadow(0 0 24px ${classData.primaryColor})`,
           }}>
-            <PixelCharacter classId={classData.id} level={newLevel} scale={8} animate />
+            <ChibiCharacter classId={classData.id} level={newLevel} scale={8} animate />
           </div>
 
           {/* Tier badge */}

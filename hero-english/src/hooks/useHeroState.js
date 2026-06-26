@@ -28,7 +28,7 @@ function calcAbilities(stats, classId) {
   const base = (x) => Math.min(100, Math.max(5, Math.floor(x)));
   return {
     reading:   base(stats.vocabCorrect * 0.25 + bonus.reading),
-    listening: base(stats.correctAnswers * 0.15 + bonus.listening),
+    listening: base((stats.listeningCorrect ?? 0) * 0.4 + stats.correctAnswers * 0.05 + bonus.listening),
     speaking:  base(stats.sessionsCompleted * 1.5 + bonus.speaking),
     writing:   base(stats.wordRecallCorrect * 0.3 + bonus.writing),
   };
@@ -163,6 +163,20 @@ export function useHeroState() {
     });
   }, []);
 
+  const recordListeningAnswer = useCallback((correct) => {
+    setStats(prev => {
+      const updated = {
+        ...prev,
+        totalQuestions: prev.totalQuestions + 1,
+        correctAnswers: prev.correctAnswers + (correct ? 1 : 0),
+        listeningTotal: (prev.listeningTotal ?? 0) + 1,
+        listeningCorrect: (prev.listeningCorrect ?? 0) + (correct ? 1 : 0),
+      };
+      saveStats(updated);
+      return updated;
+    });
+  }, []);
+
   const markMastered = useCallback((wordKey) => {
     setMastery(prev => {
       const updated = { ...prev, [wordKey]: true };
@@ -241,7 +255,7 @@ export function useHeroState() {
     cefr, accuracy, mastery, masteredCount, customWords, profile,
     justLeveledUp, newLevel, prevLevel,
     unlockedAchievements, newAchievementIds,
-    createHero, addXP, recordAnswer, markMastered, completeSession, dismissLevelUp,
+    createHero, addXP, recordAnswer, recordListeningAnswer, markMastered, completeSession, dismissLevelUp,
     dismissAchievement, triggerAchievementCheck,
     addCustomWord, removeCustomWord, loadCloudData, saveProfileData,
   };

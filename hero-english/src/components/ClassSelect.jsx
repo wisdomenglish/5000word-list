@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { CLASSES } from '../data/classes';
+import ChibiCharacter from './ChibiCharacter';
 
 const STAT_LABELS = { strength: '力量', magic: '魔法', agility: '敏捷', endurance: '耐力' };
 
@@ -30,8 +31,9 @@ function ClassCard({ cls, selected, onClick }) {
       style={{
         background: selected
           ? `linear-gradient(135deg, ${cls.gradientFrom}, ${cls.gradientTo})`
-          : 'rgba(255,255,255,0.04)',
-        boxShadow: selected ? `0 0 30px ${cls.glowColor}` : undefined,
+          : 'var(--cozy-panel)',
+        borderColor: selected ? '#fff' : 'var(--cozy-border)',
+        boxShadow: selected ? `0 0 30px ${cls.glowColor}` : '0 4px 12px var(--cozy-shadow-2)',
       }}
     >
       {selected && (
@@ -40,10 +42,15 @@ function ClassCard({ cls, selected, onClick }) {
         </div>
       )}
 
-      <div className="text-4xl mb-3">{cls.emoji}</div>
-      <div className="font-display text-lg font-bold text-white mb-0.5">{cls.name}</div>
-      <div className="text-xs text-gray-300 mb-3">{cls.nameEn}</div>
-      <p className="text-xs text-gray-200 mb-4 leading-relaxed">{cls.description}</p>
+      <div className="flex justify-center mb-2" style={{
+        filter: selected ? `drop-shadow(0 0 14px ${cls.glowColor})` : undefined,
+        transition: 'filter 0.2s',
+      }}>
+        <ChibiCharacter classId={cls.id} level={12} scale={5} animate={selected} />
+      </div>
+      <div className="font-display text-lg font-bold mb-0.5" style={{ color: selected ? '#fff' : 'var(--cozy-ink)' }}>{cls.name}</div>
+      <div className="text-xs mb-3" style={{ color: selected ? 'rgba(255,255,255,0.8)' : 'var(--cozy-ink-soft)' }}>{cls.nameEn}</div>
+      <p className="text-xs mb-4 leading-relaxed" style={{ color: selected ? 'rgba(255,255,255,0.9)' : 'var(--cozy-ink-soft)' }}>{cls.description}</p>
 
       <div
         className="text-xs font-semibold px-2 py-1 rounded-full inline-block mb-4"
@@ -68,11 +75,11 @@ export default function ClassSelect({ onConfirm }) {
   const cls = selectedClass ? CLASSES[selectedClass] : null;
 
   return (
-    <div className="min-h-screen bg-bg text-white flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ color: 'var(--cozy-ink)' }}>
       {/* Header */}
       <div className="text-center pt-10 pb-6 px-4">
-        <div className="font-display text-2xl font-bold text-white mb-1">Hero's English Journey</div>
-        <p className="text-gray-400 text-sm">選擇你的英雄職業，展開學習冒險！</p>
+        <div className="font-display text-2xl font-bold mb-1" style={{ color: 'var(--cozy-ink)' }}>Hero's English Journey</div>
+        <p className="text-sm" style={{ color: 'var(--cozy-ink-soft)' }}>選擇你的英雄職業，展開學習冒險！</p>
       </div>
 
       {/* Class grid */}
@@ -91,8 +98,8 @@ export default function ClassSelect({ onConfirm }) {
 
       {/* Name + confirm */}
       <div
-        className="sticky bottom-0 px-4 py-5 border-t border-white/10"
-        style={{ background: 'rgba(13,13,26,0.95)', backdropFilter: 'blur(12px)' }}
+        className="sticky bottom-0 px-4 py-5"
+        style={{ background: 'rgba(255,250,240,0.95)', borderTop: '1px solid var(--cozy-border)', backdropFilter: 'blur(12px)' }}
       >
         <div className="max-w-lg mx-auto space-y-3">
           <input
@@ -101,17 +108,20 @@ export default function ClassSelect({ onConfirm }) {
             onChange={e => setName(e.target.value)}
             placeholder="輸入你的英雄名稱（可跳過）"
             maxLength={20}
-            className="w-full bg-white/8 border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 outline-none focus:border-white/40 transition-colors"
+            className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-colors"
+            style={{ background: 'var(--cozy-panel)', border: '1px solid var(--cozy-border)', color: 'var(--cozy-ink)' }}
           />
           <button
             onClick={() => selectedClass && onConfirm(selectedClass, name)}
             disabled={!selectedClass}
-            className="w-full py-4 rounded-xl font-display font-bold text-base transition-all duration-200
+            className="w-full py-4 rounded-xl font-display font-bold text-base game-btn
               disabled:opacity-30 disabled:cursor-not-allowed"
             style={cls ? {
-              background: `linear-gradient(135deg, ${cls.gradientFrom}, ${cls.gradientTo})`,
-              boxShadow: cls ? `0 4px 20px ${cls.glowColor}` : undefined,
-            } : { background: '#333' }}
+              background: `linear-gradient(180deg, ${cls.gradientTo}, ${cls.gradientFrom})`,
+              '--btn-edge': cls.gradientFrom,
+              '--btn-glow': cls.glowColor,
+              textShadow: '0 1.5px 0 rgba(0,0,0,0.3)',
+            } : { background: 'var(--cozy-border)', color: 'var(--cozy-ink-faint)' }}
           >
             {selectedClass
               ? `⚔️ 以${cls.name}身份出發！`

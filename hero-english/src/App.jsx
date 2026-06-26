@@ -12,6 +12,7 @@ import SideDrawer from './components/SideDrawer';
 import CharacterTab from './components/CharacterTab';
 import QuestBoardTab from './components/QuestBoardTab';
 import LearningTab from './components/LearningTab';
+import ListeningTab from './components/ListeningTab';
 import VocabBookTab from './components/VocabBookTab';
 import LevelUpModal from './components/LevelUpModal';
 import CharacterUnboxingModal from './components/CharacterUnboxingModal';
@@ -120,7 +121,7 @@ export default function App() {
     abilities, cefr, accuracy, mastery, masteredCount, customWords, profile,
     justLeveledUp, newLevel, prevLevel,
     unlockedAchievements, newAchievementIds,
-    createHero, addXP, recordAnswer, markMastered, completeSession, dismissLevelUp,
+    createHero, addXP, recordAnswer, recordListeningAnswer, markMastered, completeSession, dismissLevelUp,
     dismissAchievement, triggerAchievementCheck,
     addCustomWord, removeCustomWord, loadCloudData, saveProfileData,
   } = useHeroState();
@@ -270,6 +271,24 @@ export default function App() {
     setActiveSession(newSession?.count ? newSession : null);
   };
 
+  const handleListeningComplete = ({ results, totalXP }) => {
+    results.forEach(r => recordListeningAnswer(r.correct));
+    completeSession('listening');
+    addXP(totalXP);
+    const updatedCorrect = stats.correctAnswers + results.filter(r => r.correct).length;
+    const updatedTypes = (stats.typesAttempted ?? []).includes('listening')
+      ? stats.typesAttempted
+      : [...(stats.typesAttempted ?? []), 'listening'];
+    const latestStats = {
+      ...stats,
+      correctAnswers: updatedCorrect,
+      listeningTotal: (stats.listeningTotal ?? 0) + results.length,
+      listeningCorrect: (stats.listeningCorrect ?? 0) + results.filter(r => r.correct).length,
+      typesAttempted: updatedTypes,
+    };
+    triggerAchievementCheck(hero, latestStats, masteredCount, profile);
+  };
+
   if (showSplash) return (
     <SplashScreen onDone={() => {
       sessionStorage.setItem('hej_splash_v1', '1');
@@ -281,7 +300,7 @@ export default function App() {
 
   // ── Main layout ──
   return (
-    <div className="relative min-h-screen" style={{ background: '#0F0F14', color: '#E8E8F0' }}>
+    <div className="relative min-h-screen" style={{ background: 'transparent', color: 'var(--cozy-ink)' }}>
       <GlobalTopBar streak={hero.streak} level={xpProgress?.level} xpProgress={xpProgress} onOpenDrawer={() => setDrawerOpen(true)} />
 
       <div style={{ paddingTop: '48px' }}>
@@ -324,6 +343,14 @@ export default function App() {
             session={activeSession}
             onComplete={handleSessionComplete}
             onClearSession={handleClearSession}
+          />
+        )}
+
+        {activeTab === 'listening' && (
+          <ListeningTab
+            hero={hero}
+            classData={classData}
+            onComplete={handleListeningComplete}
           />
         )}
 

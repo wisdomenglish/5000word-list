@@ -1,5 +1,6 @@
 import { useRef, useEffect } from 'react';
-import PixelCharacter from './PixelCharacter';
+import ChibiCharacter from './ChibiCharacter';
+import CapybaraCompanion from './CapybaraCompanion';
 
 const ROW_H   = 90;
 const PAD_TOP = 70;
@@ -246,9 +247,11 @@ export default function TaiwanMapWorld({ classData, level = 1, checkinDays }) {
                     left: '50%',
                     transform: 'translateX(-50%)',
                     zIndex: 20,
-                    filter: `drop-shadow(0 0 8px ${classData.primaryColor}80) drop-shadow(0 4px 6px rgba(0,0,0,0.5))`,
+                    display: 'flex', alignItems: 'flex-end', gap: 1,
+                    filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.32))',
                   }}>
-                    <PixelCharacter classId={classData.id} level={level} scale={4} animate />
+                    <ChibiCharacter classId={classData.id} level={level} scale={4} walking />
+                    <CapybaraCompanion scale={2.5} walking />
                   </div>
                 )}
 

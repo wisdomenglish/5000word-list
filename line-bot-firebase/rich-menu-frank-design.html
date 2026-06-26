@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 2500px; height: 843px; overflow: hidden; }
+  body {
+    display: flex;
+    font-family: "Microsoft JhengHei", "PingFang TC", "Segoe UI", sans-serif;
+    background: #0f172a;
+  }
+  .col {
+    width: 833px;
+    height: 843px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #fff;
+    position: relative;
+    border-right: 4px solid rgba(255,255,255,0.18);
+  }
+  .col:last-child { border-right: none; width: 834px; }
+  .col.c1 { background: linear-gradient(160deg, #2563EB, #1E3A8A); }
+  .col.c2 { background: linear-gradient(160deg, #16A34A, #166534); }
+  .col.c3 { background: linear-gradient(160deg, #D946EF, #7E22CE); }
+  .emoji { font-size: 200px; line-height: 1; margin-bottom: 28px;
+    font-family: "Segoe UI Emoji", "Noto Color Emoji", sans-serif; }
+  .title { font-size: 96px; font-weight: 800; letter-spacing: 4px; margin-bottom: 24px; }
+  .sub { font-size: 46px; font-weight: 500; opacity: 0.92; line-height: 1.4; padding: 0 40px; }
+  .lvl { margin-top: 22px; font-size: 38px; font-weight: 700;
+    background: rgba(255,255,255,0.22); padding: 10px 34px; border-radius: 999px; }
+</style>
+</head>
+<body>
+  <div class="col c1">
+    <div class="emoji">📝</div>
+    <div class="title">作文批改</div>
+    <div class="sub">找出優缺點<br>給你修改建議</div>
+  </div>
+  <div class="col c2">
+    <div class="emoji">✏️</div>
+    <div class="title">初階改寫</div>
+    <div class="sub">保留原意・修正文法</div>
+    <div class="lvl">A2–B1</div>
+  </div>
+  <div class="col c3">
+    <div class="emoji">🎯</div>
+    <div class="title">進階改寫</div>
+    <div class="sub">全面提升到母語水準</div>
+    <div class="lvl">B2–C1</div>
+  </div>
+</body>
+</html>

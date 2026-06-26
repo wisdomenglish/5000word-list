@@ -58,7 +58,7 @@ export default function LeaderboardSection({ uid, primaryColor, onEditProfile })
         key={row.uid}
         className="flex items-center gap-3 rounded-xl px-3 py-2.5"
         style={{
-          background: isMe ? `${primaryColor}22` : 'rgba(255,255,255,0.04)',
+          background: isMe ? `${primaryColor}22` : 'var(--cozy-panel-2)',
           border: `1px solid ${isMe ? primaryColor + '50' : 'transparent'}`,
         }}
       >
@@ -70,7 +70,7 @@ export default function LeaderboardSection({ uid, primaryColor, onEditProfile })
         </div>
         <span className="text-base flex-shrink-0">{CLASS_ICONS[row.classId] ?? '🧙'}</span>
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-semibold text-white truncate">
+          <div className="text-sm font-semibold text-ink truncate">
             {row.nickname}
             {isMe && <span className="ml-1 text-xs" style={{ color: primaryColor }}>← 我</span>}
           </div>
@@ -80,11 +80,11 @@ export default function LeaderboardSection({ uid, primaryColor, onEditProfile })
         </div>
         <div className="flex-shrink-0 text-right">
           {filter === 'level' && (
-            <div className="text-xs font-bold" style={{ color: isMe ? primaryColor : 'rgba(255,255,255,0.7)' }}>
+            <div className="text-xs font-bold" style={{ color: isMe ? primaryColor : 'var(--cozy-ink-soft)' }}>
               Lv.{row.level}
             </div>
           )}
-          <div className="text-xs font-semibold" style={{ color: isMe ? primaryColor : 'rgba(255,255,255,0.5)' }}>
+          <div className="text-xs font-semibold" style={{ color: isMe ? primaryColor : 'var(--cozy-ink-soft)' }}>
             {value.toLocaleString()} {unit}
           </div>
         </div>
@@ -93,9 +93,9 @@ export default function LeaderboardSection({ uid, primaryColor, onEditProfile })
   };
 
   return (
-    <div className="mx-4 mt-3 rounded-2xl p-5" style={{ background: '#1A1B2E' }}>
+    <div className="mx-4 mt-3 rounded-2xl p-5 game-panel">
       <div className="flex items-center justify-between mb-3">
-        <div className="text-xs font-semibold text-gray-400 tracking-wide">排行榜</div>
+        <div className="game-section-title" style={{ flex: 1, marginRight: 10 }}>🏆 排行榜</div>
         <div className="flex items-center gap-2">
           {!loading && !error && (
             <span className="text-xs text-gray-600">{rows.length} 位玩家</span>
@@ -104,7 +104,7 @@ export default function LeaderboardSection({ uid, primaryColor, onEditProfile })
             <button
               onClick={onEditProfile}
               className="text-xs px-2 py-1 rounded-lg"
-              style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}
+              style={{ background: 'rgba(140,100,55,0.1)', color: 'var(--cozy-ink-soft)' }}
             >
               編輯資料
             </button>
@@ -120,8 +120,8 @@ export default function LeaderboardSection({ uid, primaryColor, onEditProfile })
             onClick={() => setFilter(f.id)}
             className="flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-medium transition-all"
             style={{
-              background: filter === f.id ? primaryColor : 'rgba(255,255,255,0.06)',
-              color: filter === f.id ? '#fff' : 'rgba(255,255,255,0.5)',
+              background: filter === f.id ? primaryColor : 'rgba(140,100,55,0.1)',
+              color: filter === f.id ? '#fff' : 'var(--cozy-ink-soft)',
             }}
           >
             {f.label}

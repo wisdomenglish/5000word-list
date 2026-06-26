@@ -8,6 +8,33 @@ import ConversationSession from './ConversationSession';
 const CHOICE_COLORS = ['#EF4444', '#22C55E', '#3B82F6', '#A855F7'];
 const CHOICE_ICONS  = ['📕', '📗', '📘', '📙'];
 
+// 答對療癒回饋：金幣上浮 + 分數彈跳 + 光環
+function RewardBurst({ xp }) {
+  const coins = [{ x: -46, d: 0 }, { x: -18, d: 0.07 }, { x: 14, d: 0.15 }, { x: 44, d: 0.22 }, { x: 0, d: 0.3 }];
+  return (
+    <div style={{ position: 'absolute', left: '50%', top: '30%', transform: 'translateX(-50%)', pointerEvents: 'none', zIndex: 30, width: 0 }}>
+      <div style={{
+        position: 'absolute', left: '50%', top: '50%', width: 74, height: 74,
+        borderRadius: '50%', border: '4px solid var(--cozy-sun)',
+        animation: 'correctBurst 0.6s ease-out forwards',
+      }} />
+      {coins.map((c, i) => (
+        <div key={i} style={{
+          position: 'absolute', left: `${c.x}px`, top: 0, fontSize: '1.5rem',
+          transform: 'translate(-50%, 0)',
+          animation: `coinPop 0.95s ease-out ${c.d}s both`,
+        }}>🪙</div>
+      ))}
+      <div style={{
+        position: 'absolute', left: '50%', top: -16, transform: 'translateX(-50%)',
+        fontWeight: 900, fontSize: '1.7rem', color: '#E8740E', whiteSpace: 'nowrap',
+        textShadow: '0 2px 0 #fff, 0 0 12px rgba(246,169,76,0.7)',
+        animation: 'scorePop 0.7s cubic-bezier(0.34,1.56,0.64,1) both',
+      }}>+{xp} XP</div>
+    </div>
+  );
+}
+
 function SentenceWithBlank({ sentence, answer, revealed, isCorrect, primaryColor }) {
   const parts = sentence.split('______');
   if (parts.length !== 2) return <span>{sentence}</span>;
@@ -48,7 +75,8 @@ function ReadingQuestionView({ question, questionNum, total, primaryColor, onAns
   };
 
   return (
-    <div className="flex flex-col min-h-0 flex-1 overflow-y-auto">
+    <div className="flex flex-col min-h-0 flex-1 overflow-y-auto relative">
+      {revealed && isCorrect && <RewardBurst xp={30} />}
       {/* Header */}
       <div className="px-4 pt-4 flex items-center justify-between mb-2">
         <span
@@ -59,7 +87,7 @@ function ReadingQuestionView({ question, questionNum, total, primaryColor, onAns
         </span>
         <span className="text-xs text-gray-400 font-medium">{questionNum} / {total}</span>
       </div>
-      <div className="mx-4 mb-3 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
+      <div className="mx-4 mb-3 h-1 rounded-full overflow-hidden" style={{ background: 'var(--cozy-border)' }}>
         <div
           className="h-full rounded-full transition-all duration-300"
           style={{ width: `${(questionNum / total) * 100}%`, background: primaryColor }}
@@ -67,42 +95,42 @@ function ReadingQuestionView({ question, questionNum, total, primaryColor, onAns
       </div>
 
       {/* Passage (collapsible) */}
-      <div className="mx-4 mb-3 rounded-2xl overflow-hidden" style={{ background: '#1A1B2E', border: '1px solid rgba(255,255,255,0.06)' }}>
+      <div className="mx-4 mb-3 rounded-2xl overflow-hidden" style={{ background: 'var(--cozy-panel)', border: '1px solid var(--cozy-border)' }}>
         <button
           onClick={() => setPassageOpen(o => !o)}
           className="w-full flex items-center justify-between px-4 py-3 text-left"
         >
-          <span className="text-xs font-bold text-white truncate pr-2">{question.passageTitle}</span>
+          <span className="text-xs font-bold text-ink truncate pr-2">{question.passageTitle}</span>
           <span className="text-xs text-gray-400 flex-shrink-0">{passageOpen ? '▲ 收起' : '▼ 展開'}</span>
         </button>
         {passageOpen && (
-          <div className="px-4 pb-4 text-sm text-gray-300 leading-relaxed border-t border-white/5 pt-3">
+          <div className="px-4 pb-4 text-sm text-ink-soft leading-relaxed pt-3" style={{ borderTop: '1px solid var(--cozy-border)' }}>
             {question.passage}
           </div>
         )}
       </div>
 
       {/* Question card */}
-      <div className="mx-4 mb-3 rounded-2xl p-4" style={{ background: '#1A1B2E', border: '1px solid rgba(255,255,255,0.06)' }}>
+      <div className="mx-4 mb-3 rounded-2xl p-4" style={{ background: 'var(--cozy-panel)', border: '1px solid var(--cozy-border)' }}>
         <div className="text-xs text-gray-500 mb-2">閱讀理解</div>
-        <div className="text-sm font-semibold text-white leading-relaxed">{question.prompt}</div>
+        <div className="text-sm font-semibold text-ink leading-relaxed">{question.prompt}</div>
       </div>
 
       {/* Choices */}
       <div className="px-4 space-y-2.5 mb-3">
         {question.choices.map((choice, idx) => {
-          let bg = 'rgba(255,255,255,0.05)';
-          let borderColor = 'rgba(255,255,255,0.08)';
-          let textColor = '#E8E8F0';
+          let bg = 'var(--cozy-panel-2)';
+          let borderColor = 'var(--cozy-border)';
+          let textColor = 'var(--cozy-ink)';
           let leftColor = CHOICE_COLORS[idx];
 
           if (revealed) {
             if (choice === question.answer) {
-              bg = 'rgba(34,197,94,0.12)'; borderColor = '#22C55E'; textColor = '#86EFAC'; leftColor = '#22C55E';
+              bg = 'rgba(34,197,94,0.12)'; borderColor = '#22C55E'; textColor = '#15803D'; leftColor = '#22C55E';
             } else if (idx === selected) {
-              bg = 'rgba(239,68,68,0.12)'; borderColor = '#EF4444'; textColor = '#FCA5A5'; leftColor = '#EF4444';
+              bg = 'rgba(239,68,68,0.12)'; borderColor = '#EF4444'; textColor = '#B91C1C'; leftColor = '#EF4444';
             } else {
-              textColor = 'rgba(255,255,255,0.3)';
+              textColor = 'var(--cozy-ink-faint)';
             }
           }
 
@@ -128,15 +156,15 @@ function ReadingQuestionView({ question, questionNum, total, primaryColor, onAns
         <>
           {question.explanation && (
             <div className="mx-4 mb-3 px-4 py-2.5 rounded-xl text-xs text-gray-400 leading-relaxed"
-              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              style={{ background: 'var(--cozy-panel-2)', border: '1px solid var(--cozy-border)' }}>
               💡 {question.explanation}
             </div>
           )}
           <div className="mx-4 mb-4 rounded-xl py-3 flex items-center justify-center gap-4"
-            style={{ background: 'rgba(255,255,255,0.05)' }}>
+            style={{ background: 'var(--cozy-panel-2)' }}>
             <div className="flex items-center gap-1.5 text-sm">
               <span className="text-yellow-400">✦</span>
-              <span className="font-bold" style={{ color: isCorrect ? '#22C55E' : '#9CA3AF' }}>
+              <span className="font-bold" style={{ color: isCorrect ? '#22C55E' : 'var(--cozy-ink-soft)' }}>
                 {isCorrect ? '+30 XP' : '+3 XP'}
               </span>
             </div>
@@ -166,7 +194,8 @@ function QuestionView({ question, questionNum, total, topic, primaryColor, onAns
   };
 
   return (
-    <div className="flex flex-col min-h-0 flex-1">
+    <div className="flex flex-col min-h-0 flex-1 relative">
+      {revealed && isCorrect && <RewardBurst xp={isContext ? 20 : 12} />}
       {/* Topic + progress */}
       <div className="px-4 pt-4 flex items-center justify-between mb-2">
         <span
@@ -177,7 +206,7 @@ function QuestionView({ question, questionNum, total, topic, primaryColor, onAns
         </span>
         <span className="text-xs text-gray-400 font-medium">{questionNum} / {total}</span>
       </div>
-      <div className="mx-4 mb-4 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
+      <div className="mx-4 mb-4 h-1 rounded-full overflow-hidden" style={{ background: 'var(--cozy-border)' }}>
         <div
           className="h-full rounded-full transition-all duration-300"
           style={{ width: `${(questionNum / total) * 100}%`, background: primaryColor }}
@@ -187,13 +216,13 @@ function QuestionView({ question, questionNum, total, topic, primaryColor, onAns
       {/* Word / sentence card */}
       <div
         className="mx-4 mb-4 rounded-2xl p-5"
-        style={{ background: '#1A1B2E', border: '1px solid rgba(255,255,255,0.06)' }}
+        style={{ background: 'var(--cozy-panel)', border: '1px solid var(--cozy-border)' }}
       >
         {isContext && (
           <div className="text-xs text-gray-500 mb-2">文意選擇</div>
         )}
         <div
-          className={`font-bold text-white mb-1 ${isSentence ? 'text-base leading-relaxed' : 'text-3xl'}`}
+          className={`font-bold text-ink mb-1 ${isSentence ? 'text-base leading-relaxed' : 'text-3xl'}`}
           style={!isSentence ? { textShadow: `0 0 20px ${primaryColor}60` } : undefined}
         >
           {isContext
@@ -223,24 +252,24 @@ function QuestionView({ question, questionNum, total, topic, primaryColor, onAns
       {/* Choices */}
       <div className="px-4 space-y-2.5">
         {question.choices.map((choice, idx) => {
-          let bg = 'rgba(255,255,255,0.05)';
-          let borderColor = 'rgba(255,255,255,0.08)';
-          let textColor = '#E8E8F0';
+          let bg = 'var(--cozy-panel-2)';
+          let borderColor = 'var(--cozy-border)';
+          let textColor = 'var(--cozy-ink)';
           let leftColor = CHOICE_COLORS[idx];
 
           if (revealed) {
             if (choice === question.answer) {
               bg = 'rgba(34,197,94,0.12)';
               borderColor = '#22C55E';
-              textColor = '#86EFAC';
+              textColor = '#15803D';
               leftColor = '#22C55E';
             } else if (idx === selected) {
               bg = 'rgba(239,68,68,0.12)';
               borderColor = '#EF4444';
-              textColor = '#FCA5A5';
+              textColor = '#B91C1C';
               leftColor = '#EF4444';
             } else {
-              textColor = 'rgba(255,255,255,0.3)';
+              textColor = 'var(--cozy-ink-faint)';
             }
           }
 
@@ -271,7 +300,7 @@ function QuestionView({ question, questionNum, total, topic, primaryColor, onAns
       {/* Translation for context questions */}
       {revealed && isContext && question.translation && (
         <div className="mx-4 mt-3 px-4 py-2.5 rounded-xl text-xs text-gray-400 leading-relaxed"
-          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+          style={{ background: 'var(--cozy-panel-2)', border: '1px solid var(--cozy-border)' }}>
           {question.translation}
         </div>
       )}
@@ -280,11 +309,11 @@ function QuestionView({ question, questionNum, total, topic, primaryColor, onAns
       {revealed && (
         <div
           className="mx-4 mt-3 rounded-xl py-3 flex items-center justify-center gap-4"
-          style={{ background: 'rgba(255,255,255,0.05)' }}
+          style={{ background: 'var(--cozy-panel-2)' }}
         >
           <div className="flex items-center gap-1.5 text-sm">
             <span className="text-yellow-400">✦</span>
-            <span className="font-bold" style={{ color: isCorrect ? '#22C55E' : '#9CA3AF' }}>
+            <span className="font-bold" style={{ color: isCorrect ? '#22C55E' : 'var(--cozy-ink-soft)' }}>
               {isCorrect ? (isContext ? '+20 XP' : '+12 XP') : '+3 XP'}
             </span>
           </div>
@@ -308,7 +337,7 @@ function SessionDone({ results, totalXP, classData, onDone }) {
   return (
     <div className="flex flex-col items-center justify-center flex-1 px-5 py-10">
       <div className="text-6xl mb-4" style={{ animation: 'float 2s ease-in-out infinite' }}>{classData.emoji}</div>
-      <div className="font-display text-2xl font-bold text-white mb-1">{grade}</div>
+      <div className="font-display text-2xl font-bold text-ink mb-1">{grade}</div>
       <div className="text-gray-400 text-sm mb-6">任務完成</div>
 
       <div
@@ -373,10 +402,10 @@ function NoSession({ hero, classData, mood, onQuickStart }) {
   return (
     <div className="flex flex-col items-center justify-center flex-1 px-5 text-center">
       <div className="text-7xl mb-5" style={{ animation: 'float 3s ease-in-out infinite' }}>{classData.emoji}</div>
-      <p className="text-sm text-gray-300 mb-5 leading-relaxed">{msgs[0]}</p>
+      <p className="text-sm text-ink-soft mb-5 leading-relaxed">{msgs[0]}</p>
 
       {/* Mode selector */}
-      <div className="w-full max-w-xs flex gap-1.5 mb-5 p-1 rounded-2xl" style={{ background: 'rgba(255,255,255,0.05)' }}>
+      <div className="w-full max-w-xs flex gap-1.5 mb-5 p-1 rounded-2xl" style={{ background: 'var(--cozy-panel-2)' }}>
         {TRAIN_MODES.map(m => (
           <button
             key={m.key}
@@ -384,7 +413,7 @@ function NoSession({ hero, classData, mood, onQuickStart }) {
             className="flex-1 py-2 rounded-xl text-xs font-semibold transition-all"
             style={{
               background: modeKey === m.key ? classData.primaryColor : 'transparent',
-              color: modeKey === m.key ? '#fff' : 'rgba(255,255,255,0.4)',
+              color: modeKey === m.key ? '#fff' : 'var(--cozy-ink-faint)',
             }}
           >
             <div style={{ fontSize: '1rem' }}>{m.icon}</div>
@@ -403,9 +432,9 @@ function NoSession({ hero, classData, mood, onQuickStart }) {
             style={{
               background: i === 0
                 ? `linear-gradient(135deg, ${classData.gradientFrom}, ${classData.gradientTo})`
-                : 'rgba(255,255,255,0.06)',
-              border: i !== 0 ? `1px solid ${classData.primaryColor}40` : 'none',
-              color: '#fff',
+                : 'var(--cozy-border)',
+              border: i !== 0 ? `1px solid ${classData.primaryColor}55` : 'none',
+              color: i === 0 ? '#fff' : 'var(--cozy-ink)',
               boxShadow: i === 0 ? `0 4px 16px ${classData.glowColor}` : 'none',
             }}
           >
@@ -505,7 +534,7 @@ export default function LearningTab({ hero, classData, mood, session, onComplete
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100dvh-64px)] pb-24 px-6 text-center">
         <div className="text-4xl mb-4">⚠️</div>
-        <p className="text-white font-semibold mb-1">載入題目失敗</p>
+        <p className="text-ink font-semibold mb-1">載入題目失敗</p>
         <p className="text-gray-400 text-sm mb-6">請確認網路連線後再試</p>
         <button
           onClick={onClearSession}
@@ -528,7 +557,7 @@ export default function LearningTab({ hero, classData, mood, session, onComplete
         </div>
         <div className="skeleton h-1 rounded-full mb-6" />
         {/* Skeleton card */}
-        <div className="rounded-2xl p-5 mb-4" style={{ background: '#1A1B2E' }}>
+        <div className="rounded-2xl p-5 mb-4" style={{ background: 'var(--cozy-panel)' }}>
           <div className="skeleton h-4 w-16 rounded mb-3" />
           <div className="skeleton h-10 w-3/4 rounded mb-2" />
           <div className="skeleton h-4 w-1/3 rounded" />
