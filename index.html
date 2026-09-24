@@ -234,6 +234,8 @@ header{top:52px!important;}
 .quiz-opt-btn.wrong{border-color:var(--accent2);background:rgba(224,108,138,.1);color:var(--accent2);}
 .quiz-opt-btn.faded{opacity:0.28;}
 .quiz-opt-letter{width:26px;height:26px;border-radius:50%;background:var(--tag-bg);display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;color:var(--accent);flex-shrink:0;}
+.quiz-opt-wrap{display:flex;flex-direction:column;}
+.quiz-opt-note{font-size:0.78rem;color:var(--muted);line-height:1.5;margin:4px 4px 0 4px;padding-left:36px;}
 .quiz-explain{margin-top:18px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;}
 .quiz-explain-lbl{color:var(--accent2);font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;}
 .quiz-explain-zh{color:var(--text);font-size:0.9rem;margin-bottom:7px;}
@@ -1719,6 +1721,18 @@ function saveCustomWords(){
   debouncedSaveStats();
 }
 function getAllWords(){ return [...WORDS, ...customWords]; }
+function lookupEnglishZh(word){
+  if(!word) return '';
+  const target=String(word).toLowerCase().trim();
+  const w=getAllWords().find(x=>x.word.toLowerCase()===target);
+  return w && w.zh ? getZhDef(w.zh) : '';
+}
+function lookupPhraseZh(phrase){
+  if(!phrase) return '';
+  const target=String(phrase).toLowerCase().trim();
+  const p=PHRASES.find(x=>x.p.toLowerCase()===target);
+  return p && p.z ? getZhDef(p.z) : '';
+}
 
 /* ── Stats & Leaderboard ── */
 const STATS_KEY   = 'vocab_stats';
@@ -3938,6 +3952,7 @@ function renderSentenceQuestion(){
   const q=qQuestions[qIndex];
   const pct=((qIndex+1)/qQuestions.length)*100;
   const answered=qSelected!==null;
+  const isPhrase=q.type==='phrase_sentence';
   const sentHTML=q.sentence.replace('______',`<span class="quiz-blank">${answered?q.options[q.answer]:'______'}</span>`);
   document.getElementById('quizSection').innerHTML=`
     <div class="quiz-panel">
@@ -3952,7 +3967,12 @@ function renderSentenceQuestion(){
           ${q.options.map((opt,idx)=>{
             let cls='quiz-opt-btn';
             if(answered){ if(idx===q.answer)cls+=' correct'; else if(idx===qSelected)cls+=' wrong'; else cls+=' faded'; }
-            return `<button class="${cls}" onclick="answerQ(${idx})" ${answered?'disabled':''}><span class="quiz-opt-letter">${String.fromCharCode(65+idx)}</span>${opt}</button>`;
+            let note='';
+            if(answered && idx!==q.answer){
+              const zh=isPhrase?lookupPhraseZh(opt):lookupEnglishZh(opt);
+              if(zh) note=`<div class="quiz-opt-note">✗ ${opt}：${zh}（此處不符合句意）</div>`;
+            }
+            return `<div class="quiz-opt-wrap"><button class="${cls}" onclick="answerQ(${idx})" ${answered?'disabled':''}><span class="quiz-opt-letter">${String.fromCharCode(65+idx)}</span>${opt}</button>${note}</div>`;
           }).join('')}
         </div>
         ${answered?`

@@ -2,13 +2,14 @@
 
 ## 專案概覽
 
-這個 repo 包含兩個獨立子專案：
+這個 repo 包含四個獨立子專案：
 
 | 子專案 | 路徑 | 技術 | 部署 |
 |--------|------|------|------|
 | 5000英文單字學習 PWA | `/`（根目錄） | 純 HTML/CSS/JS | GitHub Pages |
 | hero-english React RPG PWA | `hero-english/` | React + Vite + Firebase Hosting | https://hero-english-ef2e4.web.app |
 | LINE Bot 英文教學助手 | `line-bot-firebase/` | Firebase Functions + Claude API | Firebase / GCP |
+| Fluent（YouTube 影片學英語） | `youtube-english/`（**獨立 git repo**，見下方） | Next.js 16 + Firebase + OpenAI | Firebase App Hosting（asia-east1） |
 
 ---
 
@@ -517,11 +518,24 @@ node line-bot-firebase/setup-rich-menu.js
 
 **Bot 1（英文教學）：**
 - **意圖分類**（Claude 智能檢測）：vocabulary、grammar、error_correction、essay_review、translation
-- **群組支援**：只回應被 @提及的訊息
+- **⚠️ 只用於一對一聊天（2026-08-30 起不再拉入任何群組）**：原本的群組 @Bot 提及機制、以及對應的 `/pending-frank-image` 旗標（群組限定的解題手勢）已整個移除。程式碼不再區分群組/一對一，解題判斷一律只看 `/pending-solve`。上層仍保留通用的「群組訊息需 @Bot 提及才處理」skip 邏輯（其他 bot 可能還會用到），但 Frank 之後理論上不會再產生群組事件
 - **Firebase Realtime DB 快取**：MD5 key、7天 TTL
 - **回覆格式**：分隔線（━━━━）+ emoji，無粗體
-- **圖片解題**（`imageMode: "solve"`）：直接傳圖 → `handleFrankImageMessage` 解英文題（選擇/填空/閱讀等）；群組需先 @Bot 提及（`/pending-frank-image` 3 分鐘旗標）
-- **作文批改／改寫（2026-06-23，同步自 Wisdom）**：底部 Rich Menu「✍️ 作文功能」tab（3 格 postback：`essay_mode=批改/初階/進階`）。點選 → `handleEssayModeSelect` 寫入 `/pending-rewrite/{userId}`（5 分鐘）+ 提示傳照片 → 傳圖時 Frank image 分支偵測到 pending 即走 `handleImageMessage`（用 Frank 的 `anthropic` client，`getEssayClient()` 選 client），否則維持解題。批改/初階/進階共用 Wisdom 的 system prompt（`level` 為 `批改` 時走 feedback else 分支）。建選單：`node setup-rich-menu-frank.js`（讀 `rich-menu-frank-design.html`，用 `LINE_CHANNEL_ACCESS_TOKEN`）。**不影響原解題**：素圖（無 pending）仍解題
+- **自由對話／解題雙模式（2026-08-29）**：Frank 預設為**自由對話模式**，要解題需先按 Rich Menu「🧩 開始解題」才能進入**解題模式**：
+  - **自由對話模式＝完全不自動回覆**：只要不在解題模式，文字和圖片訊息都不會觸發任何自動回覆（不呼叫 `handleTextMessage`，也不會回「請按解題選單」之類的提示），完全交由 Frank 老師本人在 LINE 親自回覆
+  - 狀態存 `/pending-solve/{userId}`（`{expiresAt}`），`SOLVE_MODE_TTL_MINUTES`（目前 10 分鐘）常數控制時限；`isFrankSolveModeActive()` 檢查並在過期時自動清除、`refreshFrankSolveMode()` 在**每次成功解題後**（不論文字或照片）延長時限，讓學生連續解多題不會中途被踢回自由對話
+  - 解題模式中：文字描述題目 → `handleFrankTextSolve`（沿用 `callOpenAIText`，格式與圖片解題一致但無「📸 題目辨識」段落）；傳照片 → `handleFrankImageMessage`
+  - 按 Rich Menu「💬 自由對話」（postback `solve_mode=off`）或時限到 → 移除 `/pending-solve/{userId}`，之後恢復完全靜默
+  - Rich Menu postback：`solve_mode=on` / `solve_mode=off`，由 `handleSolveModeToggle()` 處理，回覆說明目前模式與切換方式
+- **圖片解題**（`imageMode: "solve"`）：解題模式中傳圖 → `handleFrankImageMessage` 解英文題（選擇/填空/閱讀等）
+- **加好友／被拉群組歡迎詞**：`join`（被拉進群組）與 `follow`（使用者第一次加為好友，2026-08-30 補上）事件共用 `botConfig.joinMessage`，內容說明自由對話／解題模式差異；Frank 的版本已移除群組相關說明
+- **作文批改／改寫（2026-06-23，同步自 Wisdom）**：Rich Menu 下排（3 格 postback：`essay_mode=批改/初階/進階`）。點選 → `handleEssayModeSelect` 寫入 `/pending-rewrite/{userId}`（5 分鐘）+ 提示傳照片 → 傳圖時 Frank image 分支偵測到 pending 即走 `handleImageMessage`（用 Frank 的 `anthropic` client，`getEssayClient()` 選 client），優先權高於解題模式判斷。批改/初階/進階共用 Wisdom 的 system prompt（`level` 為 `批改` 時走 feedback else 分支）。建選單：`node setup-rich-menu-frank.js`（讀 `rich-menu-frank-design.html`，用 `LINE_CHANNEL_ACCESS_TOKEN`；2026-08-29 起選單改兩排：上排 開始解題／自由對話，下排 作文批改／初階改寫／進階改寫）
+- **作文對話記憶（2026-08-31，Frank + Wisdom 共用）**：解決「AI 批改完主動問學生要改哪一段，但下一則訊息其實是無狀態重新分類，接不上前文」的問題（見 [[project_linebot_essay_context_memory]]）。`getEssayContext`/`saveEssayContext`/`clearEssayContext` 操作 `/essay-context/{userId}`（10 分鐘 TTL，`ESSAY_CONTEXT_TTL_MINUTES`，每次延續對話會刷新）。**Frank 沒有文字型 essay_review 入口**——`handleTextMessage`（含 essay_review 意圖分類）現在的 webhook routing 順序下對 Frank 永遠不會被呼叫到（Frank 的訊息一定先命中 `imageMode==="solve"` 的其中一個分支），是實際上的死代碼，不要被它還在檔案裡誤導。所以 Frank 的作文記憶只從 Rich Menu 照片流程（`handleImageMessage`）建立；Wisdom 則是文字（`handleWisdomTextMessage`，essay_review 意圖）和照片都會建立/更新。有 active context 時：
+  - 文字訊息：先用 `isEssayContinuationMessage()`（用 Frank 傳 `callOpenAIText`／Wisdom 傳 `callClaudeWisdom` 做輕量分類，判斷是否為延續前文的訊息，例如「全都要改」）判斷，是的話走 `handleEssayContinuationReply()` 生成接續回覆（不查一般快取，因為是個人化延續內容），**這個分支的優先權在 webhook routing 中排在 Frank 的自由對話靜默規則之前**，所以即使 Frank 目前是「自由對話=完全不回覆」，只要是延續作文對話一樣會回覆（視為完成一個學生已經明確開始的互動，不是隨機自動回覆）
+  - 照片訊息：Wisdom／Frank 的 `handleImageMessage` 一律先查 active essay context，有的話把先前作文內容/上一則回覆併進 system prompt 再生成，讓學生可以「先打字討論，之後補傳作文題目照片」取得更完整的建議；Frank 的圖片分支判斷順序是 `pending-rewrite` > `essay-context` > 解題模式
+  - 固定指令（`綁定回報`/`解除回報`/`初階改寫`/`進階改寫`）會跳過延續判斷，避免跟 Wisdom 既有的精準文字指令衝突
+  - `handleRewriteRequest`／`handleEssayModeSelect`（明確重新選擇作文模式）都會先 `clearEssayContext()`，避免舊作文記憶混入新一輪
+  - **順手修掉的舊 bug**：`handleImageMessage` 的 openai 分支原本 `userText` 那行是編碼損毀的亂碼（`level === "??"` 這種），永遠對不到 `"初階"/"進階"`，導致 Frank 走 Rich Menu 初階/進階改寫時，實際送給 OpenAI 的指令文字一直是亂碼版本的 fallback，已修正為正常文字比對
 
 **Bot 2（行事曆）：**
 - 查詢今日 / 明日 / 本週 / 下週 / 本月行程
@@ -549,10 +563,17 @@ node line-bot-firebase/setup-rich-menu.js
     - **⚠️ 換用有 extended thinking 的模型（sonnet-5/opus-5）務必注意兩件事**，否則會出現 `Cannot read properties of undefined (reading 'text')` 或回覆內容是 `undefined`：
       1. **回覆不能再假設 `message.content[0]` 是文字**——這類模型常把 thinking block 放在 content[0]，text 被推到後面的 index。要用新增的共用 helper `extractTextFromClaudeMessage(message)`（[index.js:1250](line-bot-firebase/functions/index.js#L1250) 附近，用 `.find(b => b.type === "text")` 找，不受 index 影響），不要再手動 `.content[0].text`。
       2. **`thinking: {type:"enabled", budget_tokens:N}` 這組舊參數在 sonnet-5/opus-5 上已棄用**，API 會直接 400 拒絕（"Use thinking.type.adaptive and output_config.effort"）。要用新參數 `thinking: {type:"adaptive"}` + `output_config: {effort:"low"|"medium"|...}`。實測若省略這兩個參數（讓 thinking 用預設行為），thinking 有時會吃光整個 `max_tokens` 預算、完全沒留給最終答案（`stop_reason:"max_tokens"`, `blocks:["thinking"]`），是非固定重現的問題，不能只加大 max_tokens 解決，一定要顯式設定 `output_config.effort` 才會穩定。目前 `generateExerciseWithClaude` 用 `max_tokens:16000`+`effort:"medium"`、`runExerciseQAWithClaude` 用 `max_tokens:4096`+`effort:"low"`，實測穩定不再出現預算被 thinking 吃光的狀況。
+      3. **⚠️ 換模型後光生成就常要 50-90 秒，遠超 LINE reply token 的有效期限（2026-09-24 修復）**：文意選填/篇章結構/混合題改用 sonnet-5+extended thinking 後，`runQuestionGeneration` 原本整個流程（生成→QA→寫入 Notion）跑完才用 `replyToken` 回覆，實測光生成就 51-78 秒（QA、Notion 讀寫還沒算），reply token 早就過期，老師端完全收不到任何訊息（看起來像「不能出題了」，但 Cloud Function 本身沒有報錯、Notion 甚至可能已經成功寫入——純粹是最後那一步的回覆送不出去）。已改為：`handleQuestionWizardReply` 選定題型當下立刻用 `replyToken` 回「出題中，請稍候」，`runQuestionGeneration` 改用 `pushLineMessage`（而非 `replyLineMessage`）送完成通知，且 `lineWebhook` 的 `timeoutSeconds` 從 120 拉高到 240 留緩衝。Reading Comprehension／克漏字仍用 haiku（幾秒內完成），不受影響。**日後任何會呼叫 sonnet-5/opus-5 extended thinking 模型、且結果要回覆給 LINE 使用者的流程，都要假設耗時以「幾十秒到 1-2 分鐘」計算，不能沿用 reply token 這套（它是為「幾秒內完成」設計的），一律先立即 reply 承接掉 token，結果改用 push 送出。**
   - **⚠️ Exam Style 的字數規格為什麼不拿來改寫文章**：2026-07-30 GSAT 的「各CEFR級距調整規則」被改版成**依題型分字數**（克漏字200-280／文意選填260-311／篇章結構270-300／閱讀測驗300-420／混合題280-380），不再是單純依 CEFR 分。但 STEP2（標準化）發生在 STEP4（選題型）**之前**，標準化當下根本不知道之後會套用哪個 Question Blueprint，而且同一篇文章要能重複套用不同題型出題——不可能讓一篇文章的字數同時滿足克漏字 200-280 又滿足閱讀測驗 300-420。討論後決定 STEP2 固定用通用 CEFR 表，不管 Exam Style 字數；Exam Style 只在文章層綁 relation 當參考 metadata，不影響改寫字數。
   - **同一篇文章可以重複跑「出題」選不同 Blueprint**，各自獨立記錄在 Question Bank，互不影響。
   - **狀態靠 Firebase RTDB 暫存**：`/pending-standardize-wizard/{userId}`、`/pending-question-wizard/{userId}`，10 分鐘 TTL，回「取消」可中止。老師傳「標準化」或「出題」開新流程時，即使前一個精靈還沒選完也會直接蓋掉重開（設計上允許中途改變主意，舊狀態放著等 TTL 過期即可，無害）。
-  - **文章清單分頁（2026-07-20）**：素材庫/待出題文章會越堆越多，選文章那一步改用 `notionQueryDataSourceAll`（跟著 `next_cursor` 撈全部，不只抓第一頁）+ `buildPagedSelectionMessage` 每次只顯示 10 筆。編號是「完整清單裡的絕對位置」（1-based，不會每頁重新從 1 算），回「選取不同篇」看下一批（第 11-20、21-30…以此類推，捲到底會繞回第一批），所以不管在哪一頁，回覆數字都直接對應到正確文章。難度/考試風格/題型清單目前都很短（≤5 筆）不需要分頁，維持原本 `buildDigitQuickReply` 一次全顯示。
+  - **文章清單分頁（2026-07-20）**：素材庫/待出題文章會越堆越多，選文章那一步改用 `notionQueryDataSourceAll`（跟著 `next_cursor` 撈全部，不只抓第一頁）+ `buildPagedSelectionMessage` 每次只顯示 10 筆。難度/考試風格/題型清單目前都很短（≤5 筆）不需要分頁，維持原本 `buildDigitQuickReply` 一次全顯示。
+  - **出題選文章：固定編號＋關鍵字搜尋＋Notion連結（2026-08-03，取代純翻頁）**：老師反映文章一多，靠「選取不同篇」一頁一頁翻（原本每頁編號是「清單裡的絕對位置」）很麻煩，且清單增減時位置編號會跑掉、老師記不住。改法：
+    1. Standardized Articles 新增 Notion 內建「編號」欄位（`unique_id` 型別，`PATCH /v1/data_sources/{id}` 加的，`{"unique_id":{}}`，無 prefix，純數字且永久不變、Notion 自動遞增、不會因清單增減而改變已存在文章的編號）。`listReadyStandardizedArticles` 讀出 `p.properties["編號"].unique_id.number` 存成 `a.no`，並依 `no` 排序。
+    2. `buildPagedSelectionMessage` 新增 `opts` 參數：`useItemNo`（顯示 `it.no` 而非清單位置）／`searchable`（說明文字強調可打關鍵字）／`notionUrl`（附上可直接開 Notion App/網頁瀏覽的連結）。出題流程用新的 `buildArticleListMessage(list, page)` wrapper 統一套用這三個 opts；標準化流程的 Content Intake 清單（沒有編號欄位）維持原本純位置編號，不受影響。
+    3. `handleQuestionWizardReply` 的 `select_article` 步驟：純數字輸入＝比對 Notion 固定編號（`activeList.find(a => a.no === N)`），不是清單位置；非數字輸入＝當關鍵字，永遠從 `state.candidates`（完整原始清單，不是上次篩選結果）重新篩選標題（`toLowerCase().includes`），篩選結果存 `state.filtered`，「選取不同篇」會在目前的 activeList（篩選後或全部）裡翻頁。每次打新關鍵字都是從頭篩選（不會越篩越窄卡死），想看全部清單只要重新輸入「出題」重開精靈。
+    4. Notion 資料庫連結固定：`STANDARDIZED_ARTICLES_NOTION_URL = "https://app.notion.com/p/a0a035941eef42f8b9c3b8a6ec6a4d4d"`（從任一文章頁面的 `parent.database_id` 推出，`https://app.notion.com/p/{database_id 去掉連字號}`），點開會用手機上的 Notion App（沒裝則開網頁版），讓老師能用 Notion 原生搜尋/篩選/排序找文章，不必侷限在 LINE 的翻頁介面。
+  - **⚠️ 關鍵字搜尋「找不到」但 Notion 裡明明看得到文章（2026-08-03 發現＋修復）**：出題候選清單只抓 `Ready for Questions=true` 的文章，若某篇文章其實存在但**還沒通過標準化品質門檻**（`Unknown Words %` / `平均句長` / 字數任一超標），`Ready for Questions` 就是 `false`，對出題流程的關鍵字搜尋來說形同不存在——回「找不到」在邏輯上沒錯，但老師在 Notion 明明看得到那篇文章，會誤以為搜尋壞了。實測案例：「President Lai oversees Kaohsiung coastal drills」（A2）字數 185（達標）、平均句長 10.9（達標），但 `Unknown Words % = 8%` 超過 A2 上限 5%，卡在這一項。修法：新增 `findNotReadyStandardizedArticlesByTitle(notionToken, keyword)`，關鍵字在 Ready 候選裡搜不到時，改查全部 Standardized Articles（不篩 Ready）比對標題，找到的話具體回報卡在哪個門檻（例如「Unknown Words% 8%（上限 5%）」），並提示可到 Notion 人工複核勾選 `Ready for Questions`，或重新跑一次「標準化」——不再是死路一條的「找不到」。
   - 6 個相關資料庫 data_source_id：Content Intake `2e55907b-14d0-4400-9f79-93b4b99532d3`／Standardized Articles `59cfc5c8-3b12-4429-b0ec-f576abdbed4e`／Question Bank `1c557006-885d-40b8-bd3e-3b08bd47b8dc`／Question Blueprint `57819685-d6da-4129-826a-39957418b65e`／Difficulty Profile `00747a2e-8999-4400-ba30-92593ea84dc3`／Exam Style `1697ffde-10f4-410b-83a9-bd2002699d1e`／Prompt Components `8bf5672e-83a2-4d39-851e-588dfaead2b0`
   - `GET /v1/data_sources/{id}` 查 schema 曾經回傳過舊快取漏欄位，寫程式前務必用真實頁面 `GET /v1/pages/{id}` 核對（見 [[feedback_notion_datasource_schema_stale]]）
 
@@ -578,7 +599,9 @@ node line-bot-firebase/setup-rich-menu.js
 | `/calendar-sent/{eventId}_{userId}` | 已發送的行程提醒記錄（防重複） |
 | `/teacher-mapping/{name}` | 老師名稱 → `{ userId }` 對照表 |
 | `/task-reports/{YYYY-MM-DD}/{userId}/{safeTitle}` | 工作回報記錄（完成／未完成） |
-| `/pending-rewrite/{userId}` | Bot 3 圖片改寫等待指令（`{level, expiresAt}`，5分鐘 TTL） |
+| `/pending-rewrite/{userId}` | Bot 3 圖片改寫等待指令（`{level, expiresAt}`，5分鐘 TTL）；Frank essay 選單也共用此路徑（見 Bot 1 作文批改／改寫） |
+| `/pending-solve/{userId}` | Bot 1（Frank）解題模式旗標（`{expiresAt}`，10分鐘 TTL，`SOLVE_MODE_TTL_MINUTES`）；按 Rich Menu「開始解題」設定，每次解題成功會延長，時限到或按「自由對話」則移除。**Frank 已不支援群組**，2026-08-30 起原本的 `/pending-frank-image` 群組旗標已整個移除 |
+| `/essay-context/{userId}` | Bot 1（Frank）+ Bot 3（Wisdom）共用的作文對話記憶（`{essayText, lastReply, updatedAt, expiresAt}`，10分鐘 TTL，`ESSAY_CONTEXT_TTL_MINUTES`）；作文批改/改寫後寫入，延續對話（如「全都要改」）或補傳作文題目照片時會讀取並刷新，明確重選作文模式時清除 |
 | `/app-reports/{id}` | PWA 問題回報（`{message, user, nickname, meta, hasImage, imageMime, image(base64), createdAt, status}`）；`submitReport` 寫入、`reportImage` 讀圖 |
 | `/report-recipients/{userId}` | 接收回報的管理員（`{boundAt, tokenEnvVar, botName}`）；`tokenEnvVar` 記住綁在哪支 bot，push 時用對應 token。目前綁在 Bot 2（Wisdom Assistant）|
 
@@ -696,6 +719,8 @@ node trigger-reminder.js --cache-only
    - 檢查：提醒對象是否已訂閱（`/calendar-subscribers/{userId}`）
    - 確認：Google 日曆事件標題前綴格式是否正確（`[全部]` / `[Name1,Name2]` / 無前綴）
 
+5. **⚠️ iCal 網址回傳 Google 官方 404（2026-08-03 發現＋修復，跟上面 #1 的「假 Sorry 頁面」是不同問題）**：直接 fetch `GOOGLE_CALENDAR_ICAL_URL` 若回傳的是 Google 自己的 `<title>Error 404 (找不到)!!1</title>` 頁面（不是 1KB 的 Cloud Run 假頁面），代表**該日曆的公開分享權限被取消了**，不是 Cloud Run IP 被擋。症狀：`trigger-reminder.js`／GitHub Actions 每天都顯示「執行成功」，但 log 印出「Parsed 0 VEVENT blocks」，`calendarReminder`/`eveningFollowUp` 因此連續多天都是「Found 0 events」——**腳本本身沒有報錯，因為 404 頁面本身是合法的 HTTP 回應，只是解析出來的事件數是 0**，容易被誤以為是「這幾天真的沒有行程」而忽略。修法：日曆擁有者到 Google 日曆設定 →「活動的存取權限」，把「公開這個日曆」打勾，**還要記得把旁邊「查看所有活動的詳細資訊」下拉選單也選成「查看所有活動的詳細資訊」**——只打勾「公開這個日曆」但沒選這個下拉選單，iCal 會恢復 200 但每一則事件的 `SUMMARY` 全部都是字面上的 `"Busy"`（Google 免費/忙碌層級的分享），事件標題（含 `[老師名]` 前綴）完全讀不到，一樣沒辦法正確分派提醒對象，必須兩個都設定對才行。排查時第一步就該直接在瀏覽器/程式碼裡 fetch 那個 iCal 網址看實際回應內容，不要只看腳本有沒有報錯。
+
 #### 監控指標
 
 | 指標 | 預期值 | 檢查方式 |
@@ -753,6 +778,120 @@ firebase login:ci
 **⚠️ Token 失效處理**：若 GitHub Actions 顯示 `FIREBASE_TOKEN: `（空白），表示 token 已過期或未設定。重新執行 `firebase login:ci` 產生新 token 並更新兩個 repo 的 Secret。
 
 ---
+
+## 4. Fluent（youtube-english）
+
+把使用者看的 YouTube 影片轉成個人化單字/片語/口說練習的學習平台，正式產品名稱「Fluent」。
+
+**⚠️ `youtube-english/` 是獨立的 git repo（`f88012/fluent-english`，private），沒有併入 `myfirstcode` 這個 monorepo。** 在這個資料夾裡操作 git 指令時，作用範圍是那個獨立 repo，不會影響外層。
+
+### 部署資訊
+
+- **GitHub repo**：`f88012/fluent-english`（private）
+- **Firebase/GCP 專案**：`english-app-c1097`（Firebase 主控台顯示名稱 "YouTube-English-app"，Google AI Studio 帳單頁也是同一個）
+- **App Hosting backend**：`fluent-english`，region **asia-east1**（台灣）
+- **正式網址**：https://fluent-english--english-app-c1097.asia-east1.hosted.app
+- **CI**（PR/push main 觸發，`.github/workflows/ci.yml`）：`npm run lint` + `npm run typecheck` + `npm run test:phase11`
+- **CD**：Firebase App Hosting 監看 `main` 分支自動部署，跟 GitHub Actions CI 是分開的兩條路（CI 只負責擋爛程式碼合併，不負責部署）
+
+### 部署指令 / 常用操作
+
+```powershell
+cd youtube-english
+git push                                    # push main 會自動觸發 App Hosting 部署
+firebase apphosting:backends:get fluent-english --project english-app-c1097
+firebase apphosting:secrets:set <NAME> --data-file <path> --project english-app-c1097
+firebase apphosting:secrets:grantaccess <NAME> --backend fluent-english --project english-app-c1097
+firebase deploy --only firestore:rules --project english-app-c1097
+```
+
+### 健康檢查（2026-08-27 新增）
+
+- `GET /api/health/yt-dlp`：直接呼叫跟正式功能同一套 `YtDlpTranscriptProvider`，測試固定的已知影片（`n-nGpjLCMAE`），驗證 yt-dlp 抽取全流程（含 cookies、SSL 憑證設定）還活著。需要 `x-health-check-secret` header 才能打，不是公開端點
+- `.github/workflows/health-check.yml`：每 6 小時排程打一次上面那個端點，失敗會讓這個 workflow run 變紅
+- **⚠️ workflow 變紅不等於你會被通知（2026-09-01 發現＋修復）**：GitHub 對排程（`schedule`）觸發的 workflow **預設不會**寄 email/網頁通知，要自己去 GitHub 帳號 Settings → Notifications → Actions 手動開「Only notify for failed workflow runs」才會收到——8/31 22:13 那次 cookies 過期就是因為這個沒開，完全沒人發現，隔天才手動查到。已改成失敗時额外加一步直接 push LINE 訊息（重用 `line-bot-firebase` 既有的推播基礎設施），不依賴任何人的 GitHub 帳號通知設定，保證送達：GitHub repo secrets `LINE_NOTIFY_TOKEN`（= **Bot 1「Frank Line英語教室」**的 `LINE_CHANNEL_ACCESS_TOKEN`，2026-09-01 從 Bot 2 改過來，Frank 指定要收在自己這支 bot）與 `LINE_NOTIFY_USER_ID`（`U795afcd27f7012e5091e148880346c2e`，原本是綁在 Bot 2 `/report-recipients` 的接收者 userId，實測同一個 userId 在 Bot 1 底下推送也成功——LINE 的 userId 是以 Provider 為範圍，同一個 Provider 底下的不同 channel 通用，不需要另外查 Bot 1 專屬的 userId）。已用 `workflow_dispatch` 手動模擬失敗實測過 LINE 真的會送達
+- `HEALTH_CHECK_SECRET` 同時存在 Firebase Secret Manager（給正式環境的 API route 讀）跟 GitHub repo secret（給 Actions 呼叫用），兩邊要對得上，值是 `crypto.randomBytes(32).toString('hex')` 產生的
+- 目的是接住「未知」章節第 4 點（cookies 過期/YouTube 反爬蟲）那類問題，讓你在學生回報壞掉之前先知道
+
+### GCP IAM / Secret Manager
+
+- `gcloud` CLI **在這台機器裝不起來**（NSIS 安裝程式需要真實互動桌面工作階段，winget 預設安裝、指定來源、直接靜默安裝三種方式都在同一步失敗 exit code 2）。目前所有 GCP 操作都靠已登入的 `firebase` CLI 完成，沒有裝 gcloud
+- 正式環境密鑰存在 Secret Manager，不寫在 `apphosting.yaml` 明碼裡：
+  - `OPENAI_API_KEY`
+  - `YT_DLP_COOKIES`（見下方 yt-dlp 章節）
+  - ECPay 相關 key **尚未搬**（還在 staging 測試階段，之後要正式上線金流時要記得補）
+- 兩個 secret 都已授權給 App Hosting 自動建立的 service account：`firebase-app-hosting-compute@english-app-c1097.iam.gserviceaccount.com`（App Hosting 建立 backend 時會自動生成這個 SA，不需要手動用 gcloud 建立自訂 SA）
+- `NEXT_PUBLIC_FIREBASE_*` 這幾個是公開值（本來就會被打包進前端 JS），直接寫在 `apphosting.yaml` 明碼即可，不用進 Secret Manager
+- `GOOGLE_APPLICATION_CREDENTIALS` / `FIREBASE_ADMIN_*` 只在本機開發用（指向下載的 service account JSON），正式環境完全不用設，App Hosting 掛載的 SA 會自動提供 Application Default Credentials
+
+### App Hosting backend 建置的坑（花了很多輪才搞懂）
+
+1. **Primary region 建立後不能改**，只能整個刪除重建。這台專案的 backend 建立過程：`us-central1` → 刪除重建到 `asia-east1`（台灣）→ 改名 `fluent-english` → `fluent` → 最後又變回 `fluent-english`（Console 精靈的互動流程重建時取的名字），目前最終定案是 **`fluent-english` @ asia-east1**
+2. **GitHub repo 連結只能在「建立 backend」當下的互動式流程設定**（會跳出瀏覽器做 GitHub App 授權），Console 沒有一個獨立的「事後補連結」設定頁。用 `firebase apphosting:backends:create --non-interactive` 建立的 backend 永遠不會有 repo 連結，只能刪掉用 Console 精靈或不帶 `--non-interactive` 的 CLI 重建
+3. 每次刪除重建 backend 後，要重新跑一次 `secrets:grantaccess`（雖然通常是同一個 auto-provision 的 service account，但養成習慣重新確認比較保險）
+4. `apphosting.yaml` 裡的 `NEXT_PUBLIC_APP_URL` 要跟著 backend 名稱/region 變動同步更新（網址格式是 `{backend}--{project}.{region}.hosted.app`）
+
+### 字幕來源架構：三層備援（2026-09-07 定案）
+
+`ReliableTranscriptProvider` 依序嘗試 **TranscriptAPI → Supadata → yt-dlp**，介面是 `TranscriptProvider`（只有 `getTranscript(videoId)` 一個方法，要再加第四家就是一個新檔案 + 建構子多一個參數）。
+
+- **為什麼是這個順序**：TranscriptAPI 是付費主線、承擔日常流量；Supadata 是每月 100 次免費額度的**緊急備援**（走到它就代表主線掛了）；yt-dlp 排最後，因為 cookies 幾小時就被輪換、自從 TranscriptAPI 變主線後**一次都沒成功服務過**，但它免費，放棄前值得試一次
+- **`too_long` / `unsupported` 會直接中止整條鏈**（`isVideoVerdict`）：這兩個是對「影片本身」的判定，換誰來看結論都一樣，繼續往下問只是白花別家的額度
+
+**TranscriptAPI 的額度用盡偵測（2026-09-07）**
+
+- ⚠️ **它沒有任何查詢餘額的端點**，而且 `X-RateLimit-Remaining` 標頭是「每分鐘 300 次速率視窗」的剩餘數，**跟本月 credits 完全無關**——曾經想拿它做「額度快用完」預警，查證後發現前提根本不成立，照做只會產生假警報。**真正的早期預警在他們的 API 上做不出來**
+- 唯一訊號是 **HTTP 402**（回應 body 帶 `detail.reason`：`insufficient_credits` / `no_active_paid_plan`）。已對應到獨立的 `quota_exhausted` reason，不重試（空的方案不會自己補滿），而且這個 reason 會穿過後面的備援保留下來，不會被 yt-dlp 的一般錯誤蓋掉——否則警報只會說「都失敗了」，完全沒提到唯一能解決的動作是儲值
+
+**Supadata 的兩個坑（都是實際打 API 才發現，跟文件描述不同）**
+
+1. **字幕端點不回傳影片長度，也不回傳 video id**，但上游 `prepareYouTubeVideo` **沒有長度就直接拒絕整支影片**（就是「無法確認這部影片的長度」那個錯誤），所以 provider 必須先打 `/v1/youtube/video?id=` 拿 `duration`（秒），順便拿 `id` 驗證「回來的字幕確實屬於這支影片」、拿 `isLive` 擋直播。**刻意排在字幕請求之前而非並行**：太長或直播的影片會在這步就被擋掉，不會白花一次字幕額度
+2. **它的 `offset`/`duration` 是毫秒，我們內部全部用秒。** 這種單位錯誤不會報錯，只會讓所有字幕時間戳跑到影片結尾之外，非常難察覺——`tests/transcript-api-provider.test.mjs` 有一個用真實 API 回應釘住這個換算的測試，不要拿掉
+- 字幕一樣餵給共用的 `parseYtDlpJson3Transcript`，所以不管哪家服務，學生看到的斷句完全一致
+- **429 沒有被標成額度用盡**：Supadata 的 429 同時代表「額度用完」和「請求太快」，沒有任何欄位或標頭能區分（headers 也沒有額度資訊），硬標會犯跟上面 `X-RateLimit-Remaining` 同一類的錯
+
+**健康檢查現在有三種警報**（`.github/workflows/health-check.yml`，全部推 LINE）
+
+| 條件 | 意義 |
+|---|---|
+| `source` 開頭是 `supadata` | 付費主線掛了、正在燒每月 100 次的免費備援（學生還能用，但額度會安靜被用完）|
+| `transcriptApiQuota=exhausted` | TranscriptAPI 額度用盡，但這次被頂過去了（訊息帶 top-up 連結）|
+| HTTP != 200 | 全部供應商都失敗，學生已中斷；`reason=quota_exhausted` 時訊息會直接指向儲值 |
+
+**手動貼逐字稿（最終人工退路，本來就已完成）**：自動抓取失敗時 `video-learning-flow.tsx` 的 textarea 才可編輯（成功時唯讀），UI 內含三步驟教學，**來源就是 YouTube 自己的「顯示轉錄稿」按鈕**。實際會用的人是老師而非學生（要學生上課中途跳去 YouTube 複製貼上，摩擦太大），定位是「全部都掛了但課現在就要上」的逃生口
+
+**Secrets**：`TRANSCRIPT_API_KEY`、`SUPADATA_API_KEY` 都在 Secret Manager，`apphosting.yaml` 以 `secret:` 綁定、`availability: [RUNTIME]`。本機沒設 `SUPADATA_API_KEY` 時該層自動跳過，不影響開發
+
+### 已知問題與修復記錄
+
+1. **`tsc --noEmit` 在乾淨 checkout（含 CI）會失敗**：Next.js 16 的路由型別（`.next/types`）要先跑過 `next dev`/`next build` 才會產生，本機因為留有舊的 `.next/` 才沒發現。`package.json` 的 `typecheck` script 已改成 `next typegen && tsc --noEmit`
+2. **App Hosting 沒有 yt-dlp**：App Hosting 只支援 Buildpacks、**不支援自訂 Dockerfile**（已查證官方文件），所以裝了 `scripts/install-yt-dlp.mjs` 當 `postinstall` hook，在 Linux build 環境下載獨立執行檔到 `./bin/yt-dlp`（本機 Windows 開發、GitHub Actions CI 都會自動跳過）。`apphosting.yaml` 設定 `YT_DLP_PATH=./bin/yt-dlp`
+3. **yt-dlp 在正式環境 SSL 憑證驗證失敗**：`src/lib/transcript/yt-dlp-transcript-provider.ts` 呼叫 yt-dlp 時原本寫死 `--compat-options no-certifi`（叫 yt-dlp 用作業系統憑證庫，而不是自己內建的 certifi 包）——這是為了修**本機 Windows 開發環境**（這台機器的 Avast 會攔截 SSL，需要改用系統憑證庫才行，跟今天修 Gemini API 腳本踩到的坑同一類）。但正式環境是 Linux 容器，那邊沒有系統憑證庫，同一個參數在那邊反而讓憑證驗證整個失敗。已改成 `process.platform === "win32"` 才加這個參數，正式環境改用 yt-dlp 自己內建、比較新的憑證包
+4. **YouTube 對 Cloud Run 等機房 IP 做反爬蟲封鎖**（錯誤訊息：`Sign in to confirm you're not a bot`，換影片測試過不是單一影片問題，是整個 IP 被盯上）：
+   - 解法是 `YT_DLP_COOKIES` secret（一個**備用 Google 帳號**的登入 cookies，Netscape 格式），不是專案主帳號——避免自動化流量把帳號搞到被 YouTube 限制，連帶波及那個帳號管理的 GCP/Firebase 存取權
+   - 匯出 cookies 過程踩了不少坑，記錄一下避免下次重踩：
+     - 瀏覽器擴充功能一定要用 **「Get cookies.txt LOCALLY」**（注意 LOCALLY 三個字），另一個叫「Get cookies.txt」（沒有 LOCALLY）的舊版擴充功能匯出永遠是空檔案
+     - 擴充功能要選「Export cookies for **this site**」，不要選「Export All」——選全部會把整個瀏覽器 profile 所有網站（含其他 Google 服務、一堆廣告網域）的 cookies 都掃進去，範圍太大也有隱私疑慮
+     - `yt-dlp --cookies-from-browser edge` 這條路走不通：新版 Edge/Chrome 的 App-Bound Encryption 會擋掉 DPAPI 解密（`Failed to decrypt with DPAPI`），連在使用者自己的互動式終端機跑都一樣失敗，只能用瀏覽器擴充功能手動匯出
+     - **「無痕凍結法」讓 cookies 撐幾個月而不是幾天（2026-08-28，yt-dlp 官方 wiki 建議）**：YouTube 會對「還在活動中的 session」頻繁輪換 cookies——在一般視窗匯出後，只要該帳號 session 又有活動（同步、開 YouTube 分頁）匯出的檔案就作廢，這就是 cookies「不定期過期」的原因。正確做法：開全新無痕視窗登入備用帳號 → 同分頁導航到 `https://www.youtube.com/robots.txt`（純文字頁不觸發活動偵測）→ 擴充功能匯出 this site → **立刻關閉無痕視窗且之後永不再用該 session**，session 被凍結就不會被輪換
+     - **一鍵更新腳本**：`youtube-english/scripts/refresh-yt-cookies.ps1`——驗證 cookies 檔 → 上傳 Secret Manager → 刪除本機檔案 → 空 commit push 觸發重新部署。**注意：Secret Manager 更新後 App Hosting 不會自動吃到新值**（secret 在 rollout 時解析），一定要觸發一次重新部署才生效，腳本已包含這步
+     - **全自動同步（2026-09-02 新增，因為一天壞 2-3 次，人工／半自動都跟不上；2026-09-04 降頻）**：`scripts/sync-yt-cookies-from-firefox.ps1` + Windows工作排程器「Fluent-YtDlpCookieSync」（`-WakeToRun` 睡眠也會喚醒執行，`Interactive` principal 綁在目前登入的使用者）。前提：這台電腦裝了 Firefox，備用帳號在**一般（非無痕）視窗**登入並保持登入狀態——這跟上面「無痕凍結法」的一次性快照是不同用途，這裡要的是活著、會自然被 YouTube 輪換也沒關係的 session，因為腳本本身就是定期去抓「當下最新」的 cookies，不是想讓它凍結不變
+       - **2026-09-04 從每 3 小時降為每天一次（凌晨 4:00）**：`ReliableTranscriptProvider` 換成 TranscriptAPI 為主之後（見上方「字幕來源架構：三層備援」），比對了 2026-09-02～09-03 橫跨兩天多的 7 次健康檢查記錄，`source` 全部都是 `transcript-api:asr-en`，一次都沒出現過 `yt-dlp:*`——代表 yt-dlp 這條路徑完全沒被觸發過，同步再新鮮的 cookies 也用不到，等於白白讓帳號每 3 小時被戳一次卻沒有任何實際效益（風險沒消失，效益卻是零）。降頻後仍保留這個機制當「萬一 TranscriptAPI 掛掉時的救急備援」，但不需要那麼高頻率去驗證/更新一個平常根本不會被呼叫到的東西
+       - 原理：`yt-dlp --cookies-from-browser firefox` 直接讀 Firefox profile 的 `cookies.sqlite`（Firefox 不像 Edge/Chrome 有 App-Bound Encryption 擋 DPAPI 解密），對固定影片跑一次 `--simulate` 逼 yt-dlp 把讀到的 cookie jar 存成 Netscape 檔，再交給 `refresh-yt-cookies.ps1`
+       - `refresh-yt-cookies.ps1` 的網域驗證邏輯因此調整過：yt-dlp 從真實瀏覽器讀到的 session 本來就橫跨 `accounts.google.com`／`google.<cctld>`／`googlevideo.com` 等整個 Google 登入網域家族，不是只有 `youtube.com`；而且長期保持登入的 Firefox profile 難免混入不相干的雜訊（實測踩過 Firefox 新分頁 Pocket 推薦文章帶進 `.economist.com` cookie）。改成「過濾掉不在已知網域家族清單內的 cookies，安靜跳過」而不是整包拒絕失敗——一次性手動流程整包拒絕是對的（人在看），但無人值守的排程如果每次雜訊都整包失敗、狂發 LINE 失敗通知，會失去自動化的意義
+       - **PowerShell 5.1 的 `*>&1` 陷阱**：sync 腳本原本用 `*>&1 | ForEach-Object` 包住 nested 的 `git push` 呼叫來即時記錄每一行，結果 git 把正常進度訊息寫到 stderr，PowerShell 5.1 把這個誤判成 `NativeCommandError`、导致明明成功的更新被腳本回報成失敗。已移除這個 stream 合併，改成直接呼叫＋檢查 `$LASTEXITCODE`
+       - 已完整驗證：直接跑腳本兩次＋透過 `Start-ScheduledTask` 真的觸發工作排程器跑一次，三次都成功建立新 Secret Manager 版本並推送部署（`LastTaskResult=0`）
+       - **已知限制**：這台電腦要保持開機／可喚醒才會準時執行；如果之後這支備用帳號被 Google 判定為自動化異常行為而整個停用，再頻繁的自動更新也救不回來，屆時需要換一個全新的備用帳號重新走一次登入流程
+   - `src/lib/transcript/yt-dlp-transcript-provider.ts` 把 `YT_DLP_COOKIES` 內容寫到 `os.tmpdir()` 的暫存檔（每個 container instance 只寫一次），加 `--cookies <path>` 參數；沒設這個環境變數時完全不影響行為（本機開發不需要）
+   - **這是目前整條 pipeline 最脆弱的一環**：cookies 會過期需要手動重新匯出更新；技術上算是自動化存取 YouTube，有違反服務條款的風險（即使用備用帳號也一樣，只是後果被隔離開）。**使用者原本考慮過用其他 YouTube 字幕擷取工具**，這次是先選 yt-dlp 頂著用；如果之後 cookies 維護負擔太高或帳號被限制，值得重新比較其他方案（例如評估 YouTube Data API v3 官方字幕端點的實際限制、付費住宅型 proxy 服務等），減少對單一備用帳號存活狀態的依賴
+5. **App Hosting 預設資源配置偏緊**：`runConfig` 預設 512MiB 記憶體，跑 Next.js SSR + Firebase Admin + OpenAI SDK 又要另外 spawn yt-dlp 子行程有點吃緊，已在 `apphosting.yaml` 調高到 `cpu: 1` / `memoryMiB: 1024`（這個是先調高再測試，過程中曾經懷疑是這個造成 502，後來發現 502 其實是同時期還沒修好的 SSL 憑證問題，但調高資源本身沒有壞處就保留了）
+
+### 品牌 / 設計系統
+
+- `docs/brand-guidelines.md`：色彩 token、字體系統（`html[lang="zh-TW"]` 中英字體自動切換）、hero 卡片共用樣式、語氣文案規範（kicker/titleBefore/titleAccent/intro 三段式結構）、Logo 使用規則
+- 色調：靛藍 `--forest:#101b36` + 琥珀 `--mint-strong:#c08a2e` + 米白 `--canvas:#f3f0e8`，2026-08-27 從原本的深墨綠+薄荷綠改版
+- **⚠️ `docs/brand-guidelines.md` 寫於全站色彩硬編碼掃描（84 處 `rgba(18,63,58,*)`/`rgba(185,232,212,*)` 舊色殘留一次性替換掉）之前**，裡面「已知缺口」那段記錄已經過時，之後有空可以更新
+- Logo：`src/components/layout/brand.tsx` 裡的 `FluentMark`（inline SVG，靛藍開口圓弧 + 琥珀箭頭），取代原本用 CSS `::before`/`::after` 畫的交叉線標記
 
 ## yt-dlp 字幕擷取工具
 

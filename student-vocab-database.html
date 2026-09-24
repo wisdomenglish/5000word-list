@@ -5,86 +5,153 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Student Vocab Studio</title>
   <style>
-    :root{--ink:#17231d;--forest:#21362d;--paper:#f5f3e9;--card:#fffef9;--line:#d4ddd6;--muted:#66766d;--red:#ca604c;--orange:#d9a12f;--green:#55916a}
-    *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Georgia,"Noto Serif TC",serif}
-    button,input,select,textarea{font:inherit}button{cursor:pointer}.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
-    aside{background:var(--forest);color:#fff;padding:26px 18px;display:flex;flex-direction:column;gap:26px}.brand{font-size:1.4rem;font-weight:bold}.brand small{display:block;color:#bcd0c4;font-size:.9rem;margin-top:6px}
-    nav{display:grid;gap:8px}nav button{border:0;background:transparent;color:#e7efe9;padding:13px;text-align:left;border-radius:7px}nav button.active,nav button:hover{background:rgba(255,255,255,.14)}
-    .note{margin-top:auto;color:#bad0c1;line-height:1.7;font-size:.85rem}.main{padding:30px clamp(14px,4vw,50px)}h1{font-size:clamp(2rem,5vw,4.4rem);line-height:1;margin:8px 0 12px}.lead{color:var(--muted);line-height:1.7;max-width:760px}
-    .stats,.grid,.analysis{display:grid;gap:14px}.stats{grid-template-columns:repeat(3,1fr);margin:22px 0}.stat,.panel{background:var(--card);border:1px solid var(--line);border-radius:8px}.stat{padding:14px}.stat strong{font-size:1.6rem;display:block}.stat span{font-size:.8rem;color:var(--muted)}
-    .grid{grid-template-columns:minmax(280px,400px) 1fr}.panel h2{font-size:1.2rem;margin:0}.head{padding:18px;border-bottom:1px solid var(--line)}.body{padding:18px}.field{display:grid;gap:6px;margin-bottom:12px}.field label{font-size:.82rem;font-weight:bold;color:var(--muted)}
-    input,textarea,select{width:100%;border:1px solid var(--line);background:#fff;border-radius:7px;padding:12px;outline:none}textarea{min-height:105px;resize:vertical}.row,.actions{display:flex;gap:9px}.row>*{flex:1}.actions{flex-wrap:wrap}
-    .btn{border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:7px;padding:10px 14px;font-weight:bold}.btn.light{background:#fff;color:var(--ink);border-color:var(--line)}
-    .toolbar{display:flex;gap:9px;padding:14px;border-bottom:1px solid var(--line)}.toolbar input{flex:1}.list{display:grid;gap:10px;padding:14px;max-height:630px;overflow:auto}.word{position:relative;background:#fff;border:1px solid var(--line);border-radius:8px;padding:14px 14px 14px 18px}.word:before{content:"";position:absolute;inset:0 auto 0 0;width:7px;background:var(--green);border-radius:8px 0 0 8px}.word.l2:before{background:var(--orange)}.word.l3:before{background:var(--red)}
-    .wordtop{display:flex;justify-content:space-between;gap:8px}.wordname{font-size:1.35rem;font-weight:bold}.meaning{color:var(--muted);margin-top:4px;line-height:1.5}.badge{font-size:.75rem;font-weight:bold;padding:5px 8px;border-radius:99px;background:#e7f1ea;color:#356449;white-space:nowrap}.l2 .badge{background:#fbefd3;color:#99660d}.l3 .badge{background:#fae3dd;color:#a44634}
-    .small-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:11px}.small-actions button,.option{border:1px solid var(--line);background:#fff;border-radius:7px;padding:8px 10px}.detail{margin-top:16px;padding:20px}.detail-title{font-size:3rem;font-weight:bold}.analysis{grid-template-columns:repeat(2,1fr);margin-top:16px}.info{background:#f7f5ed;border:1px solid var(--line);border-radius:7px;padding:14px}.info h3{font-size:.8rem;color:var(--muted);margin:0 0 8px;text-transform:uppercase}.info p{line-height:1.65;margin:0}.wide{grid-column:1/-1}
-    .quiz{max-width:760px}.progress{height:7px;background:#dfe6e1;border-radius:99px;overflow:hidden}.progress span{display:block;height:100%;background:var(--forest)}.qword{font-size:4rem;font-weight:bold;margin:28px 0 8px}.options{display:grid;gap:10px;margin-top:20px}.option{text-align:left;padding:14px}.option.correct{background:#eaf6ed;border-color:var(--green)}.option.wrong{background:#fff0ed;border-color:var(--red)}.result{margin-top:18px;padding:14px;background:#f7f5ed;border-radius:7px;line-height:1.7}.empty{padding:42px;text-align:center;color:var(--muted)}.hide{display:none}
-    @media(max-width:850px){.app{grid-template-columns:1fr}aside{padding:16px;position:static}.note{display:none}nav{grid-template-columns:repeat(3,1fr)}.grid{grid-template-columns:1fr}.stats,.analysis{grid-template-columns:1fr}.list{max-height:none}}
+    :root{
+      --ink:#14211b;--forest:#1f372d;--forest-2:#2f4a3f;--paper:#f4f2e8;--card:#fffef9;
+      --line:#d8ded7;--muted:#6a796f;--red:#d84f65;--orange:#d99a25;--green:#4f956a;
+      --shadow:0 22px 60px rgba(31,55,45,.12);--soft:#eef3ed;
+    }
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 70% 0,#fbfaf4 0,#f4f2e8 44%,#eef3ed 100%);color:var(--ink);font-family:Georgia,"Noto Serif TC",serif}
+    button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.55}
+    .app{display:grid;grid-template-columns:300px minmax(0,1fr);min-height:100vh}.side{background:var(--forest);color:#fff;padding:28px 18px;display:flex;flex-direction:column;gap:24px;position:sticky;top:0;height:100vh}
+    .brand{display:grid;grid-template-columns:48px 1fr;gap:12px;align-items:center}.logo{width:48px;height:48px;border:1px solid rgba(255,255,255,.25);border-radius:8px;display:grid;place-items:center;background:#284437;font-size:1.35rem;font-weight:900}.brand-title{font-size:1.35rem;font-weight:900;line-height:1.08}.brand-sub{color:#bdd0c3;font-size:.88rem;margin-top:5px}
+    .nav{display:grid;gap:10px;border-top:1px solid rgba(255,255,255,.15);padding-top:22px}.nav button{border:0;border-radius:8px;background:transparent;color:#e9f2eb;text-align:left;padding:14px 15px;font-weight:800}.nav button.active,.nav button:hover{background:rgba(255,255,255,.14)}
+    .login-card{border:1px solid rgba(255,255,255,.18);border-radius:8px;padding:14px;background:rgba(255,255,255,.06)}.login-card p{margin:0 0 10px;color:#cbd9cf;font-size:.84rem;line-height:1.6}.side-btn{width:100%;border:1px solid rgba(255,255,255,.28);background:#fff;color:var(--forest);border-radius:8px;padding:10px 12px;font-weight:900}.side-btn.ghost{background:transparent;color:#fff}.user{font-size:.88rem;color:#e8f3eb;line-height:1.5;margin-bottom:10px;word-break:break-word}
+    .note{margin-top:auto;color:#bdd0c3;font-size:.86rem;line-height:1.75;border-top:1px solid rgba(255,255,255,.15);padding-top:18px}.main{padding:26px clamp(16px,4vw,48px) 42px}
+    .hero{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:start}.eyebrow{font-size:.75rem;letter-spacing:.16em;font-weight:900;color:var(--forest);text-transform:uppercase}.hero h1{font-size:clamp(2rem,4.6vw,4.25rem);line-height:.98;margin:8px 0 10px}.lead{color:var(--muted);line-height:1.75;max-width:820px;margin:0}.stats{display:grid;grid-template-columns:repeat(3,110px);gap:10px}.stat{background:var(--card);border:1px solid var(--line);box-shadow:0 16px 42px rgba(31,55,45,.08);border-radius:8px;padding:14px}.stat strong{display:block;font-size:1.65rem}.stat span{font-size:.78rem;color:var(--muted)}
+    .workspace{display:grid;grid-template-columns:minmax(310px,420px) minmax(0,1fr);gap:18px;margin-top:22px}.panel{background:rgba(255,254,249,.94);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow)}.head{padding:18px;border-bottom:1px solid var(--line)}.head h2{margin:0;font-size:1.2rem}.head p{margin:6px 0 0;color:var(--muted);line-height:1.55;font-size:.9rem}.body{padding:18px}.field{display:grid;gap:7px;margin-bottom:13px}.field label{font-weight:900;color:#385347;font-size:.84rem}.field small{color:var(--muted);line-height:1.5}
+    input,textarea,select{width:100%;border:1px solid var(--line);background:#fff;border-radius:8px;padding:12px 13px;outline:none;color:var(--ink)}textarea{min-height:116px;resize:vertical}input:focus,textarea:focus,select:focus{border-color:var(--forest-2);box-shadow:0 0 0 3px rgba(31,55,45,.1)}
+    .row{display:grid;grid-template-columns:1fr 150px;gap:11px}.actions,.tools{display:flex;gap:9px;flex-wrap:wrap}.btn{border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:8px;padding:10px 14px;font-weight:900}.btn.light{background:#fff;color:var(--ink);border-color:var(--line)}.btn.ai{background:var(--forest-2);border-color:var(--forest-2)}
+    .lookup{min-height:20px;font-size:.82rem;color:var(--muted)}.toolbar{display:grid;grid-template-columns:1fr auto;gap:10px;padding:14px;border-bottom:1px solid var(--line)}.seg{display:flex;background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:3px}.seg button{border:0;border-radius:6px;background:transparent;padding:8px 10px;color:var(--muted)}.seg button.active{background:#fff;color:var(--ink);box-shadow:0 3px 12px rgba(0,0,0,.07)}
+    .list{display:grid;gap:12px;padding:14px;max-height:620px;overflow:auto}.word{position:relative;background:#fff;border:1px solid var(--line);border-radius:8px;padding:16px 16px 16px 21px}.word:before{content:"";position:absolute;left:0;top:0;bottom:0;width:7px;border-radius:8px 0 0 8px;background:var(--green)}.word.l2:before{background:var(--orange)}.word.l3:before{background:var(--red)}
+    .wordtop{display:flex;justify-content:space-between;gap:12px}.wordname{font-size:1.45rem;font-weight:900;line-height:1.1}.pos{font-size:.78rem;color:var(--muted);margin-left:4px}.meaning{color:var(--muted);margin-top:6px;line-height:1.5}.badge{font-size:.75rem;font-weight:900;padding:5px 8px;border-radius:99px;background:#e7f4eb;color:#356449;white-space:nowrap}.l2 .badge{background:#fbefd3;color:#96650e}.l3 .badge{background:#fae2e7;color:#b33045}.small-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.small-actions button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 10px}
+    .detail{margin-top:18px;padding:20px}.detail-title{font-size:clamp(2.4rem,5vw,4.6rem);font-weight:900;line-height:1}.source{display:inline-block;margin-top:10px;color:var(--forest);background:#e8f1eb;border-radius:99px;padding:5px 9px;font-size:.78rem;font-weight:900}.analysis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}.info{background:#f7f5ed;border:1px solid var(--line);border-radius:8px;padding:14px}.info h3{font-size:.78rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin:0 0 8px}.info p{margin:0;line-height:1.65}.wide{grid-column:1/-1}
+    .quiz{max-width:920px}.quizbox{padding:24px}.progress{height:8px;background:#dfe6e1;border-radius:99px;overflow:hidden}.progress span{display:block;height:100%;background:var(--forest)}.qword{font-size:clamp(2.8rem,8vw,5.4rem);font-weight:900;margin:24px 0 8px}.options{display:grid;gap:10px;margin-top:20px}.option{text-align:left;border:1px solid var(--line);background:#fff;border-radius:8px;padding:14px;display:flex;gap:10px}.letter{width:28px;height:28px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-weight:900;flex:none}.option.correct{background:#eaf6ed;border-color:var(--green)}.option.wrong{background:#fff0ed;border-color:var(--red)}.option.dim{opacity:.48}.result{margin-top:16px;padding:14px;background:#f7f5ed;border-radius:8px;line-height:1.7;color:var(--muted)}
+    .empty{padding:46px 22px;text-align:center;color:var(--muted);line-height:1.7}.hide{display:none!important}.sync{font-size:.78rem;color:var(--muted);margin-top:10px}
+    @media(max-width:980px){.app{grid-template-columns:1fr}.side{height:auto;position:static}.nav{grid-template-columns:repeat(3,1fr)}.note{display:none}.hero{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}.workspace{grid-template-columns:1fr}.list{max-height:none}}
+    @media(max-width:620px){.main{padding:18px 12px 34px}.stats,.row,.analysis{grid-template-columns:1fr}.toolbar{grid-template-columns:1fr}.nav{grid-template-columns:1fr}.brand-title{font-size:1.15rem}.hero h1{font-size:2.15rem}.detail{padding:15px}}
   </style>
 </head>
 <body>
 <div class="app">
-  <aside>
-    <div class="brand">Student Vocab Studio<small>一站式單字資料庫</small></div>
-    <nav>
-      <button class="active" data-view="library" onclick="showView('library')">資料庫</button>
-      <button data-view="quiz" onclick="showView('quiz')">文意測驗</button>
-      <button data-view="review" onclick="showView('review')">不熟清單</button>
+  <aside class="side">
+    <div class="brand"><div class="logo">V</div><div><div class="brand-title">Student Vocab Studio</div><div class="brand-sub">一站式單字資料庫</div></div></div>
+    <nav class="nav">
+      <button class="active" data-view="library" onclick="showView('library')">📚 資料庫</button>
+      <button data-view="quiz" onclick="showView('quiz')">📝 文意測驗</button>
+      <button data-view="review" onclick="showView('review')">🔴 不熟清單</button>
     </nav>
-    <div class="note">把一直背不起來的單字集中管理，依照不熟悉程度排序，並生成字根字首、近義字與分級例句。</div>
+    <div class="login-card">
+      <div id="userInfo" class="user">尚未登入，資料只保存在這台裝置。</div>
+      <button id="loginBtn" class="side-btn" onclick="signIn()">Google 帳號登入同步</button>
+      <button id="logoutBtn" class="side-btn ghost hide" onclick="signOut()">登出</button>
+      <div id="syncStatus" class="sync">本機模式</div>
+    </div>
+    <div class="note">把一直背不起來的單字集中管理，依照不熟悉程度排序，並用 OpenAI API 生成字根字首、近義字與分級例句。</div>
   </aside>
-  <div class="main">
+
+  <main class="main">
     <section id="library">
-      <p class="lead">PERSONAL VOCABULARY DATABASE</p>
-      <h1>把卡住的單字，整理成自己的學習地圖。</h1>
-      <p class="lead">輸入英文、中文意思與不熟悉程度，最不熟的單字會自動排在前面。</p>
-      <div class="stats"><div class="stat"><strong id="total">0</strong><span>資料庫單字</span></div><div class="stat"><strong id="hard">0</strong><span>高度不熟</span></div><div class="stat"><strong id="lastScore">0%</strong><span>最近測驗</span></div></div>
-      <div class="grid">
+      <div class="hero">
+        <div>
+          <div class="eyebrow">Personal Vocabulary Database</div>
+          <h1>把卡住的單字，整理成自己的學習地圖。</h1>
+          <p class="lead">輸入英文單字，按「查詢」會用 OpenAI API 自動填入中文意思與詞性；最不熟的單字會排在前面。</p>
+        </div>
+        <div class="stats">
+          <div class="stat"><strong id="total">0</strong><span>資料庫單字</span></div>
+          <div class="stat"><strong id="hard">0</strong><span>高度不熟</span></div>
+          <div class="stat"><strong id="lastScore">0%</strong><span>最近測驗</span></div>
+        </div>
+      </div>
+
+      <div class="workspace">
         <section class="panel">
-          <div class="head"><h2>新增單字</h2></div>
+          <div class="head"><h2>新增單字</h2><p>輸入英文後可按查詢自動帶入中文。一次多字時，中文可用分號分隔。</p></div>
           <div class="body">
-            <div class="field"><label>英文單字，可用逗號或換行分隔</label><textarea id="wordInput" placeholder="abandon&#10;fragile&#10;meticulous"></textarea></div>
-            <div class="field"><label>中文意思，可用分號分隔</label><input id="meaningInput" placeholder="放棄；脆弱的；細心的"></div>
-            <div class="field"><label>不熟悉程度</label><select id="levelInput"><option value="3">紅色：很不熟</option><option value="2">橘色：有印象</option><option value="1">綠色：快熟了</option></select></div>
-            <div class="actions"><button class="btn" onclick="addWords()">加入資料庫</button><button class="btn light" onclick="loadSamples()">載入範例</button><button class="btn light" onclick="exportData()">匯出 JSON</button></div>
+            <div class="field"><label>英文單字</label><textarea id="wordInput" placeholder="輸入英文單字" oninput="scheduleLookup()"></textarea></div>
+            <div class="row">
+              <div class="field"><label>中文意思</label><input id="meaningInput" placeholder="按右側查詢自動填入"></div>
+              <div class="field"><label>詞性</label><input id="posInput" placeholder="n. / v."></div>
+            </div>
+            <div id="lookupStatus" class="lookup"></div>
+            <div class="field"><label>不熟悉程度</label><select id="levelInput"><option value="3">🔴 紅色：很不熟</option><option value="2">🟠 橘色：有印象</option><option value="1">🟢 綠色：快熟了</option></select></div>
+            <div class="actions"><button class="btn" onclick="addWords()">加入資料庫</button><button class="btn light" onclick="lookupMeaning(true)">查詢</button><button class="btn light" onclick="exportData()">匯出 JSON</button></div>
           </div>
         </section>
+
         <section class="panel">
-          <div class="toolbar"><input id="search" placeholder="搜尋單字或中文意思" oninput="renderWords()"><button class="btn light" onclick="toggleSort()">切換排序</button></div>
+          <div class="toolbar">
+            <input id="search" placeholder="搜尋單字或中文意思" oninput="renderWords()">
+            <div class="seg"><button id="sortLevelBtn" class="active" onclick="setSort('level')">依不熟悉</button><button id="sortAzBtn" onclick="setSort('az')">A-Z</button></div>
+          </div>
           <div id="wordList" class="list"></div>
         </section>
       </div>
       <section id="detail" class="panel detail"></section>
     </section>
+
     <section id="quiz" class="hide quiz">
-      <p class="lead">MEANING CHOICE QUIZ</p><h1>單字文意選擇測驗</h1>
-      <section class="panel body"><div class="actions"><button class="btn" onclick="startQuiz()">開始 10 題測驗</button><button class="btn light" onclick="showView('library')">回資料庫</button></div><div id="quizStage" style="margin-top:20px"></div></section>
+      <div class="eyebrow">Meaning Choice Quiz</div><h1>單字文意選擇測驗</h1>
+      <p class="lead">優先抽不熟的單字，OpenAI API 會產生選項與解析；若 API 暫時失敗，會自動改用本地備援題目。</p>
+      <section class="panel quizbox"><div class="tools"><button class="btn ai" onclick="startQuiz()">開始 10 題 AI 測驗</button><button class="btn light" onclick="showView('library')">回資料庫</button></div><div id="quizStage" style="margin-top:20px"></div></section>
     </section>
-    <section id="review" class="hide"><p class="lead">WEAK WORDS</p><h1>不熟清單</h1><section class="panel"><div id="reviewList" class="list"></div></section></section>
-  </div>
+
+    <section id="review" class="hide">
+      <div class="eyebrow">Weak Words</div><h1>不熟清單</h1>
+      <p class="lead">這裡只顯示紅色與橘色單字。測驗答對會降低不熟悉程度，答錯會提高。</p>
+      <section class="panel"><div id="reviewList" class="list"></div></section>
+    </section>
+  </main>
 </div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
 <script>
-const KEY='student_voacb_database_v1',SCORE='student_voacb_score_v1';
-let words=JSON.parse(localStorage.getItem(KEY)||'[]'),selected=null,sortByLevel=true,quiz={qs:[],i:0,score:0,pick:null};
-const samples=[['abandon','放棄；拋棄',3],['fragile','脆弱的；易碎的',2],['meticulous','一絲不苟的；細心的',3],['expand','擴大；擴展',1],['predict','預測；預言',2],['transform','轉變；改造',2]];
-const synonyms={abandon:['give up','desert','leave behind'],fragile:['delicate','breakable','weak'],meticulous:['careful','precise','thorough'],expand:['grow','extend','broaden'],predict:['forecast','expect','anticipate'],transform:['change','convert','reshape']};
+const KEY='student_vocab_database_v2',SCORE='student_vocab_score_v2',AI_CACHE='student_vocab_ai_cache_v2',LEGACY_KEYS=['student_voacb_database_v1','student_vocab_database_v1'];
+const AI_ENDPOINT='https://generatevocabstudyopenai-gtlccx6nka-uc.a.run.app';
+const firebaseConfig={apiKey:'AIzaSyAvr2g4M8OzdR63oElWurndcv8dE190_DU',authDomain:'news-english-ef2e4.firebaseapp.com',projectId:'news-english-ef2e4',storageBucket:'news-english-ef2e4.firebasestorage.app',messagingSenderId:'1039973180615',appId:'1:1039973180615:web:26067ea33794014628cae2'};
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth(),db=firebase.firestore();
+function loadInitialWords(){const current=JSON.parse(localStorage.getItem(KEY)||'[]');if(current.length)return current;for(const k of LEGACY_KEYS){const old=JSON.parse(localStorage.getItem(k)||'[]');if(old.length){localStorage.setItem(KEY,JSON.stringify(old));return old}}return[]}
+let words=loadInitialWords(),selected=null,sortMode='level',quiz={qs:[],i:0,score:0,pick:null},aiCache=JSON.parse(localStorage.getItem(AI_CACHE)||'{}'),currentUser=null,saveTimer=null,lookupTimer=null,cloudReady=false;
 const prefixes=[['pre','before / 之前'],['re','again / 再一次'],['trans','across, change / 穿越、改變'],['inter','between / 之間'],['mis','wrong / 錯誤'],['sub','under / 下方'],['ex','out / 向外']];
-function id(){return Math.random().toString(36).slice(2)+Date.now()}function esc(s){return String(s||'').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]))}
-function save(){localStorage.setItem(KEY,JSON.stringify(words));renderAll()}function label(l){return l==3?'紅色：很不熟':l==2?'橘色：有印象':'綠色：快熟了'}
-function addWords(){const ws=wordInput.value.split(/[,\n]+/).map(x=>x.trim().toLowerCase()).filter(Boolean),ms=meaningInput.value.split(/[；;,，]/).map(x=>x.trim());ws.forEach((w,i)=>{const old=words.find(x=>x.word==w),meaning=ms[i]||ms[0]||'';old?Object.assign(old,{meaning:meaning||old.meaning,level:+levelInput.value}):words.push({id:id(),word:w,meaning,level:+levelInput.value})});wordInput.value='';meaningInput.value='';save()}
-function loadSamples(){samples.forEach(([word,meaning,level])=>{if(!words.some(x=>x.word==word))words.push({id:id(),word,meaning,level})});save()}
-function sorted(list=words){const q=(search?.value||'').toLowerCase();return list.filter(x=>!q||x.word.includes(q)||x.meaning.includes(q)).sort((a,b)=>sortByLevel?b.level-a.level||a.word.localeCompare(b.word):a.word.localeCompare(b.word))}
-function card(w){return `<article class="word l${w.level}"><div class="wordtop"><div><div class="wordname">${esc(w.word)}</div><div class="meaning">${esc(w.meaning||'尚未填寫中文意思')}</div></div><span class="badge">${label(w.level)}</span></div><div class="small-actions"><button onclick="showDetail('${w.id}')">解析</button><button onclick="level('${w.id}',1)">更不熟</button><button onclick="level('${w.id}',-1)">變熟</button><button onclick="editMeaning('${w.id}')">改意思</button><button onclick="removeWord('${w.id}')">刪除</button></div></article>`}
-function renderWords(){wordList.innerHTML=sorted().map(card).join('')||'<div class="empty">尚未建立單字資料庫。</div>';renderDetail()}function renderReview(){const list=sorted(words.filter(x=>x.level>1));reviewList.innerHTML=list.map(card).join('')||'<div class="empty">目前沒有不熟單字。</div>'}
-function showDetail(i){selected=i;showView('library');renderDetail()}function renderDetail(){const w=words.find(x=>x.id==selected)||words[0];if(!w){detail.innerHTML='<div class="empty">選取單字後，這裡會顯示學習解析。</div>';return}selected=w.id;const p=prefixes.find(x=>w.word.startsWith(x[0])),syn=synonyms[w.word]||['related word','similar idea','near meaning'];detail.innerHTML=`<div class="detail-title">${esc(w.word)}</div><div class="meaning">${esc(w.meaning)}</div><div class="analysis"><div class="info"><h3>字根字首</h3><p>${p?`字首 ${p[0]} = ${p[1]}`:'可拆成音節或熟悉的小塊，再搭配語境記憶。'}</p></div><div class="info"><h3>近義字</h3><p>${syn.join(' · ')}</p></div><div class="info wide"><h3>初階造句 / 進階造句</h3><p>I need to remember the word "${esc(w.word)}" today.<br>The word "${esc(w.word)}" becomes easier when I connect it with a clear situation.</p></div></div>`}
-function level(i,n){const w=words.find(x=>x.id==i);w.level=Math.max(1,Math.min(3,w.level+n));save()}function editMeaning(i){const w=words.find(x=>x.id==i),v=prompt('修改中文意思',w.meaning);if(v!==null){w.meaning=v;save()}}function removeWord(i){if(confirm('確定刪除？')){words=words.filter(x=>x.id!=i);save()}}function toggleSort(){sortByLevel=!sortByLevel;renderWords()}
-function startQuiz(){if(words.length<4){alert('至少需要 4 個單字');return}const picked=[...words].sort((a,b)=>b.level-a.level||Math.random()-.5).slice(0,10);quiz={qs:picked.map(w=>{const d=words.filter(x=>x.id!=w.id).sort(()=>Math.random()-.5).slice(0,3).map(x=>x.meaning),o=[w.meaning,...d].sort(()=>Math.random()-.5);return{...w,o,a:o.indexOf(w.meaning)}}),i:0,score:0,pick:null};renderQuiz()}
-function renderQuiz(){if(!quiz.qs.length){quizStage.innerHTML='<div class="empty">按下開始測驗產生題目。</div>';return}const q=quiz.qs[quiz.i],done=quiz.pick!==null;quizStage.innerHTML=`<div class="progress"><span style="width:${((quiz.i+(done?1:0))/quiz.qs.length)*100}%"></span></div><div class="qword">${esc(q.word)}</div><p class="lead">請選出正確中文意思。</p><div class="options">${q.o.map((o,i)=>`<button class="option ${done?(i==q.a?'correct':i==quiz.pick?'wrong':''):''}" onclick="answer(${i})" ${done?'disabled':''}>${String.fromCharCode(65+i)}. ${esc(o)}</button>`).join('')}</div>${done?`<div class="result">${quiz.pick==q.a?'答對了':'答錯了'}，正確答案是「${esc(q.meaning)}」。</div><button class="btn" onclick="nextQ()">${quiz.i<quiz.qs.length-1?'下一題':'完成測驗'}</button>`:''}`}
-function answer(i){if(quiz.pick!==null)return;quiz.pick=i;const q=quiz.qs[quiz.i],w=words.find(x=>x.id==q.id);if(i==q.a){quiz.score++;w.level=Math.max(1,w.level-1)}else w.level=Math.min(3,w.level+1);localStorage.setItem(KEY,JSON.stringify(words));renderQuiz()}function nextQ(){if(quiz.i<quiz.qs.length-1){quiz.i++;quiz.pick=null;renderQuiz()}else{const p=Math.round(quiz.score/quiz.qs.length*100);localStorage.setItem(SCORE,p);quizStage.innerHTML=`<div class="qword">${p}%</div><p class="lead">測驗完成：${quiz.score} / ${quiz.qs.length}</p><button class="btn" onclick="startQuiz()">再測一次</button>`;renderAll()}}
-function showView(v){['library','quiz','review'].forEach(x=>document.getElementById(x).classList.toggle('hide',x!=v));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.view==v));if(v=='review')renderReview();if(v=='quiz')renderQuiz()}
-function renderAll(){renderWords();renderReview();total.textContent=words.length;hard.textContent=words.filter(x=>x.level==3).length;lastScore.textContent=(localStorage.getItem(SCORE)||0)+'%'}
-function exportData(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(words,null,2)],{type:'application/json'}));a.download='my-vocabulary.json';a.click()}
-if(!words.length)loadSamples();else renderAll();
+const synonyms={abandon:['give up','desert','leave behind'],fragile:['delicate','breakable','weak'],meticulous:['careful','precise','thorough'],expand:['grow','extend','broaden'],predict:['forecast','expect','anticipate'],transform:['change','convert','reshape']};
+function esc(s){return String(s||'').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]))}
+function id(){return Math.random().toString(36).slice(2)+Date.now().toString(36)}
+function normalizeWord(s){return s.trim().toLowerCase().replace(/[^a-z -]/g,'')}
+function label(l){return l==3?'紅色：很不熟':l==2?'橘色：有印象':'綠色：快熟了'}
+async function callAI(payload){const r=await fetch(AI_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.error||'AI 生成失敗');return data}
+function setStatus(msg){syncStatus.textContent=msg}
+function save(){localStorage.setItem(KEY,JSON.stringify(words));renderAll();if(currentUser&&cloudReady){clearTimeout(saveTimer);saveTimer=setTimeout(saveCloud,900)}}
+async function saveCloud(){if(!currentUser)return;setStatus('同步中...');await db.collection('users').doc(currentUser.uid).set({studentVocabDatabase:{words,lastScore:localStorage.getItem(SCORE)||'0',updatedAt:firebase.firestore.FieldValue.serverTimestamp()}},{merge:true});setStatus('已同步雲端')}
+function mergeWords(local,remote){const map=new Map();[...remote,...local].forEach(w=>{if(!w.word)return;const k=w.word.toLowerCase();const old=map.get(k);map.set(k,old?{...old,...w,level:Math.max(old.level||1,w.level||1),meaning:w.meaning||old.meaning,pos:w.pos||old.pos}:{...w,id:w.id||id()})});return [...map.values()]}
+async function signIn(){await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())}
+async function signOut(){await auth.signOut()}
+auth.onAuthStateChanged(async user=>{currentUser=user;loginBtn.classList.toggle('hide',!!user);logoutBtn.classList.toggle('hide',!user);userInfo.textContent=user?`${user.displayName||user.email}｜雲端同步開啟`:'尚未登入，資料只保存在這台裝置。';if(!user){cloudReady=false;setStatus('本機模式');return}setStatus('讀取雲端...');const snap=await db.collection('users').doc(user.uid).get();const remote=snap.data()?.studentVocabDatabase||{};words=mergeWords(words,remote.words||[]);if(remote.lastScore)localStorage.setItem(SCORE,remote.lastScore);cloudReady=true;save();setStatus('已同步雲端')});
+function scheduleLookup(){clearTimeout(lookupTimer);lookupTimer=setTimeout(()=>lookupMeaning(false),650)}
+async function lookupMeaning(force){const raw=wordInput.value.trim();const single=normalizeWord(raw);if(!single||single.includes(' ')||raw.split(/[,\n]+/).filter(Boolean).length!==1){if(force)lookupStatus.textContent='一次查詢請先輸入一個單字';return}if(!force&&meaningInput.value.trim())return;lookupStatus.textContent='OpenAI 查詢中...';try{const data=await callAI({action:'define',word:single});if(normalizeWord(wordInput.value)===single){if(!meaningInput.value.trim())meaningInput.value=data.zh||'';if(!posInput.value.trim())posInput.value=data.pos||'';lookupStatus.textContent='已自動填入，可自行修改'}}catch(e){lookupStatus.textContent=`查詢失敗：${e.message}`}}
+function addWords(){const list=wordInput.value.split(/[,\n]+/).map(normalizeWord).filter(Boolean);if(!list.length){alert('請先輸入英文單字');return}const meanings=meaningInput.value.split(/[；;,，]/).map(x=>x.trim()).filter(Boolean),pos=posInput.value.trim(),level=+levelInput.value;list.forEach((word,i)=>{const old=words.find(w=>w.word===word);const meaning=meanings[i]||meanings[0]||'';if(old){old.meaning=meaning||old.meaning;old.pos=pos||old.pos;old.level=Math.max(old.level||1,level);old.updatedAt=Date.now()}else words.push({id:id(),word,meaning,pos,level,createdAt:Date.now(),updatedAt:Date.now()})});selected=words.find(w=>w.word===list[0])?.id||selected;wordInput.value='';meaningInput.value='';posInput.value='';lookupStatus.textContent='';save()}
+function sorted(list=words){const q=(search?.value||'').toLowerCase();return list.filter(w=>!q||w.word.includes(q)||(w.meaning||'').toLowerCase().includes(q)).sort((a,b)=>sortMode==='level'?(b.level||1)-(a.level||1)||a.word.localeCompare(b.word):a.word.localeCompare(b.word))}
+function setSort(mode){sortMode=mode;sortLevelBtn.classList.toggle('active',mode==='level');sortAzBtn.classList.toggle('active',mode==='az');renderWords()}
+function card(w){return `<article class="word l${w.level||1}"><div class="wordtop"><div><div class="wordname">${esc(w.word)}${w.pos?`<span class="pos">${esc(w.pos)}</span>`:''}</div><div class="meaning">${esc(w.meaning||'尚未填寫中文意思')}</div></div><span class="badge">${label(w.level||1)}</span></div><div class="small-actions"><button onclick="showDetail('${w.id}',true)">AI 解析</button><button onclick="level('${w.id}',1)">更不熟</button><button onclick="level('${w.id}',-1)">變熟</button><button onclick="editMeaning('${w.id}')">改意思</button><button onclick="removeWord('${w.id}')">刪除</button></div></article>`}
+function renderWords(){const list=sorted();wordList.innerHTML=list.map(card).join('')||'<div class="empty">還沒有單字。輸入第一個一直卡住的字，這裡就會變成你的專屬資料庫。</div>';renderDetail()}
+function renderReview(){const list=sorted(words.filter(w=>(w.level||1)>1));reviewList.innerHTML=list.map(card).join('')||'<div class="empty">目前沒有紅色或橘色單字。</div>'}
+function fallbackAnalysis(w){const p=prefixes.find(x=>w.word.startsWith(x[0])),syn=synonyms[w.word]||['related word','similar idea','near meaning'];return{root:p?`字首 ${p[0]} = ${p[1]}`:'可拆成音節或熟悉的小塊，再搭配語境記憶。',synonyms:syn,basic:`I need to remember the word "${w.word}" today.`,advanced:`The word "${w.word}" becomes easier when I connect it with a clear situation.`}}
+function analysisHtml(w,a,source){return `<div class="detail-title">${esc(w.word)}</div><div class="meaning">${esc(w.meaning||'尚未填寫中文意思')}</div><span class="source">${source}</span><div class="analysis"><div class="info"><h3>字根字首</h3><p>${esc(a.root)}</p></div><div class="info"><h3>近義字</h3><p>${(a.synonyms||[]).map(esc).join(' · ')}</p></div><div class="info wide"><h3>初階造句 / 進階造句</h3><p>${esc(a.basic)}<br>${esc(a.advanced)}</p></div></div>`}
+function showDetail(i,forceAI=false){selected=i;showView('library');renderDetail(forceAI)}
+async function renderDetail(forceAI=false){const w=words.find(x=>x.id===selected)||words[0];if(!w){detail.innerHTML='<div class="empty">選取單字後，這裡會顯示 OpenAI 解析。</div>';return}selected=w.id;const key=`${w.word}|${w.meaning}`;if(aiCache[key]&&!forceAI){detail.innerHTML=analysisHtml(w,aiCache[key],'OpenAI API 生成');return}detail.innerHTML=analysisHtml(w,fallbackAnalysis(w),'本地備援解析')+'<div class="result">正在使用 OpenAI API 生成更完整解析...</div>';try{const data=await callAI({action:'analyze',word:w.word,meaning:w.meaning});aiCache[key]=data;localStorage.setItem(AI_CACHE,JSON.stringify(aiCache));if(selected===w.id)detail.innerHTML=analysisHtml(w,data,'OpenAI API 生成')}catch(e){if(selected===w.id)detail.innerHTML=analysisHtml(w,fallbackAnalysis(w),'本地備援解析')+`<div class="result">OpenAI API 暫時無法使用：${esc(e.message)}</div>`}}
+function level(i,n){const w=words.find(x=>x.id===i);if(!w)return;w.level=Math.max(1,Math.min(3,(w.level||1)+n));w.updatedAt=Date.now();save()}
+function editMeaning(i){const w=words.find(x=>x.id===i);if(!w)return;const m=prompt('修改中文意思',w.meaning||''),p=prompt('修改詞性',w.pos||'');if(m!==null)w.meaning=m.trim();if(p!==null)w.pos=p.trim();w.updatedAt=Date.now();save()}
+function removeWord(i){const w=words.find(x=>x.id===i);if(!w||!confirm(`刪除「${w.word}」？`))return;words=words.filter(x=>x.id!==i);selected=words[0]?.id||null;save()}
+async function startQuiz(){const pool=[...words].filter(w=>w.meaning).sort((a,b)=>(b.level||1)-(a.level||1)||Math.random()-.5).slice(0,10);if(pool.length<4){alert('至少需要 4 個有中文意思的單字');return}quizStage.innerHTML='<div class="empty">正在使用 OpenAI API 生成測驗...</div>';try{const data=await callAI({action:'quiz',words:pool});quiz={qs:(data.questions||[]).map(q=>{const w=words.find(x=>x.word===q.word)||pool[0];return{id:w.id,word:q.word,meaning:w.meaning,o:q.options,a:q.answerIndex,explanation:q.explanation}}),i:0,score:0,pick:null};if(!quiz.qs.length)throw new Error('AI 沒有回傳題目')}catch(e){quiz={qs:pool.map(w=>{const d=words.filter(x=>x.id!==w.id&&x.meaning).sort(()=>Math.random()-.5).slice(0,3).map(x=>x.meaning);const o=[w.meaning,...d].sort(()=>Math.random()-.5);return{id:w.id,word:w.word,meaning:w.meaning,o,a:o.indexOf(w.meaning),explanation:'本地備援題目'}}),i:0,score:0,pick:null}}renderQuiz()}
+function renderQuiz(){if(!quiz.qs.length){quizStage.innerHTML='<div class="empty">按下開始測驗產生題目。</div>';return}const q=quiz.qs[quiz.i],done=quiz.pick!==null;quizStage.innerHTML=`<div class="progress"><span style="width:${((quiz.i+(done?1:0))/quiz.qs.length)*100}%"></span></div><div class="qword">${esc(q.word)}</div><p class="lead">請選出正確中文意思。</p><div class="options">${q.o.map((o,i)=>`<button class="option ${done?(i===q.a?'correct':i===quiz.pick?'wrong':'dim'):''}" onclick="answer(${i})" ${done?'disabled':''}><span class="letter">${String.fromCharCode(65+i)}</span><span>${esc(o)}</span></button>`).join('')}</div>${done?`<div class="result">${quiz.pick===q.a?'答對了':'答錯了'}，正確答案是「${esc(q.meaning)}」。${q.explanation?`<br>${esc(q.explanation)}`:''}</div><button class="btn" style="margin-top:12px" onclick="nextQ()">${quiz.i<quiz.qs.length-1?'下一題':'完成測驗'}</button>`:''}`}
+function answer(i){if(quiz.pick!==null)return;quiz.pick=i;const q=quiz.qs[quiz.i],w=words.find(x=>x.id===q.id);if(i===q.a){quiz.score++;if(w)w.level=Math.max(1,(w.level||1)-1)}else if(w)w.level=Math.min(3,(w.level||1)+1);localStorage.setItem(KEY,JSON.stringify(words));renderQuiz()}
+function nextQ(){if(quiz.i<quiz.qs.length-1){quiz.i++;quiz.pick=null;renderQuiz();return}const p=Math.round(quiz.score/quiz.qs.length*100);localStorage.setItem(SCORE,String(p));quizStage.innerHTML=`<div class="qword">${p}%</div><p class="lead">測驗完成：${quiz.score} / ${quiz.qs.length}</p><div class="tools"><button class="btn ai" onclick="startQuiz()">再測一次</button><button class="btn light" onclick="showView('review')">看不熟清單</button></div>`;save()}
+function showView(v){['library','quiz','review'].forEach(x=>document.getElementById(x).classList.toggle('hide',x!==v));document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.view===v));if(v==='review')renderReview();if(v==='quiz')renderQuiz()}
+function renderAll(){renderWords();renderReview();total.textContent=words.length;hard.textContent=words.filter(w=>(w.level||1)===3).length;lastScore.textContent=(localStorage.getItem(SCORE)||0)+'%'}
+function exportData(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(words,null,2)],{type:'application/json'}));a.download='student-vocab-database.json';a.click();URL.revokeObjectURL(a.href)}
+renderAll();
 </script>
 </body>
 </html>

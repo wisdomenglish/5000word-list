@@ -5,7 +5,7 @@
  * 功能：
  *  1. 用 Chrome 截圖 rich-menu-design.html → rich-menu.png
  *  2. 上傳圖片到 LINE
- *  3. 建立 Rich Menu（5 格：上排 行事曆+印刷單，下排 請假單+資料提取+公告區）
+ *  3. 建立 Rich Menu（6 格：上排 行事曆+印刷單+素材庫，下排 請假單+資料提取+公告區）
  *  4. 設為所有用戶的預設選單
  */
 
@@ -111,13 +111,18 @@ function createRichMenu() {
     areas: [
       // 左上：行事曆（height=422 蓋住 2px gap，避免死區）
       {
-        bounds: { x: 0, y: 0, width: 1250, height: 422 },
+        bounds: { x: 0, y: 0, width: 833, height: 422 },
         action: { type: "message", text: "行事曆" }
       },
-      // 右上：印刷單（發送訊息，Bot 回傳 Quick Reply 讓老師選表單）
+      // 中上：印刷單（發送訊息，Bot 回傳 Quick Reply 讓老師選表單）
       {
-        bounds: { x: 1250, y: 0, width: 1250, height: 422 },
+        bounds: { x: 833, y: 0, width: 834, height: 422 },
         action: { type: "message", text: "印刷單" }
+      },
+      // 右上：素材庫（發送訊息，Bot 回傳使用說明；實際建立素材靠老師直接貼網址觸發）
+      {
+        bounds: { x: 1667, y: 0, width: 833, height: 422 },
+        action: { type: "message", text: "素材庫" }
       },
       // 左下：請假單
       {

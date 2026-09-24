@@ -5,11 +5,16 @@
  * 功能：
  *  1. 用 Chrome 截圖 rich-menu-frank-design.html → rich-menu-frank.png
  *  2. 上傳圖片到 LINE（Bot 1 / Frank）
- *  3. 建立 Rich Menu（3 格：作文批改 / 初階改寫 / 進階改寫，皆為 postback）
+ *  3. 建立 Rich Menu（兩排共 5 格，皆為 postback）：
+ *     上排：🧩 開始解題 / 💬 自由對話
+ *     下排：作文批改 / 初階改寫 / 進階改寫
  *  4. 設為 Frank Bot 所有用戶的預設選單
  *
- * 使用流程：使用者點下方「✍️ 作文功能」tab → 選一個模式 → Bot 提示傳照片 →
- *           傳照片後由 handleImageMessage 進行批改／改寫（解題功能不受影響）。
+ * 使用流程：
+ *  - 點「🧩 開始解題」→ 進入解題模式（限時，見 index.js SOLVE_MODE_TTL_MINUTES）→
+ *    時限內傳照片或打字描述題目都會直接解題；點「💬 自由對話」或時限到自動切回一般問答。
+ *  - 點下方「作文批改／初階改寫／進階改寫」→ 選一個模式 → Bot 提示傳照片 →
+ *    傳照片後由 handleImageMessage 進行批改／改寫（與解題模式互不影響）。
  */
 
 const https = require("https");
@@ -67,19 +72,32 @@ function createRichMenu() {
   const menu = {
     size: { width: WIDTH, height: HEIGHT },
     selected: true,
-    name: "Frank 作文功能",
-    chatBarText: "✍️ 作文功能",
+    name: "Frank 功能選單",
+    chatBarText: "功能選單",
     areas: [
+      // 上左：開始解題（進入解題模式，見 index.js handleSolveModeToggle）
       {
-        bounds: { x: 0, y: 0, width: 833, height: 843 },
+        bounds: { x: 0, y: 0, width: 1250, height: 422 },
+        action: { type: "postback", data: "solve_mode=on", displayText: "開始解題" }
+      },
+      // 上右：自由對話（結束解題模式）
+      {
+        bounds: { x: 1250, y: 0, width: 1250, height: 422 },
+        action: { type: "postback", data: "solve_mode=off", displayText: "自由對話" }
+      },
+      // 下左：作文批改
+      {
+        bounds: { x: 0, y: 422, width: 833, height: 421 },
         action: { type: "postback", data: "essay_mode=批改", displayText: "作文批改" }
       },
+      // 下中：初階改寫
       {
-        bounds: { x: 833, y: 0, width: 834, height: 843 },
+        bounds: { x: 833, y: 422, width: 834, height: 421 },
         action: { type: "postback", data: "essay_mode=初階", displayText: "初階改寫" }
       },
+      // 下右：進階改寫
       {
-        bounds: { x: 1667, y: 0, width: 833, height: 843 },
+        bounds: { x: 1667, y: 422, width: 833, height: 421 },
         action: { type: "postback", data: "essay_mode=進階", displayText: "進階改寫" }
       }
     ]
@@ -192,7 +210,7 @@ async function main() {
     await uploadImage(richMenuId);
     await setDefaultMenu(richMenuId);
     console.log("\n🎉 Frank Rich Menu 設定完成！");
-    console.log("打開 LINE 和 Frank Bot 聊天，底部會出現「✍️ 作文功能」選單。");
+    console.log("打開 LINE 和 Frank Bot 聊天，底部會出現新選單（上：開始解題／自由對話，下：作文批改／初階改寫／進階改寫）。");
   } catch (err) {
     console.error("\n❌ 錯誤：", err.message);
   }
