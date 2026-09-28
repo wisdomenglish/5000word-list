@@ -556,13 +556,13 @@ header{top:52px!important;}
 .home-wotd-title{color:#fff;font-weight:700;font-size:1rem;}
 .home-wotd-sub{color:rgba(255,255,255,.92);font-size:0.75rem;margin-top:2px;}
 .home-wotd-arrow{color:rgba(255,255,255,.95);font-size:1.5rem;flex-shrink:0;}
-.home-quick-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 16px 12px;}
-.home-quick-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px 16px;cursor:pointer;transition:all .15s;box-shadow:var(--shadow);}
+.home-quick-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 16px 12px;}
+.home-quick-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 8px;cursor:pointer;transition:all .15s;box-shadow:var(--shadow);text-align:center;}
 .home-quick-card:hover{border-color:rgba(67,97,238,.3);box-shadow:0 4px 20px rgba(67,97,238,.12);transform:translateY(-1px);}
 .home-quick-card:active{transform:scale(.97);}
-.home-quick-icon{font-size:1.85rem;margin-bottom:8px;}
-.home-quick-title{font-size:0.9rem;font-weight:700;color:var(--text);margin-bottom:3px;}
-.home-quick-sub{font-size:0.7rem;color:var(--muted);}
+.home-quick-icon{font-size:1.5rem;margin-bottom:6px;}
+.home-quick-title{font-size:0.78rem;font-weight:700;color:var(--text);margin-bottom:2px;}
+.home-quick-sub{font-size:0.6rem;color:var(--muted);}
 .home-lists-area{margin:0 16px;}
 .home-sect-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
 .home-sect-title{font-size:0.9rem;font-weight:700;color:var(--text);}
@@ -758,6 +758,129 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
 #imgViewModal img{max-width:100%;max-height:100%;border-radius:8px;}
 .prog-share-btn{position:relative;display:inline-flex;align-items:center;gap:6px;margin-top:14px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:20px;padding:8px 16px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s;-webkit-tap-highlight-color:transparent;}
 .prog-share-btn:hover{background:rgba(255,255,255,.26);}
+
+/* ── Magazine Question Bank (雜誌題庫) ── */
+.mz-mag-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px;}
+.mz-mag-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px 14px;text-align:center;cursor:pointer;box-shadow:var(--shadow);transition:all .15s;}
+.mz-mag-card:active{transform:scale(.97);}
+.mz-mag-card.disabled{opacity:.45;cursor:default;}
+.mz-mag-icon{font-size:2rem;margin-bottom:8px;}
+.mz-mag-label{font-weight:800;font-size:1rem;color:var(--text);}
+.mz-mag-desc{font-size:.72rem;color:var(--muted);margin-top:3px;}
+.mz-list-sub{font-size:.8rem;color:var(--muted);padding:0 16px 14px;}
+
+.mz-wrap{min-height:90vh;padding:14px 0 40px;}
+.mz-topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 16px 14px;}
+.mz-back{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:7px 12px;font-size:.75rem;font-weight:700;color:var(--accent);cursor:pointer;white-space:nowrap;}
+.mz-topbar-title{font-size:.86rem;font-weight:800;color:var(--text);text-align:center;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+.mz-unit-list{display:grid;gap:10px;padding:0 16px;}
+.mz-unit-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;cursor:pointer;box-shadow:var(--shadow);transition:all .15s;}
+.mz-unit-card:active{transform:scale(.98);}
+.mz-unit-key{font-size:.68rem;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.03em;}
+.mz-unit-title{font-size:.92rem;font-weight:700;color:var(--text);margin-top:3px;}
+.mz-unit-sub{font-size:.76rem;color:var(--muted);margin-top:2px;}
+
+.mz-tabrow{display:flex;gap:6px;overflow-x:auto;padding:0 16px 12px;-webkit-overflow-scrolling:touch;}
+.mz-tab-btn{flex-shrink:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:7px 12px;font-size:.74rem;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap;}
+.mz-tab-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+.mz-body{padding:0 16px;}
+.mz-tab-head{margin-bottom:14px;}
+.mz-tab-head h3{font-size:1rem;font-weight:800;color:var(--text);margin:0 0 4px;}
+.mz-tab-head p{font-size:.76rem;color:var(--muted);margin:0;}
+.mz-passage-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;}
+.mz-anno-modes{display:flex;gap:4px;flex-wrap:wrap;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:4px;}
+.mz-anno-mode-btn{background:transparent;border:none;border-radius:9px;padding:5px 9px;font-size:.68rem;font-weight:700;color:var(--muted);cursor:pointer;}
+.mz-anno-mode-btn.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow);}
+
+.mz-note{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;border-radius:14px;padding:12px 14px;margin-bottom:14px;font-size:.78rem;line-height:1.5;border:1px solid;}
+.mz-note-vocab{background:#ECFDF5;border-color:#A7F3D0;color:#065F46;}
+.mz-note-grammar{background:#FEF2F2;border-color:#FECACA;color:#991B1B;}
+.mz-note-pattern{background:#FDF2F8;border-color:#FBCFE8;color:#9D174D;}
+.mz-note-close{background:none;border:none;color:inherit;opacity:.6;cursor:pointer;font-size:.85rem;flex-shrink:0;}
+
+.mz-passage-full{background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:20px;font-size:.92rem;line-height:1.9;color:var(--text);}
+.mz-para{text-indent:1.4em;margin:0 0 12px;}
+.mz-para:last-child{margin-bottom:0;}
+.mz-anno{cursor:pointer;border-radius:4px;padding:0 2px;font-weight:700;border-bottom:2px solid;}
+.mz-anno sup{font-size:.6em;margin-left:1px;}
+.mz-anno-vocab{background:#D1FAE5;color:#065F46;border-color:#10B981;}
+.mz-anno-grammar{background:#FEE2E2;color:#991B1B;border-color:#EF4444;}
+.mz-anno-pattern{background:#FCE7F3;color:#9D174D;border-color:var(--accent2);}
+
+.mz-ref-block{border-radius:16px;padding:16px;margin-top:14px;border:1px solid;}
+.mz-ref-block h4{font-size:.72rem;font-weight:800;letter-spacing:.03em;margin:0 0 10px;text-transform:uppercase;}
+.mz-ref-vocab{background:#ECFDF5;border-color:#A7F3D0;}
+.mz-ref-vocab h4{color:#065F46;}
+.mz-ref-grammar{background:#FEF2F2;border-color:#FECACA;}
+.mz-ref-grammar h4{color:#991B1B;}
+.mz-ref-pattern{background:#FDF2F8;border-color:#FBCFE8;}
+.mz-ref-pattern h4{color:#9D174D;}
+.mz-ref-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:.78rem;color:var(--text);margin-bottom:8px;}
+.mz-ref-item:last-child{margin-bottom:0;}
+.mz-ref-item-head{display:flex;justify-content:space-between;font-weight:700;margin-bottom:3px;}
+.mz-ref-pos{color:var(--muted);font-weight:400;font-style:italic;}
+.mz-ref-excerpt{color:var(--muted);font-style:italic;margin-bottom:3px;}
+.mz-ref-colloc{color:#065F46;font-size:.72rem;margin-top:4px;padding-top:4px;border-top:1px solid var(--border);}
+
+.mz-trans-box,.mz-passage-box,.mz-wordbank-box,.mz-discourse-opts{background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px;}
+.mz-trans-box h4,.mz-passage-box h4,.mz-wordbank-box h4,.mz-discourse-opts h4{font-size:.7rem;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.03em;margin:0 0 8px;}
+.mz-trans-box div,.mz-passage-box p{font-size:.84rem;line-height:1.8;color:var(--text);white-space:pre-line;margin:0;}
+
+.mz-wb-words{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;}
+.mz-wb-word{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px;text-align:center;font-size:.74rem;font-weight:700;color:var(--text);}
+.mz-discourse-opt{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 10px;font-size:.76rem;color:var(--text);margin-bottom:6px;line-height:1.5;}
+.mz-discourse-opt:last-child{margin-bottom:0;}
+.mz-discourse-opt strong{color:var(--accent);margin-right:4px;}
+
+.mz-qlist{display:grid;gap:12px;}
+.mz-qcard{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow);}
+.mz-qtext{font-weight:700;font-size:.88rem;color:var(--text);margin-bottom:10px;}
+.mz-opt-grid{display:grid;gap:8px;}
+.mz-opt-grid-1{grid-template-columns:1fr;}
+.mz-opt-grid-2{grid-template-columns:1fr 1fr;}
+.mz-opt-grid-4{grid-template-columns:1fr 1fr;}
+.mz-opt-btn{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:9px 10px;font-size:.78rem;font-weight:600;color:var(--text);text-align:left;cursor:pointer;transition:all .12s;}
+.mz-opt-btn.chosen{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;}
+.mz-opt-btn.correct{background:#10B981;border-color:#0D9488;color:#fff;font-weight:800;}
+.mz-opt-btn.wrong{background:#EF4444;border-color:#DC2626;color:#fff;font-weight:800;}
+.mz-explain{margin-top:10px;background:#ECFDF5;border:1px solid #A7F3D0;border-radius:10px;padding:10px 12px;font-size:.76rem;line-height:1.6;color:#065F46;white-space:pre-line;}
+
+.mz-blank-grid{display:grid;gap:10px;}
+.mz-blank-grid-1{grid-template-columns:1fr;}
+.mz-blank-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 14px;}
+.mz-blank-head{display:flex;align-items:center;justify-content:space-between;font-size:.78rem;font-weight:700;color:var(--text);margin-bottom:8px;}
+.mz-blank-head .ok{color:#10B981;}
+.mz-blank-head .bad{color:#EF4444;}
+.mz-letter-row{display:flex;gap:6px;flex-wrap:wrap;}
+.mz-letter-btn{width:30px;height:30px;border-radius:8px;font-weight:800;font-size:.74rem;}
+.mz-letter-row-5{display:grid;grid-template-columns:repeat(5,1fr);}
+.mz-letter-btn-wide{padding:8px 4px;border-radius:10px;font-size:.7rem;text-align:center;}
+
+.mz-grade-bar{margin-top:18px;padding-top:16px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:10px;}
+.mz-grade-hint{font-size:.7rem;color:var(--muted);}
+.mz-grade-actions{display:flex;gap:10px;}
+.mz-reset-btn{flex-shrink:0;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 14px;font-size:.76rem;font-weight:700;color:var(--accent);cursor:pointer;}
+.mz-grade-btn{flex:1;background:var(--accent);border:none;border-radius:12px;padding:12px;font-size:.8rem;font-weight:800;color:#fff;cursor:pointer;}
+
+.mz-empty{text-align:center;padding:60px 20px;color:var(--muted);}
+.mz-empty-ico{font-size:2.2rem;margin-bottom:10px;}
+.mz-mistake-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;font-size:.8rem;font-weight:700;color:var(--text);}
+.mz-clear-btn{background:none;border:1px solid #FECACA;color:#EF4444;border-radius:10px;padding:7px 12px;font-size:.72rem;font-weight:700;cursor:pointer;}
+.mz-mistake-list{display:grid;gap:12px;}
+.mz-mistake-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow);}
+.mz-mistake-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.mz-mistake-tag{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:.68rem;font-weight:700;color:var(--accent);}
+.mz-mistake-x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.9rem;}
+.mz-mistake-q{font-weight:700;font-size:.86rem;color:var(--text);margin-bottom:8px;}
+.mz-mistake-opts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;}
+.mz-mistake-opts div{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:6px 8px;font-size:.7rem;color:var(--text);}
+.mz-mistake-ans{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:.76rem;margin-bottom:10px;}
+.mz-mistake-ans .bad{color:#EF4444;font-weight:700;}
+.mz-mistake-ans .ok{color:#10B981;font-weight:700;margin-top:3px;}
+.mz-mistake-exp{color:var(--text);margin-top:6px;padding-top:6px;border-top:1px solid var(--border);line-height:1.6;white-space:pre-line;}
+.mz-retest-btn{width:100%;background:var(--text);color:#fff;border:none;border-radius:10px;padding:10px;font-size:.76rem;font-weight:700;cursor:pointer;}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -765,6 +888,7 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
 <script src="vocabulary-data.js"></script>
 <script src="levels-data.js"></script>
 <script src="phrases-data.js"></script>
+<script src="magazine-sept-data.js"></script>
 </head>
 <body>
 <div id="authOverlay">
@@ -963,6 +1087,7 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
 <div id="quizSection" style="display:none"></div>
 <div id="myWordsSection" style="display:none"></div>
 <div id="paragraphSection" style="display:none"></div>
+<div id="magazineSection" style="display:none"></div>
 <div id="progressSection" style="display:none"></div>
 <div id="newsSection" style="display:none">
   <div class="news-wrap">
@@ -2875,10 +3000,11 @@ function switchTab(tab){
   document.getElementById('quizSection').style.display       = tab==='quiz'      ? '' : 'none';
   document.getElementById('myWordsSection').style.display    = tab==='mywords'   ? '' : 'none';
   document.getElementById('paragraphSection').style.display  = tab==='paragraph' ? '' : 'none';
+  document.getElementById('magazineSection').style.display   = tab==='magazine'  ? '' : 'none';
   document.getElementById('progressSection').style.display   = tab==='progress'  ? '' : 'none';
   document.getElementById('newsSection').style.display       = tab==='news'      ? '' : 'none';
   /* bottom nav active state */
-  const bnavMap = {home:'bnavHome',dict:'bnavDict',quiz:'bnavQuiz',mywords:'bnavMywords',progress:'bnavProgress',news:'bnavProgress',paragraph:null};
+  const bnavMap = {home:'bnavHome',dict:'bnavDict',quiz:'bnavQuiz',mywords:'bnavMywords',progress:'bnavProgress',news:'bnavProgress',paragraph:null,magazine:null};
   document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active'));
   const activeBnavId = bnavMap[tab];
   if(activeBnavId) document.getElementById(activeBnavId)?.classList.add('active');
@@ -2889,6 +3015,7 @@ function switchTab(tab){
   if(tab==='quiz')      renderQuizSetup();
   if(tab==='mywords')   renderMyWords();
   if(tab==='paragraph') renderParagraphTab();
+  if(tab==='magazine')  renderMagazineList();
   if(tab==='progress')  renderProgress();
 }
 
@@ -3013,6 +3140,11 @@ function renderHome(){
         <div class="home-quick-icon">🔍</div>
         <div class="home-quick-title">查單字</div>
         <div class="home-quick-sub">字根 · 例句 · 發音</div>
+      </div>
+      <div class="home-quick-card" onclick="switchTab('magazine')">
+        <div class="home-quick-icon">📚</div>
+        <div class="home-quick-title">雜誌題庫</div>
+        <div class="home-quick-sub">精讀 · 克漏字 · 閱讀測驗</div>
       </div>
     </div>
     <div class="home-lists-area">
@@ -4089,6 +4221,549 @@ function renderQuizResult(){
         ${markedWords.size?`<button class="quiz-action-btn" onclick="switchTab('mywords')">複習清單 (${markedWords.size})</button>`:''}
         <button class="quiz-action-btn pri" onclick="switchTab('dict')">回字典</button>
       </div>
+    </div>`;
+}
+
+// ─── Magazine Question Bank (雜誌題庫) ───
+const MAGAZINES = [
+  { id:'202509', label:'9月號', desc:'Live 互動英語', data: (typeof MAGAZINE_UNITS_202509!=='undefined') ? MAGAZINE_UNITS_202509 : null },
+  { id:'202508', label:'8月號', desc:'即將推出', data:null },
+  { id:'202507', label:'7月號', desc:'即將推出', data:null },
+  { id:'202506', label:'6月號', desc:'即將推出', data:null },
+  { id:'202505', label:'5月號', desc:'即將推出', data:null }
+];
+const MZ_MISTAKES_KEY = 'vocab_magazine_mistakes';
+let mzMagazineId = null;
+let mzUnitKey = null;
+let mzTab = 'passage';
+let mzAnswers = {};
+let mzShowExplain = false;
+let mzAnnotationMode = 'all';
+let mzActiveNote = null;
+let mzMistakes = JSON.parse(localStorage.getItem(MZ_MISTAKES_KEY) || '[]');
+
+function saveMzMistakes(){ localStorage.setItem(MZ_MISTAKES_KEY, JSON.stringify(mzMistakes)); }
+function mzCurrentMag(){ return MAGAZINES.find(m=>m.id===mzMagazineId) || null; }
+function mzCurrentUnitData(){ const mag=mzCurrentMag(); return (mag && mag.data && mzUnitKey) ? mag.data[mzUnitKey] : null; }
+
+function renderMagazineList(){
+  const section = document.getElementById('magazineSection');
+  section.innerHTML = `
+    <div class="mz-wrap">
+      <div class="mz-topbar">
+        <button class="mz-back" onclick="switchTab('home')">‹ 返回</button>
+        <div class="mz-topbar-title">📚 雜誌題庫</div>
+        <div style="width:56px"></div>
+      </div>
+      <div class="mz-list-sub">選擇雜誌期數，開始精讀與測驗</div>
+      <div class="mz-mag-grid">
+        ${MAGAZINES.map(m=>`
+          <div class="mz-mag-card ${m.data?'':'disabled'}" ${m.data?`onclick="openMagazine('${m.id}')"`:''}>
+            <div class="mz-mag-icon">📖</div>
+            <div class="mz-mag-label">${m.label}</div>
+            <div class="mz-mag-desc">${_escH(m.data ? m.desc : '即將推出')}</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function openMagazine(id){
+  mzMagazineId = id;
+  renderMagazineUnitList();
+}
+
+function renderMagazineUnitList(){
+  const mag = mzCurrentMag();
+  const section = document.getElementById('magazineSection');
+  if(!mag || !mag.data){ renderMagazineList(); return; }
+  const units = Object.keys(mag.data);
+  const mistakeCount = mzMistakes.filter(x=>x.magazineId===mag.id).length;
+  section.innerHTML = `
+    <div class="mz-wrap">
+      <div class="mz-topbar">
+        <button class="mz-back" onclick="renderMagazineList()">‹ 返回</button>
+        <div class="mz-topbar-title">${_escH(mag.label)} · ${_escH(mag.desc)}</div>
+        <button class="mz-back" onclick="openMagazineMistakes('${mag.id}')">📕 錯題(${mistakeCount})</button>
+      </div>
+      <div class="mz-unit-list">
+        ${units.map(uk=>{
+          const u = mag.data[uk];
+          return `<div class="mz-unit-card" onclick="openMagazineUnit('${uk}')">
+            <div class="mz-unit-key">${_escH(uk)}</div>
+            <div class="mz-unit-title">${_escH(u.title)}</div>
+            <div class="mz-unit-sub">${_escH(u.chineseTitle)}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+function openMagazineMistakes(id){
+  mzMagazineId = id;
+  mzTab = 'mistakes';
+  mzUnitKey = mzUnitKey || Object.keys(mzCurrentMag()?.data || {})[0] || null;
+  renderMagazineUnit();
+}
+
+function openMagazineUnit(unitKey){
+  mzUnitKey = unitKey;
+  mzTab = 'passage';
+  mzShowExplain = false;
+  mzAnnotationMode = 'all';
+  mzActiveNote = null;
+  renderMagazineUnit();
+}
+
+function mzSwitchTab(tab){
+  mzTab = tab;
+  mzShowExplain = false;
+  mzActiveNote = null;
+  renderMagazineUnit();
+}
+
+function mzSetAnnotationMode(mode){
+  mzAnnotationMode = mode;
+  renderMagazineUnit();
+}
+
+function mzResetTabAnswers(){
+  const prefix = `${mzUnitKey}_${mzTab}_`;
+  Object.keys(mzAnswers).forEach(k=>{ if(k.startsWith(prefix)) delete mzAnswers[k]; });
+  mzShowExplain = false;
+  renderMagazineUnit();
+}
+
+function mzOptClass(letter, correctLetter, selected){
+  if(mzShowExplain){
+    if(letter===correctLetter) return 'mz-opt-btn correct';
+    if(letter===selected) return 'mz-opt-btn wrong';
+    return 'mz-opt-btn';
+  }
+  return 'mz-opt-btn' + (letter===selected ? ' chosen' : '');
+}
+
+function mzHandleOptClick(btn){
+  if(mzShowExplain) return;
+  const qkey = btn.dataset.qkey;
+  const letter = btn.dataset.letter;
+  mzAnswers[qkey] = letter;
+  document.querySelectorAll(`.mz-opt-btn[data-qkey="${CSS.escape(qkey)}"]`).forEach(b=>{
+    b.classList.toggle('chosen', b===btn);
+  });
+}
+
+function mzHandleAnnoClick(span){
+  const u = mzCurrentUnitData();
+  if(!u || !u.annotations) return;
+  const type = span.dataset.noteType;
+  const id = span.dataset.noteId;
+  let note = null;
+  if(type==='vocab'){
+    const v = (u.annotations.keyVocabList||[]).find(x=>String(x.id)===String(id));
+    if(v) note = { type:'vocab', title:`${v.id}. ${v.word} (${v.pos||''})`, detail:`${v.meaning||''}${v.collocations?' 【搭配】：'+v.collocations:''}` };
+  } else if(type==='grammar'){
+    const g = (u.annotations.grammarNotes||[]).find(x=>x.id===id);
+    if(g) note = { type:'grammar', title:`${g.id}. ${g.title}`, detail:g.analysis||'' };
+  } else if(type==='pattern'){
+    const p = (u.annotations.patternNotes||[]).find(x=>x.id===id);
+    if(p) note = { type:'pattern', title:`${p.id}. ${p.title}`, detail:p.analysis||'' };
+  }
+  if(note){ mzActiveNote = note; renderMagazineUnit(); }
+}
+
+document.addEventListener('click', e=>{
+  const optBtn = e.target.closest('.mz-opt-btn');
+  if(optBtn){ mzHandleOptClick(optBtn); return; }
+  const noteSpan = e.target.closest('.mz-anno');
+  if(noteSpan){ mzHandleAnnoClick(noteSpan); return; }
+});
+
+function mzGradeCurrentTab(){
+  mzShowExplain = true;
+  const u = mzCurrentUnitData();
+  if(!u){ renderMagazineUnit(); return; }
+  const newMistakes = [];
+  const pushMistake = (m)=>{ if(!mzMistakes.some(x=>x.id===m.id) && !newMistakes.some(x=>x.id===m.id)) newMistakes.push(m); };
+
+  if(mzTab==='vocab' && u.vocab){
+    u.vocab.forEach(q=>{
+      const key = `${mzUnitKey}_vocab_${q.id}`;
+      const uAns = mzAnswers[key];
+      if(uAns && uAns!==q.answer){
+        pushMistake({ id:key, magazineId:mzMagazineId, unit:mzUnitKey, unitTitle:u.title, tab:'vocab', tabName:'單字四選一', question:q.question, correctAnswer:q.answer, userAnswer:uAns, options:q.options, explanation:q.explanation });
+      }
+    });
+  }
+  if(mzTab==='cloze' && u.cloze && u.cloze.questions){
+    u.cloze.questions.forEach(q=>{
+      const key = `${mzUnitKey}_cloze_${q.id}`;
+      const uAns = mzAnswers[key];
+      if(uAns && uAns!==q.answer){
+        pushMistake({ id:key, magazineId:mzMagazineId, unit:mzUnitKey, unitTitle:u.title, tab:'cloze', tabName:'克漏字測驗', question:`空格 [${q.id}] 填空選擇`, correctAnswer:q.answer, userAnswer:uAns, options:q.options, explanation:q.explanation });
+      }
+    });
+  }
+  if(mzTab==='wordBank' && u.wordBank && u.wordBank.answers){
+    Object.entries(u.wordBank.answers).forEach(([idx,correct])=>{
+      const key = `${mzUnitKey}_wordBank_${idx}`;
+      const uAns = mzAnswers[key];
+      if(uAns && uAns!==correct){
+        pushMistake({ id:key, magazineId:mzMagazineId, unit:mzUnitKey, unitTitle:u.title, tab:'wordBank', tabName:'文意選填', question:`空格 [${idx}] 單字選填`, correctAnswer:correct, userAnswer:uAns, options:u.wordBank.words, explanation:`正解為 (${correct})` });
+      }
+    });
+  }
+  if(mzTab==='discourse' && u.discourse && u.discourse.answers){
+    Object.entries(u.discourse.answers).forEach(([idx,correct])=>{
+      const key = `${mzUnitKey}_discourse_${idx}`;
+      const uAns = mzAnswers[key];
+      if(uAns && uAns!==correct){
+        pushMistake({ id:key, magazineId:mzMagazineId, unit:mzUnitKey, unitTitle:u.title, tab:'discourse', tabName:'篇章結構', question:`空格 [${idx}] 句子選擇`, correctAnswer:correct, userAnswer:uAns, options:u.discourse.options, explanation:`正解為句子 (${correct})` });
+      }
+    });
+  }
+  if(mzTab==='reading' && u.reading && u.reading.questions){
+    u.reading.questions.forEach(q=>{
+      const key = `${mzUnitKey}_reading_${q.id}`;
+      const uAns = mzAnswers[key];
+      if(uAns && uAns!==q.answer){
+        pushMistake({ id:key, magazineId:mzMagazineId, unit:mzUnitKey, unitTitle:u.title, tab:'reading', tabName:'閱讀測驗', question:q.question, correctAnswer:q.answer, userAnswer:uAns, options:q.options, explanation:q.explanation, passage:u.passage });
+      }
+    });
+  }
+  if(newMistakes.length){ mzMistakes = mzMistakes.concat(newMistakes); saveMzMistakes(); }
+  renderMagazineUnit();
+}
+
+function mzRemoveMistake(id){
+  mzMistakes = mzMistakes.filter(m=>m.id!==id);
+  saveMzMistakes();
+  renderMagazineUnit();
+}
+function mzClearMistakes(){
+  mzMistakes = mzMistakes.filter(m=>m.magazineId!==mzMagazineId);
+  saveMzMistakes();
+  renderMagazineUnit();
+}
+function mzRetestMistake(unitKey, tab){
+  mzUnitKey = unitKey;
+  mzTab = tab;
+  mzShowExplain = false;
+  renderMagazineUnit();
+}
+
+function mzRenderPassageTab(u){
+  const modes = [
+    {id:'all',label:'🏷️ 全部劃記'},
+    {id:'vocab',label:'🟢 字彙'},
+    {id:'grammar',label:'🔴 文法'},
+    {id:'pattern',label:'🟣 句型'},
+    {id:'clean',label:'📄 純淨原文'}
+  ];
+  const hasAnno = u.annotations && u.annotations.paragraphs;
+  let bodyHtml;
+  if(hasAnno){
+    bodyHtml = u.annotations.paragraphs.map(para=>{
+      const segHtml = para.map(seg=>{
+        if(seg.type==='vocab'){
+          if(mzAnnotationMode!=='all' && mzAnnotationMode!=='vocab') return _escH(seg.text);
+          return `<span class="mz-anno mz-anno-vocab" data-note-type="vocab" data-note-id="${seg.vid}">${_escH(seg.text)}<sup>${seg.vid}</sup></span>`;
+        }
+        if(seg.type==='grammar'){
+          if(mzAnnotationMode!=='all' && mzAnnotationMode!=='grammar') return _escH(seg.text);
+          return `<span class="mz-anno mz-anno-grammar" data-note-type="grammar" data-note-id="${seg.gid}">${_escH(seg.text)}<sup>${seg.gid}</sup></span>`;
+        }
+        if(seg.type==='pattern'){
+          if(mzAnnotationMode!=='all' && mzAnnotationMode!=='pattern') return _escH(seg.text);
+          return `<span class="mz-anno mz-anno-pattern" data-note-type="pattern" data-note-id="${seg.pid}">${_escH(seg.text)}<sup>${seg.pid}</sup></span>`;
+        }
+        return _escH(seg.text);
+      }).join('');
+      return `<p class="mz-para">${segHtml}</p>`;
+    }).join('');
+  } else {
+    bodyHtml = u.passage.split('\n\n').map(p=>`<p class="mz-para">${_escH(p)}</p>`).join('');
+  }
+
+  let noteHtml = '';
+  if(mzActiveNote){
+    noteHtml = `<div class="mz-note mz-note-${mzActiveNote.type}">
+      <div class="mz-note-body"><strong>${_escH(mzActiveNote.title)}</strong> ${_escH(mzActiveNote.detail)}</div>
+      <button type="button" class="mz-note-close" onclick="mzActiveNote=null;renderMagazineUnit();">✕</button>
+    </div>`;
+  }
+
+  let refBlocks = '';
+  if(u.annotations){
+    if(u.annotations.keyVocabList && u.annotations.keyVocabList.length) refBlocks += `
+      <div class="mz-ref-block mz-ref-vocab">
+        <h4>🟢 重點字彙 KEY VOCABULARY</h4>
+        ${u.annotations.keyVocabList.map(v=>`
+          <div class="mz-ref-item">
+            <div class="mz-ref-item-head"><span>${v.id}. ${_escH(v.word)}</span><span class="mz-ref-pos">${_escH(v.pos)}</span></div>
+            <div>${_escH(v.meaning)}</div>
+            ${v.collocations?`<div class="mz-ref-colloc">搭配：${_escH(v.collocations)}</div>`:''}
+          </div>`).join('')}
+      </div>`;
+    if(u.annotations.grammarNotes && u.annotations.grammarNotes.length) refBlocks += `
+      <div class="mz-ref-block mz-ref-grammar">
+        <h4>🔴 重點文法 GRAMMAR NOTES</h4>
+        ${u.annotations.grammarNotes.map(g=>`
+          <div class="mz-ref-item">
+            <div class="mz-ref-item-head"><span>${g.id}. ${_escH(g.title)}</span></div>
+            <div class="mz-ref-excerpt">"${_escH(g.excerpt)}"</div>
+            <div>${_escH(g.analysis)}</div>
+          </div>`).join('')}
+      </div>`;
+    if(u.annotations.patternNotes && u.annotations.patternNotes.length) refBlocks += `
+      <div class="mz-ref-block mz-ref-pattern">
+        <h4>🟣 關鍵句型 SENTENCE PATTERNS</h4>
+        ${u.annotations.patternNotes.map(p=>`
+          <div class="mz-ref-item">
+            <div class="mz-ref-item-head"><span>${p.id}. ${_escH(p.title)}</span></div>
+            <div class="mz-ref-excerpt">"${_escH(p.excerpt)}"</div>
+            <div>${_escH(p.analysis)}</div>
+          </div>`).join('')}
+      </div>`;
+  }
+
+  const transHtml = u.chineseTranslation ? `
+    <div class="mz-trans-box">
+      <h4>全文繁體中文參考翻譯</h4>
+      <div>${_escH(u.chineseTranslation)}</div>
+    </div>` : '';
+
+  return `
+    <div class="mz-tab-head mz-passage-head">
+      <div>
+        <h3>課文原文與精讀劃記</h3>
+        <p>點擊有底色之詞彙或句構，可查看專屬重點卡片。</p>
+      </div>
+      <div class="mz-anno-modes">
+        ${modes.map(m=>`<button type="button" class="mz-anno-mode-btn ${mzAnnotationMode===m.id?'active':''}" onclick="mzSetAnnotationMode('${m.id}')">${m.label}</button>`).join('')}
+      </div>
+    </div>
+    ${noteHtml}
+    <div class="mz-passage-full">${bodyHtml}</div>
+    ${refBlocks}
+    ${transHtml}`;
+}
+
+function mzRenderVocabTab(u){
+  return `
+    <div class="mz-tab-head">
+      <h3>單字四選一測驗 (Vocabulary)</h3>
+      <p>根據語境選出最適當的單字填入空格中。</p>
+    </div>
+    <div class="mz-qlist">
+      ${u.vocab.map(q=>{
+        const key = `${mzUnitKey}_vocab_${q.id}`;
+        const selected = mzAnswers[key];
+        return `
+          <div class="mz-qcard">
+            <div class="mz-qtext">${q.id}. ${_escH(q.question)}</div>
+            <div class="mz-opt-grid mz-opt-grid-2">
+              ${q.options.map(opt=>{
+                const letter = opt.charAt(0);
+                return `<button type="button" class="${mzOptClass(letter,q.answer,selected)}" data-qkey="${key}" data-letter="${letter}">${_escH(opt)}</button>`;
+              }).join('')}
+            </div>
+            ${mzShowExplain?`<div class="mz-explain">${_escH(q.explanation)}</div>`:''}
+          </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function mzRenderClozeTab(u){
+  return `
+    <div class="mz-tab-head">
+      <h3>大考克漏字測驗 (Cloze Test)</h3>
+      <p>依據上下文文法、搭配詞與篇章脈絡，選出最佳填空選項。</p>
+    </div>
+    <div class="mz-passage-box"><h4>克漏字篇章全文</h4><p>${_escH(u.cloze.text)}</p></div>
+    <div class="mz-qlist">
+      ${u.cloze.questions.map(q=>{
+        const key = `${mzUnitKey}_cloze_${q.id}`;
+        const selected = mzAnswers[key];
+        return `
+          <div class="mz-qcard">
+            <div class="mz-qtext">空格 [${q.id}] 填空選擇</div>
+            <div class="mz-opt-grid mz-opt-grid-4">
+              ${q.options.map(opt=>{
+                const letter = opt.charAt(0);
+                return `<button type="button" class="${mzOptClass(letter,q.answer,selected)}" data-qkey="${key}" data-letter="${letter}">${_escH(opt)}</button>`;
+              }).join('')}
+            </div>
+            ${mzShowExplain?`<div class="mz-explain"><strong>正解：(${q.answer})</strong> — ${_escH(q.explanation)}</div>`:''}
+          </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function mzRenderWordBankTab(u){
+  const letters=['A','B','C','D','E','F','G','H','I','J'];
+  return `
+    <div class="mz-tab-head">
+      <h3>文意選填 (Fill-in-the-Blank with Word Bank)</h3>
+      <p>從上方 10 個單字選項中選出最適當者，無重複使用。</p>
+    </div>
+    <div class="mz-wordbank-box">
+      <h4>選項單字庫 (Word Bank)</h4>
+      <div class="mz-wb-words">${u.wordBank.words.map(w=>`<div class="mz-wb-word">${_escH(w)}</div>`).join('')}</div>
+    </div>
+    <div class="mz-passage-box"><h4>選填篇章</h4><p>${_escH(u.wordBank.passage)}</p></div>
+    <div class="mz-blank-grid">
+      ${Object.keys(u.wordBank.answers).map(idx=>{
+        const key = `${mzUnitKey}_wordBank_${idx}`;
+        const selected = mzAnswers[key];
+        const correct = u.wordBank.answers[idx];
+        return `
+          <div class="mz-blank-card">
+            <div class="mz-blank-head">
+              <span>空格 [${idx}] 選填：</span>
+              ${mzShowExplain?`<span class="${selected===correct?'ok':'bad'}">${selected===correct?'✓ 正確':`✗ 正解為 (${correct})`}</span>`:''}
+            </div>
+            <div class="mz-letter-row">
+              ${letters.map(letter=>`<button type="button" class="${mzOptClass(letter,correct,selected)} mz-letter-btn" data-qkey="${key}" data-letter="${letter}">${letter}</button>`).join('')}
+            </div>
+          </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function mzRenderDiscourseTab(u){
+  const letters=['A','B','C','D','E'];
+  return `
+    <div class="mz-tab-head">
+      <h3>篇章結構測驗 (Discourse Structure)</h3>
+      <p>閱讀段落說明文，從 5 個句子選項中選出最合適填入四處空格者（含 1 誘答句）。</p>
+    </div>
+    <div class="mz-discourse-opts">
+      <h4>句子選項庫 (其中 4 句為正解，1 句為誘答句)</h4>
+      ${u.discourse.options.map(opt=>`<div class="mz-discourse-opt"><strong>${_escH(opt.substring(0,3))}</strong>${_escH(opt.substring(3))}</div>`).join('')}
+    </div>
+    <div class="mz-passage-box">${u.discourse.paragraphs.map(p=>`<p>${_escH(p)}</p>`).join('')}</div>
+    <div class="mz-blank-grid mz-blank-grid-1">
+      ${Object.keys(u.discourse.answers).map(idx=>{
+        const key = `${mzUnitKey}_discourse_${idx}`;
+        const selected = mzAnswers[key];
+        const correct = u.discourse.answers[idx];
+        return `
+          <div class="mz-blank-card">
+            <div class="mz-blank-head">
+              <span>空格 [${idx}] 填入句子：</span>
+              ${mzShowExplain?`<span class="${selected===correct?'ok':'bad'}">${selected===correct?'✓ 正確':`✗ 正解為 (${correct})`}</span>`:''}
+            </div>
+            <div class="mz-letter-row mz-letter-row-5">
+              ${letters.map(letter=>`<button type="button" class="${mzOptClass(letter,correct,selected)} mz-letter-btn-wide" data-qkey="${key}" data-letter="${letter}">選項 (${letter})</button>`).join('')}
+            </div>
+          </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function mzRenderReadingTab(u){
+  return `
+    <div class="mz-tab-head">
+      <h3>閱讀測驗 (Reading Comprehension)</h3>
+      <p>詳讀下列篇章後回答各題。</p>
+    </div>
+    <div class="mz-passage-box"><h4>閱讀測驗文章 (Passage)</h4><p>${_escH(u.passage)}</p></div>
+    <div class="mz-qlist">
+      ${u.reading.questions.map(q=>{
+        const key = `${mzUnitKey}_reading_${q.id}`;
+        const selected = mzAnswers[key];
+        return `
+          <div class="mz-qcard">
+            <div class="mz-qtext">${q.id}. ${_escH(q.question)}</div>
+            <div class="mz-opt-grid mz-opt-grid-1">
+              ${q.options.map(opt=>{
+                const letter = opt.charAt(0);
+                return `<button type="button" class="${mzOptClass(letter,q.answer,selected)}" data-qkey="${key}" data-letter="${letter}">${_escH(opt)}</button>`;
+              }).join('')}
+            </div>
+            ${mzShowExplain?`<div class="mz-explain"><strong>正解：(${q.answer})</strong> — ${_escH(q.explanation)}</div>`:''}
+          </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function mzRenderMistakesTab(){
+  const list = mzMistakes.filter(m=>m.magazineId===mzMagazineId);
+  if(!list.length){
+    return `<div class="mz-empty">
+      <div class="mz-empty-ico">✅</div>
+      <p>目前沒有任何錯題！表現優異，請繼續保持。</p>
+    </div>`;
+  }
+  return `
+    <div class="mz-mistake-head">
+      <div>已收集 ${list.length} 題錯題</div>
+      <button type="button" class="mz-clear-btn" onclick="mzClearMistakes()">清空全部錯題</button>
+    </div>
+    <div class="mz-mistake-list">
+      ${list.map(m=>`
+        <div class="mz-mistake-card">
+          <div class="mz-mistake-top">
+            <span class="mz-mistake-tag">${_escH(m.unit)}・${_escH(m.tabName)}</span>
+            <button type="button" class="mz-mistake-x" onclick="mzRemoveMistake('${m.id}')">✕</button>
+          </div>
+          <div class="mz-mistake-q">${_escH(m.question)}</div>
+          ${(m.options && m.options.length)?`<div class="mz-mistake-opts">${m.options.map(o=>`<div>${_escH(o)}</div>`).join('')}</div>`:''}
+          <div class="mz-mistake-ans">
+            <div class="bad">你的先前作答：${_escH(m.userAnswer)}</div>
+            <div class="ok">正確解答：${_escH(m.correctAnswer)}</div>
+            ${m.explanation?`<div class="mz-mistake-exp">${_escH(m.explanation)}</div>`:''}
+          </div>
+          <button type="button" class="mz-retest-btn" onclick="mzRetestMistake('${m.unit}','${m.tab}')">↺ 回溯至原題型重做</button>
+        </div>`).join('')}
+    </div>`;
+}
+
+function renderMagazineUnit(){
+  const mag = mzCurrentMag();
+  const u = mzCurrentUnitData();
+  const section = document.getElementById('magazineSection');
+  if(!mag || !u){ renderMagazineUnitList(); return; }
+
+  const tabs = [
+    {id:'passage', label:'📖 課文精讀'},
+    {id:'vocab', label:'🔤 單字'},
+    {id:'cloze', label:'📝 克漏字'},
+    {id:'wordBank', label:'🧩 文意選填'},
+    {id:'discourse', label:'🏛️ 篇章結構'},
+    {id:'reading', label:'🔍 閱讀測驗'}
+  ];
+
+  let body;
+  if(mzTab==='mistakes'){
+    body = mzRenderMistakesTab();
+  } else if(mzTab==='passage'){
+    body = mzRenderPassageTab(u);
+  } else {
+    const fnMap = { vocab:mzRenderVocabTab, cloze:mzRenderClozeTab, wordBank:mzRenderWordBankTab, discourse:mzRenderDiscourseTab, reading:mzRenderReadingTab };
+    body = fnMap[mzTab](u) + `
+      <div class="mz-grade-bar">
+        <div class="mz-grade-hint">※ 點擊後僅批改當前大題並顯示解析。</div>
+        <div class="mz-grade-actions">
+          <button type="button" class="mz-reset-btn" onclick="mzResetTabAnswers()">↺ 重置本題型</button>
+          <button type="button" class="mz-grade-btn" onclick="mzGradeCurrentTab()">✓ 提交並查看解析</button>
+        </div>
+      </div>`;
+  }
+
+  const mistakeCount = mzMistakes.filter(x=>x.magazineId===mzMagazineId).length;
+  section.innerHTML = `
+    <div class="mz-wrap">
+      <div class="mz-topbar">
+        <button class="mz-back" onclick="renderMagazineUnitList()">‹ ${_escH(mag.label)}</button>
+        <div class="mz-topbar-title">${_escH(mzUnitKey)}・${_escH(u.title)}</div>
+        <button class="mz-back" onclick="mzSwitchTab('mistakes')">📕 錯題(${mistakeCount})</button>
+      </div>
+      ${mzTab!=='mistakes'?`
+        <div class="mz-tabrow">
+          ${tabs.map(t=>`<button type="button" class="mz-tab-btn ${mzTab===t.id?'active':''}" onclick="mzSwitchTab('${t.id}')">${t.label}</button>`).join('')}
+        </div>`:''}
+      <div class="mz-body">${body}</div>
     </div>`;
 }
 

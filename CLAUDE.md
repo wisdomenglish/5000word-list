@@ -140,6 +140,20 @@
   - `'sentence'`：呼叫 `generatePhraseQuiz` Cloud Function 生成含空格英文句子，選項為英文片語（正確片語 + 3 個隨機干擾片語由 client 端從 PHRASES 選取）；題型物件 `type:'phrase_sentence'`，`answerQ()` 不觸發 markedWords
 - 片語測驗字母篩選同樣有防洩題機制（`enforceLetterDistractors`），但 phrase_sentence 的選項是片語文字，字母分散較自然
 
+### 雜誌題庫架構（2026-09-28 新增）
+
+- **來源**：學生用 LiveABC 雜誌製作的獨立 React 應用（`live_abc_9.tsx`，未 commit，僅供參考），因主站是無建置流程的單檔 vanilla JS PWA，**不引入 React/npm build**，改把純資料部分（`UNITS_DATA`）用 PowerShell 逐行擷取成 `magazine-sept-data.js`（`const MAGAZINE_UNITS_202509 = {...}`），互動邏輯全部改寫成 vanilla JS 比照既有 tab 的 render 函式模式（詳見「段落理解」）
+- **首頁入口**：`.home-quick-row` 從 2 欄改 3 欄（`repeat(3,1fr)`），新增「📚 雜誌題庫」卡片 → `switchTab('magazine')` → `#magazineSection`（比照 `#paragraphSection` 慣例，新增 tab 不進 `bnavMap`，無底部導覽對應項）
+- **資料結構**：`MAGAZINES` 陣列（5 本雜誌 meta），目前僅 `202509`（9月號）有 `data`，其餘 4 本 `data:null` 顯示「即將推出」（`.mz-mag-card.disabled`，不可點擊）；之後補其他月份雜誌只需同樣手法產生 `magazine-{id}-data.js` 並在 `MAGAZINES` 補上 `data` 欄位，不需改架構
+- 單一雜誌內為 `{ "Unit 1": {...}, "Unit 2": {...}, ... }`（key 為原始不連續編號，如 9 月號僅含 Unit 1,2,3,4,5,8,9,11,14，對應原雜誌實際單元序號，**保留原樣不重新編號**）；每個 Unit 含 `title/chineseTitle/passage/chineseTranslation/annotations（keyVocabList+grammarNotes+patternNotes+paragraphs 分段標註）/vocab（單字四選一）/cloze（克漏字）/wordBank（文意選填 A-J）/discourse（篇章結構 A-E）/reading（閱讀測驗）`
+- **導覽層級**：首頁卡片 → `renderMagazineList()`（5 本雜誌）→ `openMagazine(id)` → `renderMagazineUnitList()`（該期 Unit 清單）→ `openMagazineUnit(key)` → `renderMagazineUnit()`（6 個子 tab：課文精讀/單字/克漏字/文意選填/篇章結構/閱讀測驗，另有跨 Unit 的「📕 錯題」tab）
+- **答題狀態**：`mzAnswers`（記憶體內，格式 `{unitKey}_{tab}_{qid}: letter`，不落地存 localStorage，重整頁面會重置，比照原 React 版本行為）；切換 Unit/Tab 只重置 `mzShowExplain`（隱藏解析），**不清答案**，只有按「重置本題型」才清除當前 `{unitKey}_{tab}_` 前綴的作答
+- **選項點擊用事件委派 + 針對性 DOM 更新**（`document.addEventListener('click', ...)` 在 `.mz-opt-btn`/`.mz-anno` 做 `closest()` 判斷），選答案只 toggle class 不整頁重繪（避免長頁面滾動位置跳動）；批改（`mzGradeCurrentTab()`）才整頁重繪顯示對錯顏色
+- **錯題本（📕 錯題）**：批改後答錯的題目（`uAns && uAns!==正解`，未作答不算錯題）寫入 `mzMistakes`（`localStorage['vocab_magazine_mistakes']`，跨頁面持久化，**目前未同步 Firestore**，之後若要跨裝置同步可比照 `folders` 寫法），依 `id`（`{unitKey}_{tab}_{qid}`）去重；「回溯至原題型重做」按錯題卡片可跳回原 Unit/Tab
+- **課文精讀 tab 的標註點擊**：`seg.type` 為 `vocab/grammar/pattern` 的片段渲染成 `<span class="mz-anno" data-note-type data-note-id>`，點擊經事件委派查對應 `keyVocabList/grammarNotes/patternNotes` 顯示提示卡（`mzActiveNote`），**不用 inline onclick 傳文字**（避免 passage 內容常見的撇號如 `Ali Baba's` 造成引號解析錯誤，比照片語模組 `_phraseFolderTarget` 的作法）；`mzAnnotationMode`（all/vocab/grammar/pattern/clean）篩選顯示哪些標註類型
+- **未搬過來的原版功能**：原 React 版本的「列印/匯出 PDF 講義」（學生空白卷／教師詳解卷）功能**未實作**，屬於刻意縮小 v1 範圍的決定，如需要再另外評估（可能走 `window.print()` + 專用列印 CSS，或串生成 PDF 的 Cloud Function）
+- 每次修改 `magazine-{id}-data.js` 或新增雜誌後，記得升版 `sw.js` 的 `CACHE` 常數（比照 vocabulary-data.js/phrases-data.js 慣例），並視需要把新資料檔加進 `sw.js` 的 `addAll` 預快取清單
+
 ### 單字資料夾架構（含片語）
 
 - **資料結構**：`wordFolders`（`let`，存 `localStorage['vocab_folders']`），每個資料夾物件為 `{ id, name, words:[字串], phrases:[字串] }`
