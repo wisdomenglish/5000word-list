@@ -761,10 +761,10 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
 
 /* ── Magazine Question Bank (雜誌題庫) ── */
 .mz-mag-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px;}
-.mz-mag-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px 14px;text-align:center;cursor:pointer;box-shadow:var(--shadow);transition:all .15s;}
+.mz-mag-card{background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--border);border-radius:16px;padding:20px 14px;text-align:center;cursor:pointer;box-shadow:var(--shadow);transition:all .15s;}
 .mz-mag-card:active{transform:scale(.97);}
 .mz-mag-card.disabled{opacity:.45;cursor:default;}
-.mz-mag-icon{font-size:2rem;margin-bottom:8px;}
+.mz-mag-icon{font-size:1.7rem;margin:0 auto 8px;width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;overflow:hidden;}
 .mz-mag-label{font-weight:800;font-size:1rem;color:var(--text);}
 .mz-mag-desc{font-size:.72rem;color:var(--muted);margin-top:3px;}
 .mz-list-sub{font-size:.8rem;color:var(--muted);padding:0 16px 14px;}
@@ -912,6 +912,7 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
 <script src="levels-data.js"></script>
 <script src="phrases-data.js"></script>
 <script src="magazine-sept-data.js"></script>
+<script src="magazine-studioclassroom-sept-data.js"></script>
 </head>
 <body>
 <div id="authOverlay">
@@ -4251,12 +4252,13 @@ function renderQuizResult(){
 // passcodeHash：選填，SHA-256 hex（比照 AUTH_HASH 的算法：_sha256(密碼明文)）。
 // 留 null 表示這本雜誌沿用 App 本身的登入密碼即可，不需要額外一道關卡。
 // 要幫某一期單獨設密碼：在瀏覽器 console 跑 `await _sha256('你要的密碼')`，把結果貼進對應 passcodeHash。
+// color：卡片識別色（還沒有封面縮圖時的 fallback）。cover：封面縮圖路徑/URL，設定後卡片改顯示縮圖。
 const MAGAZINES = [
-  { id:'202509', label:'9月號', desc:'Live 互動英語', passcodeHash:null, data: (typeof MAGAZINE_UNITS_202509!=='undefined') ? MAGAZINE_UNITS_202509 : null },
-  { id:'202508', label:'8月號', desc:'即將推出', passcodeHash:null, data:null },
-  { id:'202507', label:'7月號', desc:'即將推出', passcodeHash:null, data:null },
-  { id:'202506', label:'6月號', desc:'即將推出', passcodeHash:null, data:null },
-  { id:'202505', label:'5月號', desc:'即將推出', passcodeHash:null, data:null }
+  { id:'202509', label:'9月號', desc:'Live 互動英語', passcodeHash:null, color:'#4361EE', cover:null, data: (typeof MAGAZINE_UNITS_202509!=='undefined') ? MAGAZINE_UNITS_202509 : null },
+  { id:'sc202509', label:'9月號', desc:'Studio Classroom', passcodeHash:null, color:'#F97316', cover:null, data: (typeof MAGAZINE_UNITS_SC202509!=='undefined') ? MAGAZINE_UNITS_SC202509 : null },
+  { id:'202507', label:'7月號', desc:'即將推出', passcodeHash:null, color:'#94A3B8', cover:null, data:null },
+  { id:'202506', label:'6月號', desc:'即將推出', passcodeHash:null, color:'#94A3B8', cover:null, data:null },
+  { id:'202505', label:'5月號', desc:'即將推出', passcodeHash:null, color:'#94A3B8', cover:null, data:null }
 ];
 const MZ_MISTAKES_KEY = 'vocab_magazine_mistakes';
 const MZ_UNLOCK_PREFIX = 'vocab_magazine_unlock_';
@@ -4289,12 +4291,18 @@ function renderMagazineList(){
       </div>
       <div class="mz-list-sub">選擇雜誌期數，開始精讀與測驗</div>
       <div class="mz-mag-grid">
-        ${MAGAZINES.map(m=>`
-          <div class="mz-mag-card ${m.data?'':'disabled'}" ${m.data?`onclick="openMagazine('${m.id}')"`:''}>
-            <div class="mz-mag-icon">📖</div>
+        ${MAGAZINES.map(m=>{
+          const color = m.color || '#94A3B8';
+          const iconStyle = m.cover
+            ? `background-image:url('${m.cover}');background-size:cover;background-position:center;`
+            : `background:${color}1f;color:${color};`;
+          return `
+          <div class="mz-mag-card ${m.data?'':'disabled'}" style="border-top-color:${color}" ${m.data?`onclick="openMagazine('${m.id}')"`:''}>
+            <div class="mz-mag-icon" style="${iconStyle}">${m.cover?'':'📖'}</div>
             <div class="mz-mag-label">${m.label}</div>
             <div class="mz-mag-desc">${_escH(m.data ? m.desc : '即將推出')}</div>
-          </div>`).join('')}
+          </div>`;
+        }).join('')}
       </div>
     </div>`;
 }
