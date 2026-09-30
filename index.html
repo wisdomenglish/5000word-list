@@ -904,6 +904,33 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
 .mz-print-row{display:flex;flex-direction:column;gap:6px;}
 .mz-print-opt{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:.78rem;font-weight:700;color:var(--text);text-align:left;cursor:pointer;}
 .mz-print-opt.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.mz-print-hint{font-size:.7rem;color:var(--muted);margin-top:10px;line-height:1.5;text-align:center;}
+
+/* 列印區域：平時完全隱藏，只有 window.print() 觸發的 @media print 才顯示，
+   直接在目前頁面列印（不開新視窗），手機/PWA 沒有瀏覽器列/上一頁可用時也不會卡住。 */
+#mzPrintArea{display:none;}
+#mzPrintArea h1{font-size:1.3rem;margin:0 0 4px;color:#1C1C1E;font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;}
+#mzPrintArea .mzp-meta{color:#666;font-size:.85rem;margin-bottom:20px;border-bottom:2px solid #333;padding-bottom:10px;}
+#mzPrintArea .mzp-section{margin-bottom:28px;page-break-inside:avoid;}
+#mzPrintArea .mzp-section h2{font-size:1.05rem;border-left:4px solid #4361EE;padding-left:8px;margin-bottom:10px;color:#1C1C1E;}
+#mzPrintArea .mzp-passage p,#mzPrintArea .mzp-cloze-text{line-height:1.9;text-indent:1.4em;margin:0 0 10px;font-size:.95rem;color:#1C1C1E;}
+#mzPrintArea .mzp-trans{line-height:1.8;white-space:pre-line;font-size:.9rem;color:#333;}
+#mzPrintArea .mzp-bank{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;font-size:.88rem;}
+#mzPrintArea .mzp-bank div{border:1px solid #999;border-radius:6px;padding:3px 8px;color:#1C1C1E;}
+#mzPrintArea .mzp-q{margin-bottom:14px;page-break-inside:avoid;}
+#mzPrintArea .mzp-opts{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:6px 0;font-size:.88rem;color:#1C1C1E;}
+#mzPrintArea .mzp-ans{background:#EFFAF4;border:1px solid #B6E8CC;border-radius:6px;padding:6px 10px;font-size:.82rem;margin-top:4px;white-space:pre-line;color:#065F46;}
+#mzPrintArea .mzp-blank{font-size:.85rem;color:#555;margin-top:4px;}
+
+@media print{
+  #globalTopBar,#bottomNav,#sideDrawer,#drawerOverlay,
+  #homeSection,#dictSection,#quizSection,#myWordsSection,
+  #paragraphSection,#magazineSection,#progressSection,#newsSection,
+  #wordModal,#phraseModal,#addWordModal,#reportModal,#announceModal,
+  #exShareModal,#statsShareModal,#focusModal,#wotdModal,#profileModal{display:none !important;}
+  body{padding:0 !important;margin:0 !important;background:#fff !important;}
+  #mzPrintArea{display:block !important;max-width:800px;margin:0 auto;padding:16px;background:#fff;font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;}
+}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -4819,23 +4846,6 @@ function mzRenderMistakesTab(){
 }
 
 // ─── Magazine Print / PDF Export ───
-const MZ_PRINT_CSS = `
-  body{font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;color:#1C1C1E;max-width:800px;margin:0 auto;padding:24px;}
-  h1{font-size:1.3rem;margin-bottom:4px;}
-  .mzp-meta{color:#666;font-size:.85rem;margin-bottom:20px;border-bottom:2px solid #333;padding-bottom:10px;}
-  .mzp-section{margin-bottom:28px;page-break-inside:avoid;}
-  .mzp-section h2{font-size:1.05rem;border-left:4px solid #4361EE;padding-left:8px;margin-bottom:10px;}
-  .mzp-passage p,.mzp-cloze-text{line-height:1.9;text-indent:1.4em;margin:0 0 10px;font-size:.95rem;}
-  .mzp-trans{line-height:1.8;white-space:pre-line;font-size:.9rem;color:#333;}
-  .mzp-bank{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;font-size:.88rem;}
-  .mzp-bank div{border:1px solid #999;border-radius:6px;padding:3px 8px;}
-  .mzp-q{margin-bottom:14px;page-break-inside:avoid;}
-  .mzp-opts{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:6px 0;font-size:.88rem;}
-  .mzp-ans{background:#EFFAF4;border:1px solid #B6E8CC;border-radius:6px;padding:6px 10px;font-size:.82rem;margin-top:4px;white-space:pre-line;}
-  .mzp-blank{font-size:.85rem;color:#555;margin-top:4px;}
-  @media print{ body{padding:0;} }
-`;
-
 function mzPrintMcQuestion(q, isTeacher, qLabel){
   return `<div class="mzp-q">
     <p>${qLabel?`<b>${_escH(qLabel)}</b> `:''}${_escH(q.question||'')}</p>
@@ -4908,7 +4918,7 @@ function mzPrintMistakesSection(isTeacher){
   }).join('');
 }
 
-function mzBuildPrintDoc(){
+function mzBuildPrintBody(){
   const mag = mzCurrentMag();
   const isTeacher = mzPrintMode === 'teacher';
   const scope = mzPrintScope;
@@ -4933,12 +4943,9 @@ function mzBuildPrintDoc(){
     bodyHtml = sections.join('');
   }
 
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${_escH(title)}</title><style>${MZ_PRINT_CSS}</style></head>
-  <body>
-    <h1>${_escH(title)}</h1>
+  return `<h1>${_escH(title)}</h1>
     <div class="mzp-meta">${isTeacher?'教師詳解卷':'學生作答卷'}</div>
-    ${bodyHtml}
-  </body></html>`;
+    ${bodyHtml}`;
 }
 
 function mzRenderPrintModal(){
@@ -4966,7 +4973,8 @@ function mzRenderPrintModal(){
           <button type="button" class="mz-print-opt ${mzPrintScope==='mistakes'?'active':''}" onclick="mzSetPrintScope('mistakes')">弱點錯題本 (${mistakeCount})</button>
         </div>
       </div>
-      <button type="button" class="mz-grade-btn" onclick="mzConfirmPrint()">開啟列印視窗</button>
+      <button type="button" class="mz-grade-btn" onclick="mzConfirmPrint()">📄 開始列印 / 儲存為 PDF</button>
+      <div class="mz-print-hint">列印畫面出現後，選「儲存為 PDF」或點分享圖示，就能存檔或直接傳送到 LINE、Gmail 等 App。</div>
     </div>
   </div>`;
 }
@@ -4980,16 +4988,17 @@ function mzClosePrintModal(){ mzPrintOpen = false; renderMagazineUnit(); }
 function mzSetPrintMode(m){ mzPrintMode = m; renderMagazineUnit(); }
 function mzSetPrintScope(s){ mzPrintScope = s; renderMagazineUnit(); }
 function mzConfirmPrint(){
-  const doc = mzBuildPrintDoc();
-  const win = window.open('', '_blank');
-  if(!win){ alert('請允許瀏覽器彈出視窗以列印'); return; }
-  win.document.open();
-  win.document.write(doc);
-  win.document.close();
-  win.focus();
-  setTimeout(()=>{ try{ win.print(); }catch(e){} }, 300);
+  const html = mzBuildPrintBody();
+  let area = document.getElementById('mzPrintArea');
+  if(!area){
+    area = document.createElement('div');
+    area.id = 'mzPrintArea';
+    document.body.appendChild(area);
+  }
+  area.innerHTML = html;
   mzPrintOpen = false;
   renderMagazineUnit();
+  setTimeout(()=>{ try{ window.print(); }catch(e){} }, 200);
 }
 
 function renderMagazineUnit(){
