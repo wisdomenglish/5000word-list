@@ -151,7 +151,12 @@
 - **選項點擊用事件委派 + 針對性 DOM 更新**（`document.addEventListener('click', ...)` 在 `.mz-opt-btn`/`.mz-anno` 做 `closest()` 判斷），選答案只 toggle class 不整頁重繪（避免長頁面滾動位置跳動）；批改（`mzGradeCurrentTab()`）才整頁重繪顯示對錯顏色
 - **錯題本（📕 錯題）**：批改後答錯的題目（`uAns && uAns!==正解`，未作答不算錯題）寫入 `mzMistakes`（`localStorage['vocab_magazine_mistakes']`，跨頁面持久化，**目前未同步 Firestore**，之後若要跨裝置同步可比照 `folders` 寫法），依 `id`（`{unitKey}_{tab}_{qid}`）去重；「回溯至原題型重做」按錯題卡片可跳回原 Unit/Tab
 - **課文精讀 tab 的標註點擊**：`seg.type` 為 `vocab/grammar/pattern` 的片段渲染成 `<span class="mz-anno" data-note-type data-note-id>`，點擊經事件委派查對應 `keyVocabList/grammarNotes/patternNotes` 顯示提示卡（`mzActiveNote`），**不用 inline onclick 傳文字**（避免 passage 內容常見的撇號如 `Ali Baba's` 造成引號解析錯誤，比照片語模組 `_phraseFolderTarget` 的作法）；`mzAnnotationMode`（all/vocab/grammar/pattern/clean）篩選顯示哪些標註類型
-- **未搬過來的原版功能**：原 React 版本的「列印/匯出 PDF 講義」（學生空白卷／教師詳解卷）功能**未實作**，屬於刻意縮小 v1 範圍的決定，如需要再另外評估（可能走 `window.print()` + 專用列印 CSS，或串生成 PDF 的 Cloud Function）
+- **每本雜誌可獨立設通行密碼（2026-10-01 新增）**：`MAGAZINES` 每筆 meta 有選填欄位 `passcodeHash`（SHA-256 hex，比照站內 `AUTH_HASH`/`_sha256()` 算法），預設 `null` 表示沿用 App 本身首頁那層全站密碼即可，不必重複設一道。要幫某一期單獨鎖密碼：瀏覽器 console 跑 `await _sha256('密碼明文')`，把結果填進該期的 `passcodeHash`。`openMagazine(id)` 會先查 `mzIsUnlocked(mag)`（比對 `localStorage['vocab_magazine_unlock_'+id]` 是否等於該雜誌的 `passcodeHash`），沒解鎖就導去 `renderMagazinePasscodeGate()`（獨立一頁表單，非 overlay，因為使用者可能要先返回雜誌列表看別期），驗證成功後寫入 localStorage 永久解鎖（不會每次重問），`renderMagazineUnitList()` 進入點也有同一道防護（防止直接呼叫函式繞過）
+- **列印／匯出試卷（2026-10-01 新增，原本 v1 刻意砍掉的功能，後續補齊）**：Unit 頁頂部 🖨️ 圖示按鈕 → `mzOpenPrintModal()` 彈出格式（學生空白卷／教師詳解卷）+ 範圍（當前題型/課文／全單元完整考卷／弱點錯題本）選擇框 → `mzConfirmPrint()` 用 `mzBuildPrintDoc()` 組出一份**完全獨立、不吃 App 自身 CSS** 的 HTML 字串（内嵌 `MZ_PRINT_CSS`），`window.open('', '_blank')` 開新分頁寫入後呼叫 `win.print()` 觸發瀏覽器原生列印/另存 PDF
+  - 各題型各有一個 `mzPrint*Section(u, isTeacher)` 產生器（passage/vocab/cloze/wordBank/discourse/reading），學生卷只印題幹+選項+空白作答格，教師卷額外印 `✔ 正解` + 解析
+  - **錯題本列印**（`mzPrintMistakesSection`）依「單元+題型」分組，且先印該題型的完整上下文再條列題目——克漏字先印全文、文意選填先印詞庫+選填全文、篇章結構先印句子選項庫+四段落、閱讀測驗先印完整文章——避免孤立空格題目沒有上下文可對照
+  - 沒有走任何 Cloud Function 或後端，純前端字串組裝 + 瀏覽器原生列印，不需要額外部署或密鑰
+- **閱讀測驗錯題卡片內嵌原文（2026-10-01 新增）**：`mzRenderMistakesTab()` 對 `m.tab==='reading'` 的錯題卡，額外抓該 Unit 的 `passage`（優先讀當下 `MAGAZINES` 資料，抓不到才退回錯題物件自己存的 `m.passage` 快照）渲染在題幹上方，`mzTogglePassage(id)` 控制收合/展開（`mzExpandedPassages` 狀態，預設展開）
 - 每次修改 `magazine-{id}-data.js` 或新增雜誌後，記得升版 `sw.js` 的 `CACHE` 常數（比照 vocabulary-data.js/phrases-data.js 慣例），並視需要把新資料檔加進 `sw.js` 的 `addAll` 預快取清單
 
 ### 單字資料夾架構（含片語）

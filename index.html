@@ -881,6 +881,29 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
 .mz-mistake-ans .ok{color:#10B981;font-weight:700;margin-top:3px;}
 .mz-mistake-exp{color:var(--text);margin-top:6px;padding-top:6px;border-top:1px solid var(--border);line-height:1.6;white-space:pre-line;}
 .mz-retest-btn{width:100%;background:var(--text);color:#fff;border:none;border-radius:10px;padding:10px;font-size:.76rem;font-weight:700;cursor:pointer;}
+
+.mz-passcode-box{max-width:320px;margin:60px auto 0;text-align:center;padding:0 20px;}
+.mz-passcode-ico{font-size:2.4rem;margin-bottom:10px;}
+.mz-passcode-title{font-weight:800;font-size:1rem;color:var(--text);margin-bottom:4px;}
+.mz-passcode-sub{font-size:.78rem;color:var(--muted);margin-bottom:16px;}
+.mz-passcode-input{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;font-size:.9rem;margin-bottom:8px;box-sizing:border-box;}
+.mz-passcode-error{color:#EF4444;font-size:.76rem;min-height:18px;margin-bottom:10px;}
+
+.mz-mistake-passage{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:10px;}
+.mz-mistake-passage-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:.72rem;font-weight:700;color:var(--text);}
+.mz-mistake-toggle{background:none;border:none;color:var(--accent);font-size:.7rem;font-weight:700;cursor:pointer;flex-shrink:0;}
+.mz-mistake-passage-body{margin-top:8px;max-height:220px;overflow-y:auto;font-size:.78rem;line-height:1.7;color:var(--text);border-top:1px solid var(--border);padding-top:8px;}
+.mz-mistake-passage-body p{text-indent:1.2em;margin:0 0 8px;}
+
+.mz-topbar-actions{display:flex;gap:6px;flex-shrink:0;}
+.mz-print-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:flex;align-items:flex-end;justify-content:center;}
+.mz-print-card{background:var(--surface);border-radius:20px 20px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));width:100%;max-width:480px;max-height:80vh;overflow-y:auto;}
+.mz-print-head{display:flex;align-items:center;justify-content:space-between;font-weight:800;font-size:.9rem;color:var(--text);margin-bottom:16px;}
+.mz-print-group{margin-bottom:16px;}
+.mz-print-label{font-size:.72rem;font-weight:700;color:var(--muted);margin-bottom:6px;}
+.mz-print-row{display:flex;flex-direction:column;gap:6px;}
+.mz-print-opt{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:.78rem;font-weight:700;color:var(--text);text-align:left;cursor:pointer;}
+.mz-print-opt.active{background:var(--accent);border-color:var(--accent);color:#fff;}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -4225,14 +4248,18 @@ function renderQuizResult(){
 }
 
 // ─── Magazine Question Bank (雜誌題庫) ───
+// passcodeHash：選填，SHA-256 hex（比照 AUTH_HASH 的算法：_sha256(密碼明文)）。
+// 留 null 表示這本雜誌沿用 App 本身的登入密碼即可，不需要額外一道關卡。
+// 要幫某一期單獨設密碼：在瀏覽器 console 跑 `await _sha256('你要的密碼')`，把結果貼進對應 passcodeHash。
 const MAGAZINES = [
-  { id:'202509', label:'9月號', desc:'Live 互動英語', data: (typeof MAGAZINE_UNITS_202509!=='undefined') ? MAGAZINE_UNITS_202509 : null },
-  { id:'202508', label:'8月號', desc:'即將推出', data:null },
-  { id:'202507', label:'7月號', desc:'即將推出', data:null },
-  { id:'202506', label:'6月號', desc:'即將推出', data:null },
-  { id:'202505', label:'5月號', desc:'即將推出', data:null }
+  { id:'202509', label:'9月號', desc:'Live 互動英語', passcodeHash:null, data: (typeof MAGAZINE_UNITS_202509!=='undefined') ? MAGAZINE_UNITS_202509 : null },
+  { id:'202508', label:'8月號', desc:'即將推出', passcodeHash:null, data:null },
+  { id:'202507', label:'7月號', desc:'即將推出', passcodeHash:null, data:null },
+  { id:'202506', label:'6月號', desc:'即將推出', passcodeHash:null, data:null },
+  { id:'202505', label:'5月號', desc:'即將推出', passcodeHash:null, data:null }
 ];
 const MZ_MISTAKES_KEY = 'vocab_magazine_mistakes';
+const MZ_UNLOCK_PREFIX = 'vocab_magazine_unlock_';
 let mzMagazineId = null;
 let mzUnitKey = null;
 let mzTab = 'passage';
@@ -4240,11 +4267,16 @@ let mzAnswers = {};
 let mzShowExplain = false;
 let mzAnnotationMode = 'all';
 let mzActiveNote = null;
+let mzExpandedPassages = {};
+let mzPrintOpen = false;
+let mzPrintMode = 'student';
+let mzPrintScope = 'current';
 let mzMistakes = JSON.parse(localStorage.getItem(MZ_MISTAKES_KEY) || '[]');
 
 function saveMzMistakes(){ localStorage.setItem(MZ_MISTAKES_KEY, JSON.stringify(mzMistakes)); }
 function mzCurrentMag(){ return MAGAZINES.find(m=>m.id===mzMagazineId) || null; }
 function mzCurrentUnitData(){ const mag=mzCurrentMag(); return (mag && mag.data && mzUnitKey) ? mag.data[mzUnitKey] : null; }
+function mzIsUnlocked(mag){ return !mag.passcodeHash || localStorage.getItem(MZ_UNLOCK_PREFIX+mag.id)===mag.passcodeHash; }
 
 function renderMagazineList(){
   const section = document.getElementById('magazineSection');
@@ -4268,14 +4300,54 @@ function renderMagazineList(){
 }
 
 function openMagazine(id){
+  const mag = MAGAZINES.find(m=>m.id===id);
+  if(!mag || !mag.data) return;
   mzMagazineId = id;
+  if(!mzIsUnlocked(mag)){ renderMagazinePasscodeGate(); return; }
   renderMagazineUnitList();
+}
+
+function renderMagazinePasscodeGate(){
+  const mag = mzCurrentMag();
+  const section = document.getElementById('magazineSection');
+  section.innerHTML = `
+    <div class="mz-wrap">
+      <div class="mz-topbar">
+        <button class="mz-back" onclick="renderMagazineList()">‹ 返回</button>
+        <div class="mz-topbar-title">${_escH(mag.label)}</div>
+        <div style="width:56px"></div>
+      </div>
+      <div class="mz-passcode-box">
+        <div class="mz-passcode-ico">🔒</div>
+        <div class="mz-passcode-title">${_escH(mag.label)}・${_escH(mag.desc)} 需要通行密碼</div>
+        <div class="mz-passcode-sub">請輸入老師提供的密碼以繼續</div>
+        <input type="password" id="mzPasscodeInput" class="mz-passcode-input" placeholder="請輸入通行密碼" onkeydown="if(event.key==='Enter') mzVerifyMagazinePasscode()">
+        <div id="mzPasscodeError" class="mz-passcode-error"></div>
+        <button type="button" class="mz-grade-btn" onclick="mzVerifyMagazinePasscode()">驗證並進入</button>
+      </div>
+    </div>`;
+  setTimeout(()=>document.getElementById('mzPasscodeInput')?.focus(), 100);
+}
+
+async function mzVerifyMagazinePasscode(){
+  const mag = mzCurrentMag();
+  const input = document.getElementById('mzPasscodeInput');
+  const pw = input ? input.value : '';
+  const h = await _sha256(pw);
+  if(h === mag.passcodeHash){
+    localStorage.setItem(MZ_UNLOCK_PREFIX+mag.id, h);
+    renderMagazineUnitList();
+  } else {
+    const err = document.getElementById('mzPasscodeError');
+    if(err) err.textContent = '密碼錯誤，請重新輸入';
+  }
 }
 
 function renderMagazineUnitList(){
   const mag = mzCurrentMag();
   const section = document.getElementById('magazineSection');
   if(!mag || !mag.data){ renderMagazineList(); return; }
+  if(!mzIsUnlocked(mag)){ renderMagazinePasscodeGate(); return; }
   const units = Object.keys(mag.data);
   const mistakeCount = mzMistakes.filter(x=>x.magazineId===mag.id).length;
   section.innerHTML = `
@@ -4687,7 +4759,13 @@ function mzRenderReadingTab(u){
     </div>`;
 }
 
+function mzTogglePassage(id){
+  mzExpandedPassages[id] = mzExpandedPassages[id] === undefined ? false : !mzExpandedPassages[id];
+  renderMagazineUnit();
+}
+
 function mzRenderMistakesTab(){
+  const mag = mzCurrentMag();
   const list = mzMistakes.filter(m=>m.magazineId===mzMagazineId);
   if(!list.length){
     return `<div class="mz-empty">
@@ -4701,12 +4779,24 @@ function mzRenderMistakesTab(){
       <button type="button" class="mz-clear-btn" onclick="mzClearMistakes()">清空全部錯題</button>
     </div>
     <div class="mz-mistake-list">
-      ${list.map(m=>`
+      ${list.map(m=>{
+        const passageText = (mag && mag.data && mag.data[m.unit] && mag.data[m.unit].passage) || m.passage;
+        const isOpen = mzExpandedPassages[m.id] !== false;
+        const passageBlock = (m.tab==='reading' && passageText) ? `
+          <div class="mz-mistake-passage">
+            <div class="mz-mistake-passage-head">
+              <span>📖 閱讀測驗原文章（${_escH(m.unitTitle||m.unit)}）</span>
+              <button type="button" class="mz-mistake-toggle" onclick="mzTogglePassage('${m.id}')">${isOpen?'▲ 收合文章':'▼ 展開對照文章'}</button>
+            </div>
+            ${isOpen?`<div class="mz-mistake-passage-body">${passageText.split('\n\n').map(p=>`<p>${_escH(p)}</p>`).join('')}</div>`:''}
+          </div>` : '';
+        return `
         <div class="mz-mistake-card">
           <div class="mz-mistake-top">
             <span class="mz-mistake-tag">${_escH(m.unit)}・${_escH(m.tabName)}</span>
             <button type="button" class="mz-mistake-x" onclick="mzRemoveMistake('${m.id}')">✕</button>
           </div>
+          ${passageBlock}
           <div class="mz-mistake-q">${_escH(m.question)}</div>
           ${(m.options && m.options.length)?`<div class="mz-mistake-opts">${m.options.map(o=>`<div>${_escH(o)}</div>`).join('')}</div>`:''}
           <div class="mz-mistake-ans">
@@ -4715,8 +4805,183 @@ function mzRenderMistakesTab(){
             ${m.explanation?`<div class="mz-mistake-exp">${_escH(m.explanation)}</div>`:''}
           </div>
           <button type="button" class="mz-retest-btn" onclick="mzRetestMistake('${m.unit}','${m.tab}')">↺ 回溯至原題型重做</button>
-        </div>`).join('')}
+        </div>`;
+      }).join('')}
     </div>`;
+}
+
+// ─── Magazine Print / PDF Export ───
+const MZ_PRINT_CSS = `
+  body{font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;color:#1C1C1E;max-width:800px;margin:0 auto;padding:24px;}
+  h1{font-size:1.3rem;margin-bottom:4px;}
+  .mzp-meta{color:#666;font-size:.85rem;margin-bottom:20px;border-bottom:2px solid #333;padding-bottom:10px;}
+  .mzp-section{margin-bottom:28px;page-break-inside:avoid;}
+  .mzp-section h2{font-size:1.05rem;border-left:4px solid #4361EE;padding-left:8px;margin-bottom:10px;}
+  .mzp-passage p,.mzp-cloze-text{line-height:1.9;text-indent:1.4em;margin:0 0 10px;font-size:.95rem;}
+  .mzp-trans{line-height:1.8;white-space:pre-line;font-size:.9rem;color:#333;}
+  .mzp-bank{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;font-size:.88rem;}
+  .mzp-bank div{border:1px solid #999;border-radius:6px;padding:3px 8px;}
+  .mzp-q{margin-bottom:14px;page-break-inside:avoid;}
+  .mzp-opts{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:6px 0;font-size:.88rem;}
+  .mzp-ans{background:#EFFAF4;border:1px solid #B6E8CC;border-radius:6px;padding:6px 10px;font-size:.82rem;margin-top:4px;white-space:pre-line;}
+  .mzp-blank{font-size:.85rem;color:#555;margin-top:4px;}
+  @media print{ body{padding:0;} }
+`;
+
+function mzPrintMcQuestion(q, isTeacher, qLabel){
+  return `<div class="mzp-q">
+    <p>${qLabel?`<b>${_escH(qLabel)}</b> `:''}${_escH(q.question||'')}</p>
+    <div class="mzp-opts">${q.options.map(o=>`<div>${_escH(o)}</div>`).join('')}</div>
+    ${isTeacher?`<div class="mzp-ans">✔ 正解：(${q.answer})${q.explanation?`<br>${_escH(q.explanation)}`:''}</div>`:`<div class="mzp-blank">作答：(　)</div>`}
+  </div>`;
+}
+
+function mzPrintPassageSection(u){
+  const paras = u.passage.split('\n\n').map(p=>`<p>${_escH(p)}</p>`).join('');
+  const trans = u.chineseTranslation ? `<h2 style="margin-top:16px;">中文翻譯</h2><div class="mzp-trans">${_escH(u.chineseTranslation)}</div>` : '';
+  return `<section class="mzp-section"><h2>課文全文</h2><div class="mzp-passage">${paras}</div>${trans}</section>`;
+}
+function mzPrintVocabSection(u, isTeacher){
+  return `<section class="mzp-section"><h2>單字四選一測驗</h2>${u.vocab.map(q=>mzPrintMcQuestion(q, isTeacher, q.id+'.')).join('')}</section>`;
+}
+function mzPrintClozeSection(u, isTeacher){
+  const text = `<p class="mzp-cloze-text">${_escH(u.cloze.text)}</p>`;
+  const qs = u.cloze.questions.map(q=>mzPrintMcQuestion({question:`空格 [${q.id}]`, options:q.options, answer:q.answer, explanation:q.explanation}, isTeacher)).join('');
+  return `<section class="mzp-section"><h2>克漏字測驗</h2>${text}${qs}</section>`;
+}
+function mzPrintWordBankSection(u, isTeacher){
+  const bank = `<div class="mzp-bank">${u.wordBank.words.map(w=>`<div>${_escH(w)}</div>`).join('')}</div>`;
+  const passage = `<p class="mzp-cloze-text">${_escH(u.wordBank.passage)}</p>`;
+  const answers = isTeacher ? `<div class="mzp-ans">${Object.entries(u.wordBank.answers).map(([i,a])=>`[${i}]=(${a})`).join('　')}</div>` : '';
+  return `<section class="mzp-section"><h2>文意選填</h2>${bank}${passage}${answers}</section>`;
+}
+function mzPrintDiscourseSection(u, isTeacher){
+  const opts = `<div class="mzp-bank">${u.discourse.options.map(o=>`<div>${_escH(o)}</div>`).join('')}</div>`;
+  const paras = u.discourse.paragraphs.map(p=>`<p class="mzp-cloze-text">${_escH(p)}</p>`).join('');
+  const answers = isTeacher ? `<div class="mzp-ans">${Object.entries(u.discourse.answers).map(([i,a])=>`[${i}]=(${a})`).join('　')}</div>` : '';
+  return `<section class="mzp-section"><h2>篇章結構</h2>${opts}${paras}${answers}</section>`;
+}
+function mzPrintReadingSection(u, isTeacher){
+  const paras = u.passage.split('\n\n').map(p=>`<p>${_escH(p)}</p>`).join('');
+  const qs = u.reading.questions.map(q=>mzPrintMcQuestion(q, isTeacher, q.id+'.')).join('');
+  return `<section class="mzp-section"><h2>閱讀測驗</h2><div class="mzp-passage">${paras}</div>${qs}</section>`;
+}
+function mzPrintMistakesSection(isTeacher){
+  const mag = mzCurrentMag();
+  const list = mzMistakes.filter(m=>m.magazineId===mzMagazineId);
+  if(!list.length) return `<p>目前沒有任何錯題。</p>`;
+  const groups = {};
+  list.forEach(m=>{
+    const key = m.unit+'__'+m.tab;
+    if(!groups[key]) groups[key] = { unit:m.unit, tab:m.tab, tabName:m.tabName, items:[] };
+    groups[key].items.push(m);
+  });
+  return Object.values(groups).map(g=>{
+    const u = mag && mag.data ? mag.data[g.unit] : null;
+    let contextHtml = '';
+    if(g.tab==='discourse' && u && u.discourse){
+      contextHtml = `<div class="mzp-bank">${u.discourse.options.map(o=>`<div>${_escH(o)}</div>`).join('')}</div>` +
+        u.discourse.paragraphs.map(p=>`<p class="mzp-cloze-text">${_escH(p)}</p>`).join('');
+    } else if(g.tab==='wordBank' && u && u.wordBank){
+      contextHtml = `<div class="mzp-bank">${u.wordBank.words.map(w=>`<div>${_escH(w)}</div>`).join('')}</div><p class="mzp-cloze-text">${_escH(u.wordBank.passage)}</p>`;
+    } else if(g.tab==='cloze' && u && u.cloze){
+      contextHtml = `<p class="mzp-cloze-text">${_escH(u.cloze.text)}</p>`;
+    } else if(g.tab==='reading'){
+      const passageText = (u && u.passage) || (g.items[0] && g.items[0].passage) || '';
+      contextHtml = passageText.split('\n\n').map(p=>`<p>${_escH(p)}</p>`).join('');
+    }
+    const itemsHtml = g.items.map(m=>`
+      <div class="mzp-q">
+        <p>${_escH(m.question)}</p>
+        ${(m.options && m.options.length)?`<div class="mzp-opts">${m.options.map(o=>`<div>${_escH(o)}</div>`).join('')}</div>`:''}
+        ${isTeacher?`<div class="mzp-ans">✔ 正解：(${m.correctAnswer})${m.explanation?`<br>${_escH(m.explanation)}`:''}</div>`:`<div class="mzp-blank">作答：(　)</div>`}
+      </div>`).join('');
+    return `<section class="mzp-section"><h2>${_escH(g.unit)}・${_escH(g.tabName)}</h2>${contextHtml}${itemsHtml}</section>`;
+  }).join('');
+}
+
+function mzBuildPrintDoc(){
+  const mag = mzCurrentMag();
+  const isTeacher = mzPrintMode === 'teacher';
+  const scope = mzPrintScope;
+  let bodyHtml = '';
+  let title = '';
+
+  if(scope === 'mistakes'){
+    title = `${mag.label} 弱點錯題本`;
+    bodyHtml = mzPrintMistakesSection(isTeacher);
+  } else {
+    const u = mzCurrentUnitData();
+    title = `${mzUnitKey} ${u ? u.title : ''}`;
+    const sections = [];
+    if(u){
+      if(scope === 'all' || mzTab === 'passage') sections.push(mzPrintPassageSection(u));
+      if(u.vocab && (scope === 'all' || mzTab === 'vocab')) sections.push(mzPrintVocabSection(u, isTeacher));
+      if(u.cloze && (scope === 'all' || mzTab === 'cloze')) sections.push(mzPrintClozeSection(u, isTeacher));
+      if(u.wordBank && (scope === 'all' || mzTab === 'wordBank')) sections.push(mzPrintWordBankSection(u, isTeacher));
+      if(u.discourse && (scope === 'all' || mzTab === 'discourse')) sections.push(mzPrintDiscourseSection(u, isTeacher));
+      if(u.reading && (scope === 'all' || mzTab === 'reading')) sections.push(mzPrintReadingSection(u, isTeacher));
+    }
+    bodyHtml = sections.join('');
+  }
+
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${_escH(title)}</title><style>${MZ_PRINT_CSS}</style></head>
+  <body>
+    <h1>${_escH(title)}</h1>
+    <div class="mzp-meta">${isTeacher?'教師詳解卷':'學生作答卷'}</div>
+    ${bodyHtml}
+  </body></html>`;
+}
+
+function mzRenderPrintModal(){
+  if(!mzPrintOpen) return '';
+  const mistakeCount = mzMistakes.filter(x=>x.magazineId===mzMagazineId).length;
+  return `
+  <div class="mz-print-overlay" onclick="if(event.target===this) mzClosePrintModal()">
+    <div class="mz-print-card">
+      <div class="mz-print-head">
+        <span>🖨️ 列印 / 匯出試卷</span>
+        <button type="button" class="mz-note-close" onclick="mzClosePrintModal()">✕</button>
+      </div>
+      <div class="mz-print-group">
+        <div class="mz-print-label">1. 選擇格式</div>
+        <div class="mz-print-row">
+          <button type="button" class="mz-print-opt ${mzPrintMode==='student'?'active':''}" onclick="mzSetPrintMode('student')">學生空白作答卷</button>
+          <button type="button" class="mz-print-opt ${mzPrintMode==='teacher'?'active':''}" onclick="mzSetPrintMode('teacher')">教師詳解卷</button>
+        </div>
+      </div>
+      <div class="mz-print-group">
+        <div class="mz-print-label">2. 選擇範圍</div>
+        <div class="mz-print-row">
+          <button type="button" class="mz-print-opt ${mzPrintScope==='current'?'active':''}" onclick="mzSetPrintScope('current')">當前題型/課文</button>
+          <button type="button" class="mz-print-opt ${mzPrintScope==='all'?'active':''}" onclick="mzSetPrintScope('all')">全單元完整考卷</button>
+          <button type="button" class="mz-print-opt ${mzPrintScope==='mistakes'?'active':''}" onclick="mzSetPrintScope('mistakes')">弱點錯題本 (${mistakeCount})</button>
+        </div>
+      </div>
+      <button type="button" class="mz-grade-btn" onclick="mzConfirmPrint()">開啟列印視窗</button>
+    </div>
+  </div>`;
+}
+
+function mzOpenPrintModal(){
+  mzPrintScope = mzTab === 'mistakes' ? 'mistakes' : 'current';
+  mzPrintOpen = true;
+  renderMagazineUnit();
+}
+function mzClosePrintModal(){ mzPrintOpen = false; renderMagazineUnit(); }
+function mzSetPrintMode(m){ mzPrintMode = m; renderMagazineUnit(); }
+function mzSetPrintScope(s){ mzPrintScope = s; renderMagazineUnit(); }
+function mzConfirmPrint(){
+  const doc = mzBuildPrintDoc();
+  const win = window.open('', '_blank');
+  if(!win){ alert('請允許瀏覽器彈出視窗以列印'); return; }
+  win.document.open();
+  win.document.write(doc);
+  win.document.close();
+  win.focus();
+  setTimeout(()=>{ try{ win.print(); }catch(e){} }, 300);
+  mzPrintOpen = false;
+  renderMagazineUnit();
 }
 
 function renderMagazineUnit(){
@@ -4757,14 +5022,18 @@ function renderMagazineUnit(){
       <div class="mz-topbar">
         <button class="mz-back" onclick="renderMagazineUnitList()">‹ ${_escH(mag.label)}</button>
         <div class="mz-topbar-title">${_escH(mzUnitKey)}・${_escH(u.title)}</div>
-        <button class="mz-back" onclick="mzSwitchTab('mistakes')">📕 錯題(${mistakeCount})</button>
+        <div class="mz-topbar-actions">
+          <button class="mz-back" onclick="mzOpenPrintModal()" title="列印/匯出">🖨️</button>
+          <button class="mz-back" onclick="mzSwitchTab('mistakes')">📕(${mistakeCount})</button>
+        </div>
       </div>
       ${mzTab!=='mistakes'?`
         <div class="mz-tabrow">
           ${tabs.map(t=>`<button type="button" class="mz-tab-btn ${mzTab===t.id?'active':''}" onclick="mzSwitchTab('${t.id}')">${t.label}</button>`).join('')}
         </div>`:''}
       <div class="mz-body">${body}</div>
-    </div>`;
+    </div>
+    ${mzRenderPrintModal()}`;
 }
 
 // ─── Paragraph Understanding ───
