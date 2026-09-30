@@ -1,5 +1,7 @@
-// Studio Classroom 9月號（課文 U1-U14）— 目前僅 Unit 1 為完整樣張，供審核內容品質用。
-// 審核通過後再依相同 schema 補齊 Unit 2-14（原始課文來源：Studio Classroom 9月號_課文 U1-U14.pdf）。
+// Studio Classroom 9月號（課文 U1-U14）— 全部 14 個 Unit 皆為完整內容。
+// 原始課文來源：Studio Classroom 9月號_課文 U1-U14.pdf（僅課文本身，annotations/
+// vocab/cloze/wordBank/discourse/reading 皆由 Claude 依黃金標準規範原創產製，
+// 已逐一通過結構性驗證，但建議實際使用前仍抽查內容品質）。
 const MAGAZINE_UNITS_SC202509 = {
   "Unit 1": {
     title: "WePlay",
@@ -1126,6 +1128,460 @@ const MAGAZINE_UNITS_SC202509 = {
         { id: 2, question: "According to the article, how does a defensive player stop an offensive player?", options: ["A. By tackling them to the ground", "B. By pulling one or both flags from the runner's belt", "C. By blocking the entire field", "D. By calling a timeout"], answer: "B", explanation: "細節題。文中提到防守方球員藉由拔下帶球者腰帶上的一條或兩條布旗來終止該次進攻。" },
         { id: 3, question: "How many points does a team score when they successfully reach the end zone?", options: ["A. Three points", "B. Six points", "C. Ten points", "D. One point"], answer: "B", explanation: "細節題。文中提到成功進入底線區可得六分。" },
         { id: 4, question: "What can be inferred about the popularity of flag football, based on the article?", options: ["A. It is a niche sport with very few players worldwide", "B. It is rapidly growing in popularity and will be featured at the 2028 Olympics", "C. It is losing popularity compared to traditional football", "D. It is only played by professional athletes"], answer: "B", explanation: "推論題。文中提到全球已有超過 2000 萬人參與，且男女代表隊正競逐 2028 奧運參賽資格，顯示這項運動正快速成長。" }
+      ]
+    }
+  },
+
+  "Unit 11": {
+    title: "The Locker Letters",
+    chineseTitle: "置物櫃情書之謎",
+    passage: `Day 1\n\nBy Friday, love letters had taken over Owl City High School. Dozens of students found anonymous notes in their lockers — some were shy confessions, and others were poetic expressions of hidden feelings. The writing was smooth, the compliments specific. People were flattered. And embarrassed. And curious.\n\n“It’s a flood of feelings,” Dean said, watching three girls blush as they read their letters.\n\n“Too many notes. Too similar,” Ivy said, flipping through hers. “Same ink. Same style. Same silly poetry voice.”\n\nDean raised an eyebrow. “What if someone’s playing matchmaker?”\n\n“What if someone’s playing everyone?” Ivy answered.\n\nDay 2\n\nDean studied one of the letters. “It’s important that we figure out who’s writing these letters — they sound emotional without being real.” Dean’s eyes narrowed. “You know what? That chatbot the computer lab’s testing — it’s still open to students. You think …?”\n\nTen minutes later, he and Ivy were in the computer lab digging through the chatbot’s log data and, sure enough, they struck gold. Dozens of prompts had been fed into the system, each tied to the same login name, with timestamps lined up perfectly with the letters.\n\nDean opened one of the logs and read the prompt aloud:\n\n“Write a romantic letter to someone who loves frogs and hates chocolate. Reference a science field trip and a joke about pencils.”\n\nHe whistled. “He’s using people’s public profiles as source material.”\n\n“And letting them believe the feelings were genuine,” Ivy finished, frowning.\n\nThe culprit? Jonah Rhee. Quiet. Smart. Forgettable — until now.\n\nThey found Jonah cleaning paintbrushes in the art room.\n\n“Jonah,” Ivy said gently, “We’ve seen the letters. And the prompts you wrote.”\n\nJonah set a brush down. “I didn’t think my own words were good enough for anyone to care about. But if they got a beautiful, heartfelt letter, they’d feel the way I wish I could.”\n\n“So you used the chatbot?” asked Dean.\n\nJonah gave a small nod. “I didn’t know what to say. But I knew what they liked — frogs, concerts, old field trips.”\n\n“Jonah, it’s evident that you want to be seen. But pretending to be other people doesn’t make you more lovable. Just harder to trust,” said Ivy kindly.\n\nJonah looked down. “I didn’t think it’d work.”\n\n“It didn’t,” Ivy said softly. “But maybe now you can try something riskier.”\n\n“Like what?”\n\n“Being honest.”`,
+    chineseTranslation: `【第 1 天】\n\n到了星期五，情書已經席捲了貓頭鷹城高中。許多學生在自己的置物櫃裡發現了匿名紙條——有些是害羞的告白，有些則是充滿詩意、訴說著隱藏心意的文字。字跡工整流暢，讚美之詞也十分具體。大家既感到受寵若驚，又覺得尷尬，同時也充滿好奇。\n\n「這簡直是一波情感的洪流，」迪恩說著，看著三個女孩紅著臉讀信。\n\n「太多紙條了，而且太相似了，」艾薇邊翻閱著自己收到的信邊說。「同樣的墨水，同樣的風格，同樣拙劣的詩意語氣。」\n\n迪恩挑起眉毛。「會不會是有人在扮演月老？」\n\n「會不會是有人在耍弄所有人？」艾薇回應道。\n\n【第 2 天】\n\n迪恩仔細研究其中一封信。「我們得找出到底是誰在寫這些信——這些信讀起來充滿情感，卻不像是真心的。」迪恩瞇起了眼睛。「你知道嗎？電腦教室正在測試的那個聊天機器人——它現在還開放給學生使用。你覺得……？」\n\n十分鐘後，他和艾薇已經身在電腦教室，翻找著聊天機器人的紀錄資料，結果不出所料，他們挖到了重要線索。系統中被輸入了數十筆提示詞，全都綁定在同一個登入帳號下，而且時間戳記與那些信件的時間完全吻合。\n\n迪恩打開其中一則紀錄，大聲唸了出來：\n\n「幫我寫一封浪漫情書，對象是一個喜歡青蛙、討厭巧克力的人。內容要提到一次科學校外教學，還要有個關於鉛筆的笑話。」\n\n他吹了聲口哨。「他根本是在拿別人的公開個人檔案當寫作素材。」\n\n「而且還讓對方誤以為那些情感是真的，」艾薇接著說，皺起了眉頭。\n\n犯人是誰？喬納·瑞。安靜。聰明。存在感薄弱——直到現在為止。\n\n他們在美術教室找到了正在清洗畫筆的喬納。\n\n「喬納，」艾薇溫和地說，「我們已經看過那些信了，也看過你寫的那些提示詞。」\n\n喬納放下畫筆。「我覺得自己的話不夠好，不足以讓任何人在意。但如果他們收到一封美麗、真情流露的信，他們就能感受到我希望自己能表達出的那種感覺。」\n\n「所以你用了聊天機器人？」迪恩問道。\n\n喬納輕輕點了點頭。「我不知道該說什麼。但我知道他們喜歡什麼——青蛙、演唱會，還有以前的校外教學。」\n\n「喬納，很明顯你渴望被看見。但假裝成別人並不會讓你變得更討人喜歡，只會讓人更難信任你，」艾薇語氣溫柔地說。\n\n喬納垂下了頭。「我沒想到會被發現。」\n\n「確實沒成功，」艾薇輕聲說道。「但也許現在你可以試試更有勇氣的做法。」\n\n「像是什麼？」\n\n「誠實面對。」`,
+    annotations: {
+      keyVocabList: [
+        { id: 1, word: "anonymous", pos: "adj.", meaning: "匿名的", collocations: "anonymous notes 匿名紙條" },
+        { id: 2, word: "flattered", pos: "v.", meaning: "感到受寵若驚", collocations: "feel flattered 感到受寵若驚" },
+        { id: 3, word: "genuine", pos: "adj.", meaning: "真誠的、真實的", collocations: "genuine feelings 真實的情感" },
+        { id: 4, word: "culprit", pos: "n.", meaning: "犯人、罪魁禍首", collocations: "the culprit 犯人" },
+        { id: 5, word: "Forgettable", pos: "adj.", meaning: "容易被遺忘的", collocations: "forgettable and quiet 存在感薄弱又安靜" }
+      ],
+      grammarNotes: [
+        { id: "G1", title: "What if...? (假設疑問句，表懷疑猜測)", excerpt: "“What if someone’s playing matchmaker?”", analysis: "What if...? 用於提出假設性的猜測或疑問，表「如果…會怎樣？」。" },
+        { id: "G2", title: "without + V-ing (沒有…卻…)", excerpt: "without being real", analysis: "without 後接動名詞，表「沒有…」，此處形容信件聽起來充滿情感卻不真實。" }
+      ],
+      patternNotes: [
+        { id: "P1", title: "it's evident that + S. + V. (顯而易見的是…)", excerpt: "it’s evident that you want to be seen", analysis: "it is evident that... 為虛主詞句型，強調後方子句所陳述的事實顯而易見。" }
+      ],
+      paragraphs: [
+        [ { type: 'text', text: 'Day 1' } ],
+        [
+          { type: 'text', text: 'By Friday, love letters had taken over Owl City High School. Dozens of students found ' },
+          { type: 'vocab', text: 'anonymous', vid: 1 },
+          { type: 'text', text: ' notes in their lockers — some were shy confessions, and others were poetic expressions of hidden feelings. The writing was smooth, the compliments specific. People were ' },
+          { type: 'vocab', text: 'flattered', vid: 2 },
+          { type: 'text', text: '. And embarrassed. And curious.' }
+        ],
+        [ { type: 'text', text: '“It’s a flood of feelings,” Dean said, watching three girls blush as they read their letters.' } ],
+        [ { type: 'text', text: '“Too many notes. Too similar,” Ivy said, flipping through hers. “Same ink. Same style. Same silly poetry voice.”' } ],
+        [
+          { type: 'text', text: 'Dean raised an eyebrow. ' },
+          { type: 'grammar', text: '“What if someone’s playing matchmaker?”', gid: 'G1' }
+        ],
+        [ { type: 'text', text: '“What if someone’s playing everyone?” Ivy answered.' } ],
+        [ { type: 'text', text: 'Day 2' } ],
+        [
+          { type: 'text', text: 'Dean studied one of the letters. “It’s important that we figure out who’s writing these letters — they sound emotional ' },
+          { type: 'grammar', text: 'without being real', gid: 'G2' },
+          { type: 'text', text: '.” Dean’s eyes narrowed. “You know what? That chatbot the computer lab’s testing — it’s still open to students. You think …?”' }
+        ],
+        [ { type: 'text', text: 'Ten minutes later, he and Ivy were in the computer lab digging through the chatbot’s log data and, sure enough, they struck gold. Dozens of prompts had been fed into the system, each tied to the same login name, with timestamps lined up perfectly with the letters.' } ],
+        [ { type: 'text', text: 'Dean opened one of the logs and read the prompt aloud:' } ],
+        [ { type: 'text', text: '“Write a romantic letter to someone who loves frogs and hates chocolate. Reference a science field trip and a joke about pencils.”' } ],
+        [ { type: 'text', text: 'He whistled. “He’s using people’s public profiles as source material.”' } ],
+        [
+          { type: 'text', text: '“And letting them believe the feelings were ' },
+          { type: 'vocab', text: 'genuine', vid: 3 },
+          { type: 'text', text: ',” Ivy finished, frowning.' }
+        ],
+        [
+          { type: 'text', text: 'The ' },
+          { type: 'vocab', text: 'culprit', vid: 4 },
+          { type: 'text', text: '? Jonah Rhee. Quiet. Smart. ' },
+          { type: 'vocab', text: 'Forgettable', vid: 5 },
+          { type: 'text', text: ' — until now.' }
+        ],
+        [ { type: 'text', text: 'They found Jonah cleaning paintbrushes in the art room.' } ],
+        [ { type: 'text', text: '“Jonah,” Ivy said gently, “We’ve seen the letters. And the prompts you wrote.”' } ],
+        [ { type: 'text', text: 'Jonah set a brush down. “I didn’t think my own words were good enough for anyone to care about. But if they got a beautiful, heartfelt letter, they’d feel the way I wish I could.”' } ],
+        [ { type: 'text', text: '“So you used the chatbot?” asked Dean.' } ],
+        [ { type: 'text', text: 'Jonah gave a small nod. “I didn’t know what to say. But I knew what they liked — frogs, concerts, old field trips.”' } ],
+        [
+          { type: 'text', text: '“Jonah, ' },
+          { type: 'pattern', text: 'it’s evident that you want to be seen', pid: 'P1' },
+          { type: 'text', text: '. But pretending to be other people doesn’t make you more lovable. Just harder to trust,” said Ivy kindly.' }
+        ],
+        [ { type: 'text', text: 'Jonah looked down. “I didn’t think it’d work.”' } ],
+        [ { type: 'text', text: '“It didn’t,” Ivy said softly. “But maybe now you can try something riskier.”' } ],
+        [ { type: 'text', text: '“Like what?”' } ],
+        [ { type: 'text', text: '“Being honest.”' } ]
+      ]
+    },
+    vocab: [
+      { id: 1, question: "The charity received a large ______ donation from someone who wished to remain unnamed.", options: ["A. anonymous", "B. deceptive", "C. sentimental", "D. artificial"], answer: "A", explanation: "【選項解析】\n- (A) anonymous (adj.) 匿名的 (正解)\n- (B) deceptive (adj.) 欺騙性的\n- (C) sentimental (adj.) 多愁善感的\n- (D) artificial (adj.) 人造的" },
+      { id: 2, question: "Her apology sounded ______, and everyone could tell she truly meant it.", options: ["A. genuine", "B. vague", "C. contagious", "D. excessive"], answer: "A", explanation: "【選項解析】\n- (A) genuine (adj.) 真誠的、真實的 (正解)\n- (B) vague (adj.) 模糊的\n- (C) contagious (adj.) 傳染性的\n- (D) excessive (adj.) 過量的" },
+      { id: 3, question: "Detectives eventually identified the ______ behind the string of break-ins.", options: ["A. culprit", "B. companion", "C. host", "D. spectrum"], answer: "A", explanation: "【選項解析】\n- (A) culprit (n.) 犯人、罪魁禍首 (正解)\n- (B) companion (n.) 夥伴\n- (C) host (n.) 主持人\n- (D) spectrum (n.) 範圍" },
+      { id: 4, question: "The movie's plot was so ______ that she couldn't remember a single detail the next day.", options: ["A. forgettable", "B. remarkable", "C. courageous", "D. qualified"], answer: "A", explanation: "【選項解析】\n- (A) forgettable (adj.) 容易被遺忘的 (正解)\n- (B) remarkable (adj.) 非凡的\n- (C) courageous (adj.) 勇敢的\n- (D) qualified (adj.) 合格的" }
+    ],
+    cloze: {
+      text: "When a wave of anonymous love letters appeared at Owl City High School, two curious students decided to investigate [1] had written them. At first, the notes seemed like an innocent, even charming mystery, but the writing style was suspiciously [2] across every letter. Rather than accept the notes at face value, Dean and Ivy began looking for clues, [3] led them straight to the school's computer lab. There, they discovered [4] appeared to be the true source of the romantic messages: an AI chatbot. The real surprise, however, was not the technology itself but the shy, overlooked classmate [5] had been quietly typing the prompts all along.",
+      questions: [
+        { id: 1, options: ["A. who", "B. whom", "C. whose", "D. which"], answer: "A", explanation: "investigate 後接名詞子句，who 引導子句作受詞，表「調查是誰…」。" },
+        { id: 2, options: ["A. similar", "B. similarly", "C. similarity", "D. similarize"], answer: "A", explanation: "be + adj. 句型，similar 為形容詞作主詞補語。" },
+        { id: 3, options: ["A. which", "B. who", "C. whom", "D. whose"], answer: "A", explanation: "先行詞為前面整個概念（尋找線索的過程），which 引導非限定關係子句補充說明。" },
+        { id: 4, options: ["A. what", "B. that", "C. which", "D. who"], answer: "A", explanation: "what 引導名詞子句，作 discovered 的受詞，相當於 the thing that。" },
+        { id: 5, options: ["A. who", "B. which", "C. whom", "D. whose"], answer: "A", explanation: "先行詞 classmate 為人，who 在子句中作主詞，引導限定關係子句。" }
+      ]
+    },
+    wordBank: {
+      words: ["(A) confess", "(B) confession", "(C) convincing", "(D) disguise", "(E) evidence", "(F) expose", "(G) motive", "(H) remorseful", "(I) suspect", "(J) suspicious"],
+      passage: "Mystery stories set in high schools often follow a familiar pattern: something strange happens, a small group of students starts asking questions, and the truth turns out to be far more personal than anyone expected. Before investigators can [1] any single classmate, they usually need real [2], not just a hunch.\n\nIn many cases, the first clue is something small and oddly [3], a detail that does not quite match the story being told. A handwriting style that looks too polished, a compliment that feels suspiciously specific — these tiny inconsistencies are often enough to make sharp-eyed classmates start paying closer attention.\n\nOnce investigators begin digging, they usually look for a clear [4]. Why would someone go to such lengths to hide their identity? Loneliness, a crush or a simple desire to be noticed are common answers, and understanding the reason often makes the mystery's resolution far more [5].\n\nWhen the culprit is finally identified, reactions vary widely. Some try to [6] their true feelings right away, offering a full [7] without much resistance. Others attempt to [8] their involvement for as long as possible, hoping no one will [9] the whole story before graduation.\n\nIn the end, most of these stories are not really about catching a rule-breaker. They are about a [10] student finally working up the courage to be honest, even after being caught.",
+      answers: { 1: "I", 2: "E", 3: "J", 4: "G", 5: "C", 6: "A", 7: "B", 8: "D", 9: "F", 10: "H" }
+    },
+    discourse: {
+      options: [
+        "A. A closer look revealed that every letter shared oddly similar phrasing and style.",
+        "B. The school principal immediately canceled all extracurricular clubs as a punishment.",
+        "C. This digital trail eventually led the two students straight to an AI chatbot in the school's computer lab.",
+        "D. Rather than punishing him, Ivy encouraged him to try a far simpler, more honest approach instead.",
+        "E. At first, most students assumed the letters were simply the work of a secret admirer."
+      ],
+      paragraphs: [
+        "When anonymous love letters flooded the lockers of Owl City High School, the reaction was part delight and part confusion. Nobody could say for certain who was behind them.",
+        "[1] But two classmates, Dean and Ivy, were not so easily convinced.",
+        "[2] Suspicious, they decided to investigate further, tracing login records and timestamps back to a single source. [3]",
+        "The real culprit turned out to be a quiet, overlooked classmate who simply wanted to be noticed. [4] In the end, the mystery said less about deception and more about the courage it takes to be truly seen."
+      ],
+      answers: { 1: "E", 2: "A", 3: "C", 4: "D" }
+    },
+    reading: {
+      questions: [
+        { id: 1, question: "What is this story mainly about?", options: ["A. Two students solving a mystery about who has been secretly using a chatbot to write love letters", "B. A romantic love story between Dean and Ivy", "C. A technical guide to building chatbots", "D. A school election scandal"], answer: "A", explanation: "主旨題。全文描述迪恩與艾薇如何調查並揭穿是誰利用聊天機器人撰寫情書的謎團。" },
+        { id: 2, question: "What first made Dean and Ivy suspicious of the love letters?", options: ["A. The letters were written in a foreign language", "B. The letters shared a suspiciously similar writing style", "C. The letters were signed with a real name", "D. The letters were delivered by mail instead of placed in lockers"], answer: "B", explanation: "細節題。艾薇提到這些信件用詞相似、風格雷同，讓他們開始起疑。" },
+        { id: 3, question: "How did Dean and Ivy discover who was writing the letters?", options: ["A. They asked the school principal for help", "B. They found fingerprints on the letters", "C. They traced chatbot prompts and timestamps linked to the same login name", "D. They hired a private investigator"], answer: "C", explanation: "細節題。文中提到他們透過聊天機器人的紀錄資料，發現提示詞都與同一個登入帳號、且時間戳記與信件時間吻合。" },
+        { id: 4, question: "What can be inferred about Jonah's motivation for writing the letters, based on the story?", options: ["A. He wanted to embarrass his classmates", "B. He wanted to be noticed and cared about but felt his own words weren't good enough", "C. He was hired by someone else to write the letters", "D. He was practicing for a creative writing class assignment"], answer: "B", explanation: "推論題。喬納表示自己覺得「話不夠好，不足以讓任何人在意」，顯示他其實渴望被關注，卻對自己缺乏自信。" }
+      ]
+    }
+  },
+
+  "Unit 12": {
+    title: "Greenland's Cool History",
+    chineseTitle: "格陵蘭的酷歷史",
+    passage: `Day 1\n\nAn icy island almost entirely within the Arctic Circle with a tiny population, Greenland might not sound like a historically important place, yet a noticeable number of nations have engaged with Greenland over the years.\n\nDespite its cold climate and the surrounding waters, Greenland is believed to have been inhabited for 4,500 years. The first people to reach Greenland came from North America through what is now Canada. Several waves of migration from Canada took place, and although some of these groups either left or died out, remains of their culture still exist there.\n\nThere is some irony in a cold place with few plants being named Greenland. The island’s name came from a Viking explorer named Erik the Red. He found the island in the 10th century and then convinced others from his homeland to settle there. At the time, the southern parts of Greenland may have been green enough to inspire its name, but he also chose it to make the prospect of living there appealing. The Norse settlement founded by Erik the Red lasted until the 15th century, but then it disappeared for reasons that remain a mystery.\n\nAnother group of people traveled to Greenland from Siberia in the 12th century. Their descendants, called the Inuit, live in Greenland to this day and comprise most of its population.\n\nDay 2\n\nAfter the disappearance of the Norse settlement, European involvement with the island ceased for a few centuries. But in 1721, a Norwegian priest set out for Greenland as a missionary, planning to search for the lost settlement to give them spiritual guidance. Instead, he found Inuit communities and sought to convince them to convert to Christianity. Over the course of several generations, most of the Inuit became Christian, and Greenland became a colony of Denmark, which at the time was united with Norway. When Norway and Denmark split into separate nations, Norway asserted that they should own Greenland, but an international court ruled that the island still belonged to Denmark.\n\nToday, Greenland remains part of Denmark, but Denmark’s law says Greenland can become independent whenever it chooses. Most people in Greenland want to become independent eventually, but so far, they have not voted for independence for fear that Greenland’s government would collapse without financial support from Denmark.\n\nDuring World War II, Denmark’s ambassador to the United States granted the U.S. permission to establish military bases on the island, one of which still exists. Greenland sits in a strategic location off the coast of North America, so its future may be more important for global affairs than its climate and population may suggest.`,
+    chineseTranslation: `【第 1 天】\n\n格陵蘭是一座幾乎完全位於北極圈內、人口稀少的冰封島嶼，聽起來或許不像是個在歷史上舉足輕重的地方，但事實上，相當多的國家多年來都與格陵蘭有著密切的往來。\n\n儘管氣候嚴寒、四周環海，格陵蘭據信已有人居住長達 4500 年之久。最早抵達格陵蘭的人們，是經由現今加拿大的地區從北美洲而來。之後又歷經了數波來自加拿大的遷徙潮，儘管其中一些族群後來離開或消失了，他們的文化遺跡至今仍存在於此。\n\n一個幾乎不長植物的寒冷之地，卻被命名為「格陵蘭」（意為「綠地」），這其中頗具諷刺意味。這座島嶼的名字，來自一位名叫「紅髮艾瑞克」的維京探險家。他於十世紀發現這座島嶼，並說服故鄉的族人一同前來定居。在當時，格陵蘭南部或許真的有足夠的綠意，足以啟發這個名字的由來，但他選擇這個名字，也是為了讓人們覺得移居此地更具吸引力。由紅髮艾瑞克建立的北歐移民聚落，一直延續到十五世紀，之後便神秘消失，原因至今成謎。\n\n另一群人則於十二世紀從西伯利亞遷徙至格陵蘭。他們的後裔，也就是今日的因紐特人，至今仍居住在格陵蘭，並構成當地人口的絕大多數。\n\n【第 2 天】\n\n北歐移民聚落消失後，歐洲與這座島嶼的往來中斷了數個世紀。但到了 1721 年，一位挪威籍的傳教士啟程前往格陵蘭，原本計畫尋找那個失落的聚落，給予他們心靈上的指引。然而，他找到的卻是因紐特人的部落，並試圖說服他們改信基督教。經過數個世代之後，大多數因紐特人皆已改信基督教，格陵蘭也成為丹麥（當時與挪威為同一國）的殖民地。後來當挪威與丹麥分裂為兩個獨立國家時，挪威一度主張格陵蘭應歸其所有，但國際法庭最終裁定，這座島嶼仍屬於丹麥。\n\n如今，格陵蘭仍是丹麥的一部分，但根據丹麥的法律，格陵蘭隨時可以選擇獨立。多數格陵蘭人最終都希望能夠獨立，但截至目前為止，他們尚未投票支持獨立，原因在於他們擔心，一旦失去丹麥的財政支持，格陵蘭政府恐怕會因此垮台。\n\n二戰期間，丹麥駐美大使批准美國在該島上建立軍事基地，其中一座至今仍然存在。由於格陵蘭地處北美洲海岸外的戰略要地，其未來對於全球事務的重要性，恐怕遠超過它的氣候與人口數字所能顯示的程度。`,
+    annotations: {
+      keyVocabList: [
+        { id: 1, word: "inhabited", pos: "v.", meaning: "被居住", collocations: "be inhabited for... years 被居住…年" },
+        { id: 2, word: "migration", pos: "n.", meaning: "遷徙", collocations: "waves of migration 一波波的遷徙" },
+        { id: 3, word: "irony", pos: "n.", meaning: "諷刺意味", collocations: "there is irony in... …頗具諷刺意味" },
+        { id: 4, word: "settlement", pos: "n.", meaning: "移民聚落", collocations: "a Norse settlement 北歐移民聚落" },
+        { id: 5, word: "descendants", pos: "n.", meaning: "後裔", collocations: "their descendants 他們的後裔" },
+        { id: 6, word: "missionary", pos: "n.", meaning: "傳教士", collocations: "set out as a missionary 以傳教士身分啟程" },
+        { id: 7, word: "convert", pos: "v.", meaning: "使改信、皈依", collocations: "convert to Christianity 改信基督教" },
+        { id: 8, word: "strategic", pos: "adj.", meaning: "戰略上的", collocations: "a strategic location 戰略要地" }
+      ],
+      grammarNotes: [
+        { id: "G1", title: "for fear that + S. + V. (因為害怕…)", excerpt: "for fear that Greenland’s government would collapse without financial support from Denmark", analysis: "for fear that... 表「因為害怕、唯恐…」，說明尚未採取行動（投票獨立）的原因。" },
+        { id: "G2", title: "one of which + V. (非限定關係子句，先行詞為複數事物)", excerpt: "one of which still exists", analysis: "of which 代替先行詞 military bases 表「其中之一」，引導補充說明的非限定關係子句。" }
+      ],
+      patternNotes: [
+        { id: "P1", title: "may have + p.p. (過去可能已經…)", excerpt: "may have been green enough to inspire its name", analysis: "may have + p.p. 表對過去事實的不確定推測，意為「當時可能已經…」。" }
+      ],
+      paragraphs: [
+        [ { type: 'text', text: 'Day 1' } ],
+        [
+          { type: 'text', text: 'An icy island almost entirely within the Arctic Circle with a tiny population, Greenland might not sound like a historically important place, yet a noticeable number of nations have engaged with Greenland over the years.' }
+        ],
+        [
+          { type: 'text', text: 'Despite its cold climate and the surrounding waters, Greenland is believed to have been ' },
+          { type: 'vocab', text: 'inhabited', vid: 1 },
+          { type: 'text', text: ' for 4,500 years. The first people to reach Greenland came from North America through what is now Canada. Several waves of ' },
+          { type: 'vocab', text: 'migration', vid: 2 },
+          { type: 'text', text: ' from Canada took place, and although some of these groups either left or died out, remains of their culture still exist there.' }
+        ],
+        [
+          { type: 'text', text: 'There is some ' },
+          { type: 'vocab', text: 'irony', vid: 3 },
+          { type: 'text', text: ' in a cold place with few plants being named Greenland. The island’s name came from a Viking explorer named Erik the Red. He found the island in the 10th century and then convinced others from his homeland to settle there. At the time, the southern parts of Greenland ' },
+          { type: 'pattern', text: 'may have been green enough to inspire its name', pid: 'P1' },
+          { type: 'text', text: ', but he also chose it to make the prospect of living there appealing. The Norse ' },
+          { type: 'vocab', text: 'settlement', vid: 4 },
+          { type: 'text', text: ' founded by Erik the Red lasted until the 15th century, but then it disappeared for reasons that remain a mystery.' }
+        ],
+        [
+          { type: 'text', text: 'Another group of people traveled to Greenland from Siberia in the 12th century. Their ' },
+          { type: 'vocab', text: 'descendants', vid: 5 },
+          { type: 'text', text: ', called the Inuit, live in Greenland to this day and comprise most of its population.' }
+        ],
+        [ { type: 'text', text: 'Day 2' } ],
+        [
+          { type: 'text', text: 'After the disappearance of the Norse settlement, European involvement with the island ceased for a few centuries. But in 1721, a Norwegian priest set out for Greenland as a ' },
+          { type: 'vocab', text: 'missionary', vid: 6 },
+          { type: 'text', text: ', planning to search for the lost settlement to give them spiritual guidance. Instead, he found Inuit communities and sought to convince them to ' },
+          { type: 'vocab', text: 'convert', vid: 7 },
+          { type: 'text', text: ' to Christianity. Over the course of several generations, most of the Inuit became Christian, and Greenland became a colony of Denmark, which at the time was united with Norway. When Norway and Denmark split into separate nations, Norway asserted that they should own Greenland, but an international court ruled that the island still belonged to Denmark.' }
+        ],
+        [
+          { type: 'text', text: 'Today, Greenland remains part of Denmark, but Denmark’s law says Greenland can become independent whenever it chooses. Most people in Greenland want to become independent eventually, but so far, they have not voted for independence ' },
+          { type: 'grammar', text: 'for fear that Greenland’s government would collapse without financial support from Denmark', gid: 'G1' },
+          { type: 'text', text: '.' }
+        ],
+        [
+          { type: 'text', text: 'During World War II, Denmark’s ambassador to the United States granted the U.S. permission to establish military bases on the island, ' },
+          { type: 'grammar', text: 'one of which still exists', gid: 'G2' },
+          { type: 'text', text: '. Greenland sits in a ' },
+          { type: 'vocab', text: 'strategic', vid: 8 },
+          { type: 'text', text: ' location off the coast of North America, so its future may be more important for global affairs than its climate and population may suggest.' }
+        ]
+      ]
+    },
+    vocab: [
+      { id: 1, question: "Archaeologists found evidence that the cave had been ______ thousands of years ago.", options: ["A. inhabited", "B. curated", "C. certified", "D. exhausted"], answer: "A", explanation: "【選項解析】\n- (A) inhabited (v.) 被居住 (正解)\n- (B) curated (v.) 策劃\n- (C) certified (v.) 被認證\n- (D) exhausted (v.) 精疲力竭的" },
+      { id: 2, question: "Every autumn, millions of birds begin their long ______ south for the winter.", options: ["A. migration", "B. consultation", "C. procedure", "D. adoption"], answer: "A", explanation: "【選項解析】\n- (A) migration (n.) 遷徙 (正解)\n- (B) consultation (n.) 諮詢\n- (C) procedure (n.) 手術\n- (D) adoption (n.) 領養" },
+      { id: 3, question: "The early ______ struggled through a harsh first winter with little food.", options: ["A. settlement", "B. spectrum", "C. incentive", "D. tactic"], answer: "A", explanation: "【選項解析】\n- (A) settlement (n.) 移民聚落 (正解)\n- (B) spectrum (n.) 範圍\n- (C) incentive (n.) 誘因\n- (D) tactic (n.) 手法" },
+      { id: 4, question: "Many of her ______ can be traced back to farmers who settled in this valley centuries ago.", options: ["A. descendants", "B. companions", "C. specialists", "D. watchdogs"], answer: "A", explanation: "【選項解析】\n- (A) descendants (n.) 後裔 (正解)\n- (B) companions (n.) 夥伴\n- (C) specialists (n.) 專家\n- (D) watchdogs (n.) 監督機構" }
+    ],
+    cloze: {
+      text: "Greenland's history is far more complicated than its small population might suggest. Long before any European explorer arrived, Indigenous groups [1] traveled across the Arctic had already made the island their home. Centuries later, a Norse explorer gave the island a name [2] was arguably more hopeful than accurate, hoping it would attract new settlers. That early settlement eventually vanished, [3] leaving historians with more questions than answers. Missionaries who arrived much later found a very different population already living there, and their efforts eventually [4] the island's connection to Denmark. Today, Greenland's political status remains unsettled, [5] many residents hoping for eventual independence while remaining cautious about the economic risks involved.",
+      questions: [
+        { id: 1, options: ["A. who", "B. which", "C. whom", "D. whose"], answer: "A", explanation: "先行詞 groups 為人，who 在子句中作主詞，引導限定關係子句。" },
+        { id: 2, options: ["A. that", "B. who", "C. whom", "D. whose"], answer: "A", explanation: "先行詞 a name 為事物，that 在子句中作主詞，引導限定關係子句。" },
+        { id: 3, options: ["A. thus", "B. despite", "C. unless", "D. among"], answer: "A", explanation: "thus 為副詞，表「因此」，連接前後兩個結果。" },
+        { id: 4, options: ["A. shaped", "B. shaping", "C. to shape", "D. shape"], answer: "A", explanation: "過去簡單式敘述歷史事實，shaped 為過去式動詞。" },
+        { id: 5, options: ["A. with", "B. despite", "C. unless", "D. among"], answer: "A", explanation: "with + N. + V-ing 為獨立分詞構句，表附帶狀態，意為「伴隨著…」。" }
+      ]
+    },
+    wordBank: {
+      words: ["(A) assimilate", "(B) autonomous", "(C) colonize", "(D) dwindle", "(E) heritage", "(F) indigenous", "(G) preserve", "(H) remote", "(I) sovereignty", "(J) territory"],
+      passage: "Long before national borders existed in the Arctic, [1] communities had already adapted to one of the planet's harshest climates, developing skills in hunting, fishing and building shelter from ice and stone. When European explorers later attempted to [2] the region, they often underestimated how difficult survival there truly was.\n\nEarly Norse settlements struggled for generations before their population began to [3], eventually disappearing altogether for reasons historians still debate. Meanwhile, Inuit communities, arriving separately from Siberia, proved far more resilient in the same harsh environment.\n\nCenturies later, missionaries and colonial powers pressured many Inuit families to [4] into European culture and religion, often at the cost of traditional practices. Even so, many communities worked quietly to [5] their language, stories and customs for future generations.\n\nToday, questions of [6] and political control remain central to Greenland's identity. While the island is governed as part of Denmark, it enjoys an [7] level of self-rule that allows local leaders to manage many of their own affairs.\n\nSome Greenlanders argue that full [8] would better protect their cultural [9], while others worry that losing Danish financial support could leave a [10] population struggling to support itself. Either way, Greenland's small population continues to navigate an outsized role in international affairs.",
+      answers: { 1: "F", 2: "C", 3: "D", 4: "A", 5: "G", 6: "J", 7: "B", 8: "I", 9: "E", 10: "H" }
+    },
+    discourse: {
+      options: [
+        "A. Centuries later, a very different group of Europeans arrived not as settlers but as missionaries.",
+        "B. Every resident of Greenland is currently required to relocate to Denmark by the year 2030.",
+        "C. Unlike the Norse, these newer arrivals survived and their descendants remain the island's majority population today.",
+        "D. This unresolved tension between identity and economics continues to shape Greenland's politics today.",
+        "E. His chosen name, ironically, promised a landscape far greener than the island actually offered."
+      ],
+      paragraphs: [
+        "Greenland's history stretches back thousands of years, long before any European explorer set foot on its icy shores. Its story is one of repeated arrivals, disappearances and quiet endurance.",
+        "A Viking explorer named Erik the Red is often credited with giving the island its hopeful name. [1]",
+        "His settlement eventually vanished under mysterious circumstances. [2] [3]",
+        "Greenland remains part of Denmark today, though many residents hope for eventual independence, held back mainly by concerns over losing financial support. [4]"
+      ],
+      answers: { 1: "E", 2: "A", 3: "C", 4: "D" }
+    },
+    reading: {
+      questions: [
+        { id: 1, question: "What is this article mainly about?", options: ["A. A travel guide to Greenland's best tourist attractions", "B. The history of Greenland's settlement, naming and political status", "C. A scientific study of Greenland's melting ice", "D. A biography of Erik the Red"], answer: "B", explanation: "主旨題。全文介紹格陵蘭的移民史、命名由來，以及其政治地位的演變。" },
+        { id: 2, question: "According to the article, why did Erik the Red name the island “Greenland”?", options: ["A. Because the entire island was covered in thick green forests", "B. Because the southern part may have looked green enough, and to make it sound appealing to settlers", "C. Because it was named after a Norwegian king", "D. Because Inuit communities had already given it that name"], answer: "B", explanation: "細節題。文中提到南部或許真的有足夠綠意，且他選擇這個名字也是為了讓移居此地看起來更具吸引力。" },
+        { id: 3, question: "What happened when Norway and Denmark split into separate nations, according to the article?", options: ["A. Greenland immediately became an independent country", "B. Norway claimed ownership of Greenland, but an international court ruled it belonged to Denmark", "C. Greenland was divided equally between the two countries", "D. The United States took control of Greenland"], answer: "B", explanation: "細節題。文中提到挪威主張擁有格陵蘭，但國際法庭裁定該島仍屬於丹麥。" },
+        { id: 4, question: "Based on the article, why haven't most Greenlanders voted for independence?", options: ["A. They are not legally allowed to vote on the matter", "B. They fear losing financial support from Denmark", "C. They prefer being governed entirely by Norway", "D. They believe the United States would take over instead"], answer: "B", explanation: "推論題。文中提到多數格陵蘭人擔心一旦失去丹麥的財政支持，政府恐將垮台，因此尚未投票支持獨立。" }
+      ]
+    }
+  },
+
+  "Unit 13": {
+    title: "Celebrating Educators",
+    chineseTitle: "向教育工作者致敬",
+    passage: `Some holidays celebrate food, while others celebrate history. But September 28 honors the heroes of the classroom — teachers!\n\nThis day is believed to be the birthday of Confucius, who is known as the world’s “first teacher.” He earned this title for his focus on learning and his great contributions to education.\n\nBoth teachers and Confucius are celebrated on September 28 in Taiwan with special events. Some attend ceremonies that exhibit ancient customs. With beautiful costumes, traditional music and dance, the events often feel like grand celebrations from the past.\n\nWhen Teachers’ Day approaches, students often take the opportunity to express their gratitude to their teachers in different ways. Some offer cards, gifts or food as tokens of appreciation. Many schools and universities hold award ceremonies to recognize educators who are making an impact on their students’ lives. Other people elect to enjoy their day off by eating out, shopping or watching a movie.\n\nNo matter how you celebrate today, remember to thank those who inspire you and make learning exciting!`,
+    chineseTranslation: `有些節日慶祝美食，有些則紀念歷史事件。但 9 月 28 日，要向教室裡的英雄致敬——那就是老師們！\n\n這一天被認為是孔子的誕辰，他被譽為世界上的「至聖先師」。他之所以獲得這個稱號，是因為他專注於學習，並對教育做出了偉大的貢獻。\n\n在台灣，教師節與孔子誕辰同樣都在 9 月 28 日這天，透過特別的活動一同慶祝。有些人會參加展現古代習俗的祭孔典禮。透過華麗的服飾、傳統音樂與舞蹈，這些活動往往讓人感覺像是重現了過去盛大的慶典。\n\n每當教師節將近，學生們常會把握機會，用不同的方式向老師表達感謝。有些人會贈送卡片、禮物或食物，作為心意的象徵。許多學校與大學也會舉辦頒獎典禮，表揚那些正在深刻影響學生生命的教育者。也有些人則選擇以外出用餐、購物或看電影的方式，享受這一天的假期。\n\n無論你今天用什麼方式慶祝，都別忘了感謝那些啟發你、讓學習變得精彩有趣的人！`,
+    annotations: {
+      keyVocabList: [
+        { id: 1, word: "honors", pos: "v.", meaning: "向…致敬", collocations: "honor the heroes 向英雄致敬" },
+        { id: 2, word: "contributions", pos: "n.", meaning: "貢獻", collocations: "make contributions to... 對…做出貢獻" },
+        { id: 3, word: "ceremonies", pos: "n.", meaning: "典禮、儀式", collocations: "attend ceremonies 參加典禮" },
+        { id: 4, word: "gratitude", pos: "n.", meaning: "感激", collocations: "express gratitude 表達感激" },
+        { id: 5, word: "tokens", pos: "n.", meaning: "象徵、表示心意的物品", collocations: "tokens of appreciation 感謝的象徵" }
+      ],
+      grammarNotes: [
+        { id: "G1", title: "who 引導形容詞子句 (先行詞為人)", excerpt: "who is known as the world’s “first teacher.”", analysis: "who 代替先行詞 Confucius 作主詞，引導補充說明的非限定關係子句。" }
+      ],
+      patternNotes: [
+        { id: "P1", title: "No matter how + S. + V. (無論如何…)", excerpt: "No matter how you celebrate today", analysis: "no matter how 引導讓步子句，表「無論以何種方式」，強調後面敘述不受前面條件影響。" }
+      ],
+      paragraphs: [
+        [
+          { type: 'text', text: 'Some holidays celebrate food, while others celebrate history. But September 28 ' },
+          { type: 'vocab', text: 'honors', vid: 1 },
+          { type: 'text', text: ' the heroes of the classroom — teachers!' }
+        ],
+        [
+          { type: 'text', text: 'This day is believed to be the birthday of Confucius, ' },
+          { type: 'grammar', text: 'who is known as the world’s “first teacher.”', gid: 'G1' },
+          { type: 'text', text: ' He earned this title for his focus on learning and his great ' },
+          { type: 'vocab', text: 'contributions', vid: 2 },
+          { type: 'text', text: ' to education.' }
+        ],
+        [
+          { type: 'text', text: 'Both teachers and Confucius are celebrated on September 28 in Taiwan with special events. Some attend ' },
+          { type: 'vocab', text: 'ceremonies', vid: 3 },
+          { type: 'text', text: ' that exhibit ancient customs. With beautiful costumes, traditional music and dance, the events often feel like grand celebrations from the past.' }
+        ],
+        [
+          { type: 'text', text: 'When Teachers’ Day approaches, students often take the opportunity to express their ' },
+          { type: 'vocab', text: 'gratitude', vid: 4 },
+          { type: 'text', text: ' to their teachers in different ways. Some offer cards, gifts or food as ' },
+          { type: 'vocab', text: 'tokens', vid: 5 },
+          { type: 'text', text: ' of appreciation. Many schools and universities hold award ceremonies to recognize educators who are making an impact on their students’ lives. Other people elect to enjoy their day off by eating out, shopping or watching a movie.' }
+        ],
+        [
+          { type: 'pattern', text: 'No matter how you celebrate today', pid: 'P1' },
+          { type: 'text', text: ', remember to thank those who inspire you and make learning exciting!' }
+        ]
+      ]
+    },
+    vocab: [
+      { id: 1, question: "The annual parade ______ the veterans who served in the war.", options: ["A. honors", "B. donates", "C. diagnoses", "D. rehearses"], answer: "A", explanation: "【選項解析】\n- (A) honors (v.) 向…致敬 (正解)\n- (B) donates (v.) 捐贈\n- (C) diagnoses (v.) 診斷\n- (D) rehearses (v.) 排練" },
+      { id: 2, question: "Her research made significant ______ to the field of renewable energy.", options: ["A. contributions", "B. consultations", "C. procedures", "D. shortages"], answer: "A", explanation: "【選項解析】\n- (A) contributions (n.) 貢獻 (正解)\n- (B) consultations (n.) 諮詢\n- (C) procedures (n.) 手術、程序\n- (D) shortages (n.) 短缺" },
+      { id: 3, question: "He wrote a heartfelt letter to express his deep ______ for her support.", options: ["A. gratitude", "B. isolation", "C. curiosity", "D. discipline"], answer: "A", explanation: "【選項解析】\n- (A) gratitude (n.) 感激 (正解)\n- (B) isolation (n.) 孤立\n- (C) curiosity (n.) 好奇心\n- (D) discipline (n.) 紀律" },
+      { id: 4, question: "The temple holds religious ______ every year to honor its founders.", options: ["A. ceremonies", "B. barriers", "C. loopholes", "D. footprints"], answer: "A", explanation: "【選項解析】\n- (A) ceremonies (n.) 典禮、儀式 (正解)\n- (B) barriers (n.) 障礙\n- (C) loopholes (n.) 漏洞\n- (D) footprints (n.) 足跡" }
+    ],
+    cloze: {
+      text: "Teachers' Day in Taiwan falls on September 28, a date [1] also marks the traditional birthday of Confucius. Schools across the island use the occasion [2] recognize educators who go above and beyond for their students. Some students choose [3] write personal notes, while others prefer to attend a small celebration organized by their class. Regardless of the method, the underlying message remains the same: teachers deserve to be thanked for the impact they have, even [4] that impact is not always obvious right away. Many educators say that a single note of appreciation can mean more [5] any gift purchased from a store.",
+      questions: [
+        { id: 1, options: ["A. that", "B. who", "C. whom", "D. whose"], answer: "A", explanation: "先行詞 a date 為事物，that 在子句中作主詞，引導限定關係子句。" },
+        { id: 2, options: ["A. to", "B. for", "C. of", "D. at"], answer: "A", explanation: "to V. 表目的，相當於 in order to，說明使用這個節日的目的。" },
+        { id: 3, options: ["A. to", "B. for", "C. of", "D. at"], answer: "A", explanation: "choose to V. 表「選擇做…」，choose 後接不定詞。" },
+        { id: 4, options: ["A. though", "B. so", "C. unless", "D. despite"], answer: "A", explanation: "even though + S. + V. 表「即使」，though 在此與 even 搭配強調讓步語氣。" },
+        { id: 5, options: ["A. than", "B. then", "C. that", "D. as"], answer: "A", explanation: "mean more than + N. 表「比…更有意義」，than 用於比較。" }
+      ]
+    },
+    wordBank: {
+      words: ["(A) commemorate", "(B) devotion", "(C) esteemed", "(D) heartfelt", "(E) honor", "(F) influential", "(G) legacy", "(H) mentor", "(I) nurture", "(J) tribute"],
+      passage: "Across many cultures, a single day each year is set aside to [1] the people who shape young minds inside a classroom. In Taiwan, that day coincides with the traditional birthday of Confucius, a scholar whose ideas about education remain [2] more than two thousand years later.\n\nFar beyond formal ceremonies, the true spirit of the holiday often shows up in small, everyday moments. A teacher who stays late to [3] a struggling student, or one who quietly offers encouragement during a difficult week, rarely expects public recognition. Yet these small acts of [4] often shape a student's confidence for years to come.\n\nStudents frequently mark the occasion with a simple, [5] note rather than an expensive gift, and many teachers say these messages mean more than any formal award. Some schools go further, organizing events specifically designed to [6] the most [7] educators on staff, individuals whose guidance has clearly changed the direction of students' lives.\n\nBeyond the celebrations themselves, the holiday also serves as a quiet reminder of the long-term impact a single teacher can have. A dedicated mentor does not simply transfer facts; they help [8] curiosity, resilience and character, qualities that often outlast any single lesson plan. In this sense, every student who grows up to make a difference carries forward a small piece of a teacher's [9], a lasting [10] to the guidance they once received.",
+      answers: { 1: "E", 2: "F", 3: "H", 4: "B", 5: "D", 6: "A", 7: "C", 8: "I", 9: "G", 10: "J" }
+    },
+    discourse: {
+      options: [
+        "A. Students of all ages take part, from young children drawing thank-you cards to university students writing heartfelt letters.",
+        "B. Every teacher in Taiwan receives a mandatory cash bonus equal to one month's salary on this day.",
+        "C. The date was deliberately chosen to align with the traditional birthday of Confucius, revered as the nation's first teacher.",
+        "D. Long after a school year ends, many adults still remember the specific words a favorite teacher once said to them.",
+        "E. Some schools also hold formal ceremonies featuring traditional costumes, music and dance passed down for generations."
+      ],
+      paragraphs: [
+        "Every September 28, classrooms across Taiwan pause their usual routines to celebrate Teachers' Day. Unlike holidays built around food or fireworks, this occasion centers entirely on gratitude.",
+        "[1] For many, the day carries a deeper historical meaning as well.",
+        "[2] [3] Whatever form it takes, the gesture is rarely about the gift itself.",
+        "The true impact of a great teacher, however, often outlasts a single holiday. [4] That quiet, lasting influence may be the truest form of thanks a teacher could ever receive."
+      ],
+      answers: { 1: "C", 2: "E", 3: "A", 4: "D" }
+    },
+    reading: {
+      questions: [
+        { id: 1, question: "What is this article mainly about?", options: ["A. The history and traditions of Teachers' Day in Taiwan", "B. A biography of Confucius's early life", "C. A guide to planning a classroom party", "D. A comparison of holidays around the world"], answer: "A", explanation: "主旨題。全文介紹台灣教師節的由來與慶祝方式。" },
+        { id: 2, question: "Why is September 28 significant, according to the article?", options: ["A. It marks the founding of the first school in Taiwan", "B. It is believed to be the birthday of Confucius, known as the world's “first teacher”", "C. It is a national holiday unrelated to education", "D. It celebrates the anniversary of a famous university"], answer: "B", explanation: "細節題。文中提到這一天被認為是被譽為「至聖先師」的孔子誕辰。" },
+        { id: 3, question: "According to the article, how do some students show appreciation for their teachers on this day?", options: ["A. By giving cards, gifts or food as tokens of appreciation", "B. By organizing a school-wide exam", "C. By taking over teaching duties for the day", "D. By donating money to build a new school"], answer: "A", explanation: "細節題。文中提到學生常以卡片、禮物或食物來表達感謝之意。" },
+        { id: 4, question: "What is the overall message the article wants to convey?", options: ["A. Teachers' Day is only meaningful in Taiwan", "B. People should take the opportunity to thank those who inspire and teach them", "C. Confucius is more important than modern teachers", "D. Celebrations should focus only on ancient customs"], answer: "B", explanation: "推論題。文末提醒讀者無論如何慶祝，都別忘了感謝那些啟發自己、讓學習變得精彩的人，可見全文核心訊息是鼓勵表達感謝。" }
+      ]
+    }
+  },
+
+  "Unit 14": {
+    title: "Perfect Perth",
+    chineseTitle: "完美伯斯",
+    passage: `Day 1\n\nMention Australia, and many people immediately picture Sydney’s famous Harbour Bridge or the creative street art of Melbourne. But across the continent, closer to the Indian Ocean than to any other major Australian city, sits Perth — a place that many travelers overlook. That’s a mistake. Perth might just be one of Australia’s most surprising destinations.\n\nIn Perth, beaches take center stage. Along the coast, clear blue waves roll gently onto gorgeous stretches of soft, white sand. One of the most beloved local spots is Mettams Pool, a sheltered area perfect for snorkeling. On calm days, swimmers pass over seagrass where small, patterned fish, starfish and even the occasional octopus move quietly below the surface.\n\nAnother must-see is Cottesloe Beach, often called Perth’s postcard beach. Just a 20-minute drive from the city center, the beach has been loved by locals for more than 100 years. Swim, surf, stroll on the sand or dine on fresh seafood while looking out over the Indian Ocean.\n\nBack in Perth, visit the Bell Tower, famous for its glass and copper sail-like design. Housing 18 bells, it is one of the few places in the world where people can watch bell ringing.\n\nDay 2\n\nPerth offers plenty more to explore. The historic arcade of London Court looks like something straight out of Merry Old England. Enjoy a coffee or ice cream and browse in the little shops. Don’t miss the fancy mechanical clocks at both ends of the arcade, with moving figures inspired by historic English scenes.\n\nAnother popular place to visit is the Perth Zoo, which offers a close-up look at animals from around the world as well as some of Australia’s unique wildlife.\n\nSee one of these creatures in the wild by taking a short ferry ride to Rottnest Island. It’s famous for its friendly residents: the charming quokka. These pint-sized marsupials are often called the happiest animals on Earth because of their friendly, smile-like facial expressions. Visitors love taking photos with them. The island is also great for adventure. You can try glass-bottom boating or stay overnight in the simple tents at Pinky Beach, falling asleep to the sound of waves brushing the shore.\n\nPerth may not always be the first place people think of when planning an Australian adventure. But some travelers do visit Perth, only to discover it is one of Australia’s most surprising destinations.`,
+    chineseTranslation: `【第 1 天】\n\n一提到澳洲，許多人腦海中立刻浮現雪梨知名的海港大橋，或墨爾本充滿創意的街頭藝術。但在這片大陸的另一端，比起任何其他澳洲大城市都更靠近印度洋的地方，坐落著伯斯——一個常被許多旅人忽略的城市。這實在是個錯誤的疏忽。伯斯很可能是澳洲最令人驚豔的旅遊目的地之一。\n\n在伯斯，海灘才是真正的主角。沿著海岸線，清澈的藍色海浪輕輕拍打在一片片絕美的白色沙灘上。其中最受當地人喜愛的景點之一，是梅塔姆斯池——一處適合浮潛的隱蔽海灣。在風平浪靜的日子裡，游泳的人們會經過海草叢，可以看見帶有花紋的小魚、海星，甚至偶爾出沒的章魚，在水面下靜靜地移動。\n\n另一處不容錯過的景點是科特斯洛海灘，常被稱為「伯斯的明信片海灘」。這裡距離市中心僅需 20 分鐘車程，超過百年來一直深受當地人喜愛。你可以在這裡游泳、衝浪、漫步沙灘，或是一邊眺望印度洋、一邊享用新鮮海鮮。\n\n回到伯斯市區，別忘了造訪鐘塔，它以玻璃與銅製成、宛如船帆般的外觀設計聞名。鐘塔內共有 18 座鐘，是全世界少數能夠讓民眾親眼觀賞敲鐘過程的地方之一。\n\n【第 2 天】\n\n伯斯還有更多值得探索的地方。歷史悠久的倫敦廊拱廊街，看起來彷彿直接從古老的英格蘭搬移而來。你可以在小商店裡喝杯咖啡、吃支冰淇淋，四處逛逛。千萬別錯過拱廊街兩端那些精緻的機械時鐘，鐘上會有仿照英國歷史場景設計、會動的人偶。\n\n另一個熱門景點是伯斯動物園，遊客能在這裡近距離觀賞來自世界各地的動物，以及一些澳洲獨有的野生動物。\n\n只要搭乘短程渡輪前往羅特尼斯島，就能親眼看見其中一種野生動物。這座島以牠親切友善的居民聞名——那就是討人喜歡的短尾矮袋鼠。這些嬌小玲瓏的有袋類動物，常被稱為「地球上最快樂的動物」，因為牠們友善、彷彿總是在微笑的臉部表情。遊客都很喜歡和牠們一起拍照。這座島也很適合展開冒險活動。你可以嘗試搭乘玻璃船底船，或選擇在平基海灘的簡易帳篷裡過夜，伴隨著海浪輕拍岸邊的聲音入睡。\n\n伯斯或許不總是人們規劃澳洲旅遊時第一個想到的地方。但有些旅人確實造訪了伯斯，結果卻發現，這裡正是澳洲最令人驚豔的旅遊目的地之一。`,
+    annotations: {
+      keyVocabList: [
+        { id: 1, word: "overlook", pos: "v.", meaning: "忽略", collocations: "a place many overlook 一個許多人忽略的地方" },
+        { id: 2, word: "gorgeous", pos: "adj.", meaning: "美極了的", collocations: "gorgeous stretches of sand 絕美的沙灘" },
+        { id: 3, word: "sheltered", pos: "adj.", meaning: "隱蔽的、有遮蔽的", collocations: "a sheltered area 隱蔽的區域" },
+        { id: 4, word: "arcade", pos: "n.", meaning: "拱廊街、商場", collocations: "a historic arcade 歷史悠久的拱廊街" },
+        { id: 5, word: "wildlife", pos: "n.", meaning: "野生動物", collocations: "unique wildlife 獨特的野生動物" },
+        { id: 6, word: "marsupials", pos: "n.", meaning: "有袋類動物", collocations: "pint-sized marsupials 嬌小的有袋類動物" },
+        { id: 7, word: "adventure", pos: "n.", meaning: "冒險", collocations: "great for adventure 很適合展開冒險" }
+      ],
+      grammarNotes: [
+        { id: "G1", title: "過去分詞片語作形容詞 (省略關代+be動詞)", excerpt: "often called Perth’s postcard beach", analysis: "called... 為過去分詞片語，修飾 Cottesloe Beach，等於 which is often called... 的省略形式。" },
+        { id: "G2", title: "分詞構句 (表伴隨結果，主動語態)", excerpt: "falling asleep to the sound of waves brushing the shore", analysis: "分詞構句表伴隨發生的結果，主動用 falling，描述入睡時伴隨的情境。" }
+      ],
+      patternNotes: [
+        { id: "P1", title: "only to V. (結果卻…；沒想到卻…)", excerpt: "only to discover it is one of Australia’s most surprising destinations", analysis: "only to V. 置於句尾，表出乎意料的結果，意為「沒想到卻發現…」。" }
+      ],
+      paragraphs: [
+        [ { type: 'text', text: 'Day 1' } ],
+        [
+          { type: 'text', text: 'Mention Australia, and many people immediately picture Sydney’s famous Harbour Bridge or the creative street art of Melbourne. But across the continent, closer to the Indian Ocean than to any other major Australian city, sits Perth — a place that many travelers ' },
+          { type: 'vocab', text: 'overlook', vid: 1 },
+          { type: 'text', text: '. That’s a mistake. Perth might just be one of Australia’s most surprising destinations.' }
+        ],
+        [
+          { type: 'text', text: 'In Perth, beaches take center stage. Along the coast, clear blue waves roll gently onto ' },
+          { type: 'vocab', text: 'gorgeous', vid: 2 },
+          { type: 'text', text: ' stretches of soft, white sand. One of the most beloved local spots is Mettams Pool, a ' },
+          { type: 'vocab', text: 'sheltered', vid: 3 },
+          { type: 'text', text: ' area perfect for snorkeling. On calm days, swimmers pass over seagrass where small, patterned fish, starfish and even the occasional octopus move quietly below the surface.' }
+        ],
+        [
+          { type: 'text', text: 'Another must-see is Cottesloe Beach, ' },
+          { type: 'grammar', text: 'often called Perth’s postcard beach', gid: 'G1' },
+          { type: 'text', text: '. Just a 20-minute drive from the city center, the beach has been loved by locals for more than 100 years. Swim, surf, stroll on the sand or dine on fresh seafood while looking out over the Indian Ocean.' }
+        ],
+        [
+          { type: 'text', text: 'Back in Perth, visit the Bell Tower, famous for its glass and copper sail-like design. Housing 18 bells, it is one of the few places in the world where people can watch bell ringing.' }
+        ],
+        [ { type: 'text', text: 'Day 2' } ],
+        [
+          { type: 'text', text: 'Perth offers plenty more to explore. The historic ' },
+          { type: 'vocab', text: 'arcade', vid: 4 },
+          { type: 'text', text: ' of London Court looks like something straight out of Merry Old England. Enjoy a coffee or ice cream and browse in the little shops. Don’t miss the fancy mechanical clocks at both ends of the arcade, with moving figures inspired by historic English scenes.' }
+        ],
+        [
+          { type: 'text', text: 'Another popular place to visit is the Perth Zoo, which offers a close-up look at animals from around the world as well as some of Australia’s unique ' },
+          { type: 'vocab', text: 'wildlife', vid: 5 },
+          { type: 'text', text: '.' }
+        ],
+        [
+          { type: 'text', text: 'See one of these creatures in the wild by taking a short ferry ride to Rottnest Island. It’s famous for its friendly residents: the charming quokka. These pint-sized ' },
+          { type: 'vocab', text: 'marsupials', vid: 6 },
+          { type: 'text', text: ' are often called the happiest animals on Earth because of their friendly, smile-like facial expressions. Visitors love taking photos with them. The island is also great for ' },
+          { type: 'vocab', text: 'adventure', vid: 7 },
+          { type: 'text', text: '. You can try glass-bottom boating or stay overnight in the simple tents at Pinky Beach, ' },
+          { type: 'grammar', text: 'falling asleep to the sound of waves brushing the shore', gid: 'G2' },
+          { type: 'text', text: '.' }
+        ],
+        [
+          { type: 'text', text: 'Perth may not always be the first place people think of when planning an Australian adventure. But some travelers do visit Perth, ' },
+          { type: 'pattern', text: 'only to discover it is one of Australia’s most surprising destinations', pid: 'P1' },
+          { type: 'text', text: '.' }
+        ]
+      ]
+    },
+    vocab: [
+      { id: 1, question: "Don't ______ the small details; they can make a huge difference in the final result.", options: ["A. overlook", "B. donate", "C. diagnose", "D. rehearse"], answer: "A", explanation: "【選項解析】\n- (A) overlook (v.) 忽略 (正解)\n- (B) donate (v.) 捐贈\n- (C) diagnose (v.) 診斷\n- (D) rehearse (v.) 排練" },
+      { id: 2, question: "The sunset over the mountains was absolutely ______, painting the sky in shades of orange and pink.", options: ["A. gorgeous", "B. contagious", "C. deceptive", "D. vulnerable"], answer: "A", explanation: "【選項解析】\n- (A) gorgeous (adj.) 美極了的 (正解)\n- (B) contagious (adj.) 傳染性的\n- (C) deceptive (adj.) 欺騙性的\n- (D) vulnerable (adj.) 脆弱的" },
+      { id: 3, question: "The old shopping ______ was lined with tiny boutiques selling handmade jewelry.", options: ["A. arcade", "B. landfill", "C. dump", "D. spectrum"], answer: "A", explanation: "【選項解析】\n- (A) arcade (n.) 拱廊街、商場 (正解)\n- (B) landfill (n.) 垃圾掩埋場\n- (C) dump (n.) 垃圾場\n- (D) spectrum (n.) 範圍" },
+      { id: 4, question: "Climbing the tallest peak in the region turned into the ______ of their entire trip.", options: ["A. adventure", "B. donation", "C. consultation", "D. procedure"], answer: "A", explanation: "【選項解析】\n- (A) adventure (n.) 冒險 (正解)\n- (B) donation (n.) 捐贈\n- (C) consultation (n.) 諮詢\n- (D) procedure (n.) 手術、程序" }
+    ],
+    cloze: {
+      text: "Perth rarely appears at the top of most travelers' must-see lists, [1] it arguably deserves to. Compared [2] Sydney or Melbourne, the city receives relatively little international attention, even though it offers beaches, wildlife and historic architecture within a short distance of each other. Visitors [3] make the trip are often surprised by how much the city has to offer. From snorkeling at a quiet cove [4] photographing a famously cheerful marsupial, Perth packs a wide variety of experiences into a single destination. Travel writers increasingly argue that Perth's relative lack of fame is exactly [5] makes it worth visiting.",
+      questions: [
+        { id: 1, options: ["A. although", "B. because", "C. unless", "D. since"], answer: "A", explanation: "although 引導讓步子句，表「儘管」，與前面的陳述形成對比。" },
+        { id: 2, options: ["A. to", "B. by", "C. for", "D. at"], answer: "A", explanation: "compare A to B 表「將A與B比較」，固定搭配介系詞 to。" },
+        { id: 3, options: ["A. who", "B. which", "C. whom", "D. whose"], answer: "A", explanation: "先行詞 Visitors 為人，who 在子句中作主詞，引導限定關係子句。" },
+        { id: 4, options: ["A. to", "B. for", "C. at", "D. with"], answer: "A", explanation: "from A to B 表「從A到B」，用於列舉一系列經驗或範圍。" },
+        { id: 5, options: ["A. what", "B. that", "C. which", "D. who"], answer: "A", explanation: "what 引導名詞子句，作 is 的主詞，相當於 the thing that。" }
+      ]
+    },
+    wordBank: {
+      words: ["(A) coastline", "(B) getaway", "(C) landmark", "(D) laid-back", "(E) scenic", "(F) showcase", "(G) stroll", "(H) underrated", "(I) unwind", "(J) venture"],
+      passage: "Ask most travelers to name Australia's top destinations, and Perth rarely makes the list. Sydney's opera house and Melbourne's laneways tend to dominate the conversation, leaving this sunny western city strangely [1] by comparison.\n\nYet Perth offers exactly the kind of relaxed, [2] pace many travelers say they are searching for. Along its long [3], visitors can [4] past quiet coves, spend an afternoon at a café or simply [5] on a beach without ever feeling rushed.\n\nThe city also makes an ideal base for day trips. Adventurous travelers can [6] out to nearby islands, historic arcades or wildlife parks, each offering a slightly different side of Western Australia.\n\nPerth's most famous [7], the sail-shaped Bell Tower, draws visitors curious to watch its bells ring in person, a rare experience found in few other cities worldwide. Meanwhile, smaller museums and galleries [8] the region's unique history without the crowds found in larger capital cities.\n\nFor travelers planning a longer Australian itinerary, Perth makes a practical and memorable weekend [9]. Those willing to look past the more famous cities may find that this [10] corner of the country offers some of the country's most rewarding surprises.",
+      answers: { 1: "H", 2: "D", 3: "A", 4: "G", 5: "I", 6: "J", 7: "C", 8: "F", 9: "B", 10: "E" }
+    },
+    discourse: {
+      options: [
+        "A. Its relative distance from Australia's eastern cities has, ironically, helped keep the region feeling uncrowded and unspoiled.",
+        "B. Every visitor to Western Australia is legally required to see a quokka before leaving the country.",
+        "C. Its pristine beaches and calm, protected coves rival any coastline found on the country's more famous east coast.",
+        "D. Nearby Rottnest Island offers an entirely different kind of charm, centered around a famously cheerful little marsupial.",
+        "E. From colonial-era arcades to a striking modern bell tower, the city center rewards visitors willing to explore on foot."
+      ],
+      paragraphs: [
+        "While Sydney and Melbourne dominate most conversations about Australian travel, the western city of Perth quietly offers an entirely different kind of appeal.",
+        "Perth sits far from the country's eastern hubs, closer to Southeast Asia than to Sydney. [1]",
+        "[2] [3] Beyond the water, downtown Perth has its own architectural charm.",
+        "A short ferry ride away, the adventure continues. [4] For many travelers, that island alone is worth the entire trip to Western Australia."
+      ],
+      answers: { 1: "A", 2: "C", 3: "E", 4: "D" }
+    },
+    reading: {
+      questions: [
+        { id: 1, question: "What is this article mainly about?", options: ["A. A ranking of Australia's most dangerous cities", "B. A travel guide introducing Perth's beaches, landmarks and nearby attractions", "C. A history of British colonization in Australia", "D. A scientific study of quokka behavior"], answer: "B", explanation: "主旨題。全文介紹伯斯的海灘、地標與周邊景點，屬旅遊介紹文章。" },
+        { id: 2, question: "According to the article, what makes Mettams Pool special?", options: ["A. It is the largest beach in Australia", "B. It is a sheltered area perfect for snorkeling", "C. It only allows swimming at night", "D. It is located inside the Perth Zoo"], answer: "B", explanation: "細節題。文中提到梅塔姆斯池是一處適合浮潛的隱蔽海灣。" },
+        { id: 3, question: "Why are quokkas often called “the happiest animals on Earth,” according to the article?", options: ["A. Because they can perform tricks for tourists", "B. Because of their friendly, smile-like facial expressions", "C. Because they live only on Rottnest Island", "D. Because they are the largest marsupials in Australia"], answer: "B", explanation: "細節題。文中提到短尾矮袋鼠因友善、彷彿總在微笑的臉部表情，而被稱為地球上最快樂的動物。" },
+        { id: 4, question: "What is the overall tone of this article toward Perth as a travel destination?", options: ["A. Critical and discouraging", "B. Neutral and purely factual", "C. Positive, suggesting Perth is an underrated destination worth visiting", "D. Warning readers to avoid visiting Perth"], answer: "C", explanation: "推論題。全文多次強調伯斯常被忽略卻值得造訪，並稱其為澳洲最令人驚豔的目的地之一，語氣正面，鼓勵讀者前往。" }
       ]
     }
   }
