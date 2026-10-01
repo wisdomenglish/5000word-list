@@ -905,6 +905,22 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
 .mz-print-opt{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:.78rem;font-weight:700;color:var(--text);text-align:left;cursor:pointer;}
 .mz-print-opt.active{background:var(--accent);border-color:var(--accent);color:#fff;}
 .mz-print-hint{font-size:.7rem;color:var(--muted);margin-top:10px;line-height:1.5;text-align:center;}
+.mz-print-progress{text-align:center;padding:30px 10px;}
+.mz-print-spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;margin:0 auto 16px;animation:mzSpin .8s linear infinite;}
+@keyframes mzSpin{to{transform:rotate(360deg);}}
+.mz-print-progress-text{font-size:.8rem;color:var(--text);font-weight:700;margin-bottom:4px;}
+.mz-print-progress-sub{font-size:.7rem;color:var(--muted);}
+.mz-print-ready{text-align:center;padding:16px 4px;}
+.mz-print-ready-ico{font-size:2.2rem;margin-bottom:8px;}
+.mz-print-ready-text{font-size:.85rem;font-weight:800;color:var(--text);margin-bottom:2px;}
+.mz-print-ready-sub{font-size:.72rem;color:var(--muted);margin-bottom:16px;}
+.mz-print-ready-actions{display:flex;flex-direction:column;gap:8px;}
+.mz-print-share-btn{background:var(--accent);border:none;border-radius:12px;padding:12px;font-size:.8rem;font-weight:800;color:#fff;cursor:pointer;}
+.mz-print-download-btn{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:11px;font-size:.78rem;font-weight:700;color:var(--text);cursor:pointer;}
+.mz-print-retry-btn{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:10px;font-size:.74rem;font-weight:700;color:var(--accent);cursor:pointer;margin-top:6px;}
+.mz-print-error{text-align:center;padding:20px 10px;}
+.mz-print-error-ico{font-size:1.8rem;margin-bottom:8px;}
+.mz-print-error-text{font-size:.8rem;color:#EF4444;font-weight:700;margin-bottom:4px;}
 
 /* 列印區域：平時完全隱藏，只有 window.print() 觸發的 @media print 才顯示，
    直接在目前頁面列印（不開新視窗），手機/PWA 沒有瀏覽器列/上一頁可用時也不會卡住。 */
@@ -4302,6 +4318,9 @@ let mzExpandedPassages = {};
 let mzPrintOpen = false;
 let mzPrintMode = 'student';
 let mzPrintScope = 'current';
+let mzPrintStage = 'select'; // 'select' | 'generating' | 'ready' | 'error'
+let mzPrintFile = null;      // 已產生的 PDF File 物件（記憶體內，不落地存）
+let mzPrintErrorMsg = '';
 let mzMistakes = JSON.parse(localStorage.getItem(MZ_MISTAKES_KEY) || '[]');
 
 function saveMzMistakes(){ localStorage.setItem(MZ_MISTAKES_KEY, JSON.stringify(mzMistakes)); }
@@ -4953,13 +4972,36 @@ function mzBuildPrintBody(){
 function mzRenderPrintModal(){
   if(!mzPrintOpen) return '';
   const mistakeCount = mzMistakes.filter(x=>x.magazineId===mzMagazineId).length;
-  return `
-  <div class="mz-print-overlay" onclick="if(event.target===this) mzClosePrintModal()">
-    <div class="mz-print-card">
-      <div class="mz-print-head">
-        <span>🖨️ 列印 / 匯出試卷</span>
-        <button type="button" class="mz-note-close" onclick="mzClosePrintModal()">✕</button>
-      </div>
+
+  let bodyHtml;
+  if(mzPrintStage === 'generating'){
+    bodyHtml = `
+      <div class="mz-print-progress">
+        <div class="mz-print-spinner"></div>
+        <div class="mz-print-progress-text">正在產生 PDF…</div>
+        <div class="mz-print-progress-sub">內容較長時可能需要幾秒鐘，請稍候</div>
+      </div>`;
+  } else if(mzPrintStage === 'ready'){
+    bodyHtml = `
+      <div class="mz-print-ready">
+        <div class="mz-print-ready-ico">✅</div>
+        <div class="mz-print-ready-text">PDF 已經產生好了</div>
+        <div class="mz-print-ready-sub">${mzPrintFile ? _escH(mzPrintFile.name) : ''}</div>
+        <div class="mz-print-ready-actions">
+          <button type="button" class="mz-print-share-btn" onclick="mzSharePdf()">📤 分享到 LINE / Gmail 等</button>
+          <button type="button" class="mz-print-download-btn" onclick="mzDownloadPdf()">⬇️ 直接下載</button>
+        </div>
+      </div>`;
+  } else if(mzPrintStage === 'error'){
+    bodyHtml = `
+      <div class="mz-print-error">
+        <div class="mz-print-error-ico">⚠️</div>
+        <div class="mz-print-error-text">PDF 產生失敗</div>
+        <div class="mz-print-progress-sub">${_escH(mzPrintErrorMsg || '請稍後再試一次')}</div>
+        <button type="button" class="mz-print-retry-btn" onclick="mzStartPdfExport()">重試一次</button>
+      </div>`;
+  } else {
+    bodyHtml = `
       <div class="mz-print-group">
         <div class="mz-print-label">1. 選擇格式</div>
         <div class="mz-print-row">
@@ -4975,32 +5017,141 @@ function mzRenderPrintModal(){
           <button type="button" class="mz-print-opt ${mzPrintScope==='mistakes'?'active':''}" onclick="mzSetPrintScope('mistakes')">弱點錯題本 (${mistakeCount})</button>
         </div>
       </div>
-      <button type="button" class="mz-grade-btn" onclick="mzConfirmPrint()">📄 開始列印 / 儲存為 PDF</button>
-      <div class="mz-print-hint">列印畫面出現後，選「儲存為 PDF」或點分享圖示，就能存檔或直接傳送到 LINE、Gmail 等 App。</div>
+      <button type="button" class="mz-grade-btn" onclick="mzStartPdfExport()">📄 產生 PDF</button>
+      <div class="mz-print-hint">產生完成後可直接分享到 LINE、Gmail 等 App，或下載存檔。</div>`;
+  }
+
+  return `
+  <div class="mz-print-overlay" onclick="if(event.target===this) mzClosePrintModal()">
+    <div class="mz-print-card">
+      <div class="mz-print-head">
+        <span>🖨️ 列印 / 匯出試卷</span>
+        <button type="button" class="mz-note-close" onclick="mzClosePrintModal()">✕</button>
+      </div>
+      ${bodyHtml}
     </div>
   </div>`;
 }
 
 function mzOpenPrintModal(){
   mzPrintScope = mzTab === 'mistakes' ? 'mistakes' : 'current';
+  mzPrintStage = 'select';
+  mzPrintFile = null;
+  mzPrintErrorMsg = '';
   mzPrintOpen = true;
   renderMagazineUnit();
 }
-function mzClosePrintModal(){ mzPrintOpen = false; renderMagazineUnit(); }
+function mzClosePrintModal(){ mzPrintOpen = false; mzPrintStage = 'select'; mzPrintFile = null; renderMagazineUnit(); }
 function mzSetPrintMode(m){ mzPrintMode = m; renderMagazineUnit(); }
 function mzSetPrintScope(s){ mzPrintScope = s; renderMagazineUnit(); }
-function mzConfirmPrint(){
-  const html = mzBuildPrintBody();
-  let area = document.getElementById('mzPrintArea');
-  if(!area){
-    area = document.createElement('div');
-    area.id = 'mzPrintArea';
-    document.body.appendChild(area);
-  }
-  area.innerHTML = html;
-  mzPrintOpen = false;
+
+// ─── PDF 產生：html2canvas 把內容轉成圖片 + jsPDF 組成多頁 PDF ───
+// 不依賴系統列印面板（window.print() 在很多手機瀏覽器／LINE 內建瀏覽器裡完全沒反應或不支援分享），
+// 改成前端直接產出真正的 PDF 檔案，再用 navigator.share 或下載，跨瀏覽器行為一致。
+let _mzPdfLibsPromise = null;
+function mzLoadScript(src){
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector(`script[src="${src}"]`);
+    if(existing){ existing.addEventListener('load', resolve); if(existing._loaded) resolve(); return; }
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = () => { s._loaded = true; resolve(); };
+    s.onerror = () => reject(new Error('無法載入必要元件，請檢查網路連線'));
+    document.head.appendChild(s);
+  });
+}
+function mzLoadPdfLibs(){
+  if(_mzPdfLibsPromise) return _mzPdfLibsPromise;
+  _mzPdfLibsPromise = Promise.all([
+    mzLoadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),
+    mzLoadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
+  ]).catch(e => { _mzPdfLibsPromise = null; throw e; });
+  return _mzPdfLibsPromise;
+}
+
+async function mzStartPdfExport(){
+  mzPrintStage = 'generating';
   renderMagazineUnit();
-  setTimeout(()=>{ try{ window.print(); }catch(e){} }, 200);
+
+  try{
+    const html = mzBuildPrintBody();
+    let area = document.getElementById('mzPrintArea');
+    if(!area){
+      area = document.createElement('div');
+      area.id = 'mzPrintArea';
+      document.body.appendChild(area);
+    }
+    area.innerHTML = html;
+
+    await mzLoadPdfLibs();
+
+    // 暫時讓內容「可被渲染但在畫面外」（html2canvas 無法擷取 display:none 的元素）
+    area.style.cssText = 'display:block;position:fixed;left:-9999px;top:0;width:800px;background:#fff;padding:20px;';
+
+    const naturalHeight = area.scrollHeight || 1000;
+    // iOS 對 canvas 總像素數有上限（約 16,777,216 px²），長篇內容要動態降低解析度避免空白/損毀
+    let scale = 2;
+    if(naturalHeight * scale * 800 > 15000000){ scale = Math.max(1, 15000000 / (naturalHeight * 800)); }
+
+    const canvas = await html2canvas(area, { scale, backgroundColor:'#ffffff', useCORS:true, windowWidth:800 });
+
+    area.style.cssText = 'display:none;';
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ unit:'pt', format:'a4' });
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const imgW = pageW;
+    const imgH = canvas.height * imgW / canvas.width;
+    const imgData = canvas.toDataURL('image/jpeg', 0.92);
+
+    let heightLeft = imgH;
+    let position = 0;
+    pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH);
+    heightLeft -= pageH;
+    while(heightLeft > 0){
+      position -= pageH;
+      pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH);
+      heightLeft -= pageH;
+    }
+
+    const blob = pdf.output('blob');
+    const scopeLabel = mzPrintScope === 'mistakes' ? '錯題本' : (mzUnitKey || '雜誌題庫');
+    const fileName = `${scopeLabel}_${mzPrintMode === 'teacher' ? '教師詳解卷' : '學生作答卷'}.pdf`.replace(/[\\/:*?"<>|]/g, '');
+    mzPrintFile = new File([blob], fileName, { type:'application/pdf' });
+    mzPrintStage = 'ready';
+  } catch(e){
+    console.error(e);
+    mzPrintErrorMsg = (e && e.message) ? e.message : '發生未知錯誤';
+    mzPrintStage = 'error';
+  }
+  renderMagazineUnit();
+}
+
+async function mzSharePdf(){
+  if(!mzPrintFile) return;
+  if(navigator.canShare && navigator.canShare({ files:[mzPrintFile] })){
+    try{
+      await navigator.share({ files:[mzPrintFile], title: mzPrintFile.name });
+      return;
+    }catch(e){
+      if(e && e.name === 'AbortError') return; // 使用者自行取消，不當作錯誤
+      // 分享失敗則退回下載
+    }
+  }
+  mzDownloadPdf();
+}
+function mzDownloadPdf(){
+  if(!mzPrintFile) return;
+  const url = URL.createObjectURL(mzPrintFile);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = mzPrintFile.name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
 }
 
 function renderMagazineUnit(){
