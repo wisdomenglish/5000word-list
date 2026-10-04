@@ -1662,6 +1662,10 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
     <button class="modal-close" onclick="closeReportModal()">✕</button>
     <div style="font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--text);margin-bottom:4px">🛟 回報問題</div>
     <div style="color:var(--muted);font-size:0.82rem;margin-bottom:16px">遇到 bug、單字錯誤或任何建議都可以告訴我們，可附上截圖 📷</div>
+    <div class="form-row" style="margin-bottom:10px">
+      <input class="add-word-input" id="reportClass" placeholder="班級（選填）" autocomplete="off">
+      <input class="add-word-input" id="reportTeacher" placeholder="老師（選填）" autocomplete="off">
+    </div>
     <textarea class="report-textarea" id="reportMsg" placeholder="請描述你遇到的問題或建議…（例如：某個單字解釋怪怪的、某個按鈕沒反應）"></textarea>
     <input type="file" id="reportFileInput" accept="image/*" style="display:none" onchange="onReportFilePick(event)">
     <div class="report-drop" id="reportDrop" onclick="document.getElementById('reportFileInput').click()">
@@ -6106,6 +6110,11 @@ function openReportModal(){
   document.getElementById('reportMsg').value = '';
   document.getElementById('reportErr').textContent = '';
   removeReportImage();
+  try{
+    const info = JSON.parse(localStorage.getItem('vocab_report_info')||'{}');
+    document.getElementById('reportClass').value = info.className || '';
+    document.getElementById('reportTeacher').value = info.teacher || '';
+  }catch(e){}
   const btn = document.getElementById('reportSubmitBtn');
   btn.disabled = false; btn.textContent = '送出回報';
   document.getElementById('reportModal').style.display = 'flex';
@@ -6158,14 +6167,19 @@ function _compressReportImage(fileOrBlob){
 }
 async function submitReport(){
   const msg = document.getElementById('reportMsg').value.trim();
+  const className = document.getElementById('reportClass').value.trim();
+  const teacher = document.getElementById('reportTeacher').value.trim();
   const errEl = document.getElementById('reportErr');
   if(!msg && !_reportImage){ errEl.textContent = '請輸入問題描述，或附上一張截圖'; return; }
   const btn = document.getElementById('reportSubmitBtn');
   btn.disabled = true; btn.textContent = '送出中…';
   errEl.textContent = '';
+  try{ localStorage.setItem('vocab_report_info', JSON.stringify({className, teacher})); }catch(e){}
   const u = window._fbUser || null;
   const payload = {
     message: msg,
+    className: className,
+    teacher: teacher,
     image: _reportImage || '',
     user: u ? { uid: u.uid || '', name: u.displayName || '', email: u.email || '' } : null,
     nickname: (typeof userProfile === 'object' && userProfile && userProfile.nickname) ? userProfile.nickname : '',

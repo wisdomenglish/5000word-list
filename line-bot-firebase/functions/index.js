@@ -4013,8 +4013,10 @@ const REPORT_IMAGE_BASE = "https://reportimage-gtlccx6nka-uc.a.run.app";
 exports.submitReport = onRequest({ cors: true, invoker: "public" }, async (req, res) => {
   if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
   try {
-    const { message, image, user, nickname, meta } = req.body || {};
+    const { message, image, user, nickname, meta, className, teacher } = req.body || {};
     const msg = (message || "").toString().slice(0, 2000);
+    const cls = (className || "").toString().slice(0, 100);
+    const tch = (teacher || "").toString().slice(0, 100);
     if (!msg && !image) return res.status(400).json({ error: "Empty report" });
 
     initializeFirebase();
@@ -4030,6 +4032,8 @@ exports.submitReport = onRequest({ cors: true, invoker: "public" }, async (req, 
     const id = ref.key;
     const record = {
       message: msg,
+      className: cls,
+      teacher: tch,
       user: user || null,
       nickname: nickname || "",
       meta: meta || null,
@@ -4049,9 +4053,10 @@ exports.submitReport = onRequest({ cors: true, invoker: "public" }, async (req, 
       const who = (user && (user.name || user.email)) || nickname || "匿名同學";
       const device = meta && meta.ua ? shortDeviceFromUA(meta.ua) : "";
       const when = new Date(record.createdAt + 8 * 3600 * 1000).toISOString().replace("T", " ").slice(0, 16);
+      const classLine = (cls || tch) ? `🏫 ${cls || "（未填班級）"}　👩‍🏫 ${tch || "（未填老師）"}\n` : "";
       const textMsg = {
         type: "text",
-        text: `🛟 App 問題回報\n━━━━━━━━\n👤 ${who}\n🕐 ${when}（台灣）\n📱 ${device}\n\n${msg || "（無文字，見下方圖片）"}`
+        text: `🛟 App 問題回報\n━━━━━━━━\n👤 ${who}\n${classLine}🕐 ${when}（台灣）\n📱 ${device}\n\n${msg || "（無文字，見下方圖片）"}`
       };
       const messages = [textMsg];
       if (imageData) {

@@ -288,8 +288,9 @@
 ### 問題回報架構（2026-06-25）
 
 - **入口**：側邊欄 ☰ →「意見回饋 → 🛟 回報問題」（`openReportModal()`）；`#reportModal` 文字框 + 截圖（支援剪貼簿貼上 `_reportPasteHandler` 或選檔），`_compressReportImage()` 壓成 ≤1080px JPEG
+- **班級／老師（2026-10-05 新增）**：文字框上方兩個選填輸入框 `#reportClass`／`#reportTeacher`，方便老師知道是哪個班級/哪位老師的學生回報。`openReportModal()` 從 `localStorage['vocab_report_info']` 預填上次填過的值，`submitReport()` 送出時連同寫回 localStorage（同一台裝置下次開啟直接帶出，不用每次重打）
 - **一次性公告彈窗**：`maybeShowAnnounce()`（key `vocab_announce_report_v1`）在 `showWotdIfNeeded()` 開頭呼叫，**優先於每日一字**，看過一次不再出現
-- **送出**：`submitReport` CF → 寫 RTDB `/app-reports/{id}`（message/user/nickname/meta/image(base64)/createdAt），並 push 給所有 `/report-recipients`
+- **送出**：`submitReport` CF → 寫 RTDB `/app-reports/{id}`（message/className/teacher/user/nickname/meta/image(base64)/createdAt），並 push 給所有 `/report-recipients`（LINE 通知文字會在裝置型號那行上方多印一行「🏫 班級　👩‍🏫 老師」，兩者都沒填就不印這行）
 - **收件人綁定**：對任一 LINE Bot 傳「**綁定回報**」→ `handleReportBind()` 存 `/report-recipients/{userId} = {boundAt, tokenEnvVar, botName}`；「**解除回報**」移除。**`tokenEnvVar` 記住在哪支 bot 綁的**（LINE userId 分頻道，push 必須用同一支 token）；`submitReport` 依此挑 token 推播
 - **目前收件 bot**：**English Calendar（Bot 2，destination `U45ed153…`，LINE 顯示名稱為「Wisdom Assistant」）** — 詳見 LINE Bot 章節的命名說明
 - **圖片**：`reportImage?id={id}` 把該筆 base64 以 `image/jpeg` 吐回 → LINE 圖片訊息用此 URL（省去啟用 Firebase Storage）
@@ -865,7 +866,16 @@ firebase deploy --only firestore:rules --project english-app-c1097
 3. 每次刪除重建 backend 後，要重新跑一次 `secrets:grantaccess`（雖然通常是同一個 auto-provision 的 service account，但養成習慣重新確認比較保險）
 4. `apphosting.yaml` 裡的 `NEXT_PUBLIC_APP_URL` 要跟著 backend 名稱/region 變動同步更新（網址格式是 `{backend}--{project}.{region}.hosted.app`）
 
-### 字幕來源架構：三層備援（2026-09-07 定案）
+### 字幕來源架構（2026-10-04 起 Gemini 優先）
+
+**現行順序：Gemini → Supadata → TranscriptAPI → yt-dlp**（`reliable-transcript-provider.ts`）。
+- **Gemini**（`gemini-transcript-provider.ts`，模型 `gemini-3.8-flash`）：由 Google 端直接讀公開 YouTube 網址轉寫，不受機房 IP 封鎖／cookies 影響。先用 **YouTube Data API v3** 取長度/公開狀態/是否直播（太長、直播、非公開的影片在花錢轉寫前就擋掉；非公開影片會往下交給其他供應商）。金鑰 `GEMINI_API_KEY`（Secret Manager），是一把只限 Gemini API + YouTube Data API 的金鑰（GCP 金鑰顯示名稱「Fluent transcripts (Gemini + YouTube Data)」）。實測對照人工字幕：用字約 98–99%、時間戳 ±0.7 秒；成本約 US$0.05/15 分鐘影片（2027 起約翻倍）。輸出是 Gemini 自己的語音辨識，不是 YouTube 原生字幕軌。`gemini-2.5-flash` 對新金鑰已 404
+- **TranscriptAPI**：方案 2026-09-24 到期、**刻意不續訂**，LINE 通知已從健康檢查移除（只留「全部供應商都失敗」那則）
+- 健康檢查改用 19 秒短片 `jNQXAC9IVRw`，每次約 US$0.0015
+- ⚠️ **新增 secret 的順序**：一定要先 `firebase apphosting:secrets:set` + `grantaccess`，再在 `apphosting.yaml` 引用。2026-09-24～10-02 因 `apphosting.yaml` 引用了不存在的 `AZURE_SPEECH_KEY`，App Hosting 建置連續失敗一週、正式站停在舊版（已將 Azure 兩項註解掉）。push 後要看 commit 的「App Hosting - Rollout」檢查是否成功，CI 綠燈不代表有部署成功
+
+以下為 2026-09-07 的舊架構說明（順序已被上方取代，細節仍可參考）：
+
 
 `ReliableTranscriptProvider` 依序嘗試 **TranscriptAPI → Supadata → yt-dlp**，介面是 `TranscriptProvider`（只有 `getTranscript(videoId)` 一個方法，要再加第四家就是一個新檔案 + 建構子多一個參數）。
 
