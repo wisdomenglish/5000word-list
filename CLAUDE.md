@@ -294,6 +294,7 @@
 - **收件人綁定**：對任一 LINE Bot 傳「**綁定回報**」→ `handleReportBind()` 存 `/report-recipients/{userId} = {boundAt, tokenEnvVar, botName}`；「**解除回報**」移除。**`tokenEnvVar` 記住在哪支 bot 綁的**（LINE userId 分頻道，push 必須用同一支 token）；`submitReport` 依此挑 token 推播
 - **目前收件 bot**：**English Calendar（Bot 2，destination `U45ed153…`，LINE 顯示名稱為「Wisdom Assistant」）** — 詳見 LINE Bot 章節的命名說明
 - **圖片**：`reportImage?id={id}` 把該筆 base64 以 `image/jpeg` 吐回 → LINE 圖片訊息用此 URL（省去啟用 Firebase Storage）
+- **加 LINE 官方好友入口（2026-10-05 新增）**：`#reportModal` 送出按鈕下方多一行純連結（`https://line.me/R/ti/p/@sds9548e`），供想直接聯繫的學生/家長使用；側邊欄「意見回饋」區塊也新增同連結的「💬 加 LINE 官方好友」項目（跟 🛟 回報問題並列），兩處都是單純外部連結，非走 `submitReport` 流程
 
 ### 更新公告頁
 
