@@ -36,7 +36,7 @@ const BOT_CONFIG = {
     imageMode: "rewrite",
     secretEnvVar: "LINE_CHANNEL_SECRET_BOT3",
     tokenEnvVar: "LINE_CHANNEL_ACCESS_TOKEN_BOT3",
-    joinMessage: `大家好！我是 Wisdom AI Teacher 👋\n\n我可以幫你：\n\n📚 文法問答、單字查詢、句子糾錯\n📝 作文批改、寫作範例、句子翻譯\n🖼️ 傳照片作文或看圖 → 我幫你改寫！\n\n傳圖片後，在 30 秒內回覆：\n✏️「初階改寫」→ 簡單易懂版\n🎯「進階改寫」→ 高分進階版\n\n期待為大家解答英文問題！😊`
+    joinMessage: `大家好！我是 Wisdom AI Teacher 👋\n\n我有兩種模式，差別在於「要不要自動幫你解題」：\n\n💬 自由對話模式（預設）\n我不會自動回覆，訊息會由老師親自回答喔\n\n🧩 解題模式\n輸入「開始解題」（或按選單「🧩 開始解題」）進入，接下來一段時間內傳照片或打字描述題目，我都會直接幫你解！時間到了會自動切回自由對話模式，也可輸入「自由對話」手動切回\n\n✍️ 作文批改／改寫：輸入「初階改寫」或「進階改寫」→ 再傳照片\n\n期待為大家解答英文問題！😊`
   }
 };
 
@@ -3161,10 +3161,69 @@ async function refreshFrankSolveMode(userId) {
   await dbRef.ref(`/pending-solve/${userId}`).update({ expiresAt: Date.now() + SOLVE_MODE_TTL_MS });
 }
 
-// 使用者按 Rich Menu「🧩 開始解題」／「💬 自由對話」切換 Frank 的解題模式
-async function handleSolveModeToggle(on, replyToken, token, userId) {
+// ========== 文字／圖片解題（Wisdom AI Teacher，解題模式中使用 Claude）==========
+const WISDOM_SOLVE_PROMPT = `你是 Wisdom AI Teacher，一位英文解題助手。學生會傳來英文題目（可能是選擇題、填空題、閱讀測驗、文法改錯、翻譯題、作文題、單字練習等），請幫忙解題。
+
+請依下列格式回應：
+
+✅ 答案與解析
+━━━━━━━━━━━━━━━━
+[逐題或逐步給出答案，並說明理由]
+
+📖 文法／概念說明
+━━━━━━━━━━━━━━━━
+[解釋題目涉及的文法規則或重點概念，幫助學生真正理解]
+
+💡 小提醒
+━━━━━━━━━━━━━━━━
+[給學生一個實用的學習建議，避免類似錯誤]
+
+💪 [鼓勵語]
+
+格式規定：
+- 全程使用繁體中文
+- 使用分隔線 ━━━━━━━━━━━━━━━━ 和 emoji 區分段落
+- 絕對不使用 ** 粗體標記
+- 若題目不完整、看不懂在問什麼或照片模糊，請直接說明需要補充什麼資訊或請學生重新拍照`;
+
+async function handleWisdomTextSolve(userMessage, replyToken, token) {
+  try {
+    const outputText = await callClaudeWisdom(WISDOM_SOLVE_PROMPT, userMessage, 3000);
+    await replyLineMessage(replyToken, { type: "text", text: sanitizeTextForLine(outputText) }, token);
+  } catch (error) {
+    console.error("[ERROR] handleWisdomTextSolve:", error.message);
+    await replyLineMessage(replyToken, { type: "text", text: "抱歉，解題時發生錯誤，請稍後再試。" }, token);
+  }
+}
+
+async function handleWisdomImageSolve(messageId, replyToken, token) {
+  try {
+    const { base64, mediaType } = await fetchLineImageAsBase64(messageId, token);
+    initializeAnthropicWisdom();
+    const message = await anthropicWisdom.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 4096,
+      system: `${WISDOM_SOLVE_PROMPT}\n\n另外，請在最前面加上一段「📸 題目辨識」（分隔線 + 用繁體中文簡述照片中的題型與主要內容）。`,
+      messages: [{
+        role: "user",
+        content: [
+          { type: "image", source: { type: "base64", media_type: mediaType, data: base64 } },
+          { type: "text", text: "請幫我解這道英文題目" }
+        ]
+      }]
+    });
+    await replyLineMessage(replyToken, { type: "text", text: sanitizeTextForLine(extractTextFromClaudeMessage(message)) }, token);
+  } catch (error) {
+    console.error("[ERROR] handleWisdomImageSolve:", error.message);
+    await replyLineMessage(replyToken, { type: "text", text: "抱歉，處理圖片時發生錯誤。請稍後再試，或重新拍一張更清楚的照片。📸" }, token);
+  }
+}
+
+// 使用者按 Rich Menu「🧩 開始解題」／「💬 自由對話」切換解題模式（Frank、Wisdom 共用）
+async function handleSolveModeToggle(on, replyToken, token, userId, botConfig) {
   try {
     initializeFirebase();
+    const owner = botConfig && botConfig.imageMode === "rewrite" ? "老師" : "Frank 老師";
     if (on) {
       await dbRef.ref(`/pending-solve/${userId}`).set({ expiresAt: Date.now() + SOLVE_MODE_TTL_MS });
       await replyLineMessage(replyToken, {
@@ -3175,7 +3234,7 @@ async function handleSolveModeToggle(on, replyToken, token, userId) {
       await dbRef.ref(`/pending-solve/${userId}`).remove();
       await replyLineMessage(replyToken, {
         type: "text",
-        text: sanitizeTextForLine("💬 已切換回自由對話模式！\n\n接下來的訊息不會自動回覆，會由 Frank 老師親自回答。要解題的話再按一次「🧩 開始解題」選單喔！")
+        text: sanitizeTextForLine(`💬 已切換回自由對話模式！\n\n接下來的訊息不會自動回覆，會由${owner}親自回答。要解題的話再按一次「🧩 開始解題」選單喔！`)
       }, token);
     }
   } catch (error) {
@@ -3348,8 +3407,15 @@ app.post("/", async (req, res) => {
         } else if (botConfig.imageMode === "rewrite" && /^(初階改寫|進階改寫)$/.test(userMessage.trim())) {
           const level = userMessage.trim().startsWith("進階") ? "進階" : "初階";
           await handleRewriteRequest(level, event.replyToken, botCredentials.token, event.source.userId);
+        } else if (botConfig.imageMode === "rewrite" && /^(開始解題|自由對話)$/.test(userMessage.trim())) {
+          await handleSolveModeToggle(userMessage.trim() === "開始解題", event.replyToken, botCredentials.token, event.source.userId, botConfig);
+        } else if (botConfig.imageMode === "rewrite" && await isFrankSolveModeActive(event.source.userId)) {
+          // Wisdom 解題模式中：打字描述題目也直接解題
+          await handleWisdomTextSolve(userMessage, event.replyToken, botCredentials.token);
+          await refreshFrankSolveMode(event.source.userId);
         } else if (botConfig.imageMode === "rewrite") {
-          await handleWisdomTextMessage(userMessage, event.replyToken, botCredentials.token, event.source.userId);
+          // Wisdom 自由對話模式：完全不自動回覆，交由老師本人親自回覆
+          console.log("[INFO] Wisdom free-chat mode, skipping auto-reply so the teacher can respond personally");
         } else if (botConfig.imageMode === "solve" && await isFrankSolveModeActive(event.source.userId)) {
           // Frank 解題模式中：打字描述題目也直接解題
           await handleFrankTextSolve(userMessage, event.replyToken, botCredentials.token);
@@ -3362,7 +3428,20 @@ app.post("/", async (req, res) => {
         }
       } else if (event.type === "message" && event.message.type === "image" && botConfig.supportsImage) {
         if (botConfig.imageMode === "rewrite") {
-          await handleImageMessage(event.message.id, event.replyToken, botCredentials.token, event.source.userId);
+          // Wisdom：與 Frank 相同，優先權為 作文選單(pending-rewrite) > 作文延續 > 解題模式，其餘自由對話保持靜默
+          initializeFirebase();
+          const essaySnap = await dbRef.ref(`/pending-rewrite/${event.source.userId}`).get();
+          const hasPendingRewrite = essaySnap.exists() && Date.now() < essaySnap.val().expiresAt;
+          const essayContextActive = hasPendingRewrite ? null : await getEssayContext(event.source.userId);
+          if (hasPendingRewrite || essayContextActive) {
+            await handleImageMessage(event.message.id, event.replyToken, botCredentials.token, event.source.userId);
+          } else if (await isFrankSolveModeActive(event.source.userId)) {
+            await refreshFrankSolveMode(event.source.userId);
+            await handleWisdomImageSolve(event.message.id, event.replyToken, botCredentials.token);
+          } else {
+            console.log("[INFO] Wisdom free-chat mode, skipping auto-reply for image so the teacher can respond personally");
+            continue;
+          }
         } else {
           // Frank bot: 若使用者剛從作文選單選了模式（pending-rewrite）或正在延續作文對話，走作文批改／改寫，否則維持解題
           initializeFirebase();
@@ -3397,7 +3476,7 @@ app.post("/", async (req, res) => {
           }
         } else if (data === "solve_mode=on" || data === "solve_mode=off") {
           // Rich Menu「🧩 開始解題」／「💬 自由對話」→ 切換 Frank 解題模式
-          await handleSolveModeToggle(data === "solve_mode=on", event.replyToken, botCredentials.token, event.source.userId);
+          await handleSolveModeToggle(data === "solve_mode=on", event.replyToken, botCredentials.token, event.source.userId, botConfig);
         } else {
           console.log("[INFO] Unhandled postback data:", data);
         }

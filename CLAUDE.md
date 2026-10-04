@@ -614,14 +614,13 @@ node line-bot-firebase/setup-rich-menu.js
   - `GET /v1/data_sources/{id}` 查 schema 曾經回傳過舊快取漏欄位，寫程式前務必用真實頁面 `GET /v1/pages/{id}` 核對（見 [[feedback_notion_datasource_schema_stale]]）
 
 **Bot 3（Wisdom AI Teacher）：**
-- 英文教學功能與 Bot 1 相同（vocabulary、grammar、error_correction、essay_review、translation）
-- **圖片改寫**（`supportsImage: true`）：
-  - 直接傳圖 → 作文批改 Feedback
-  - 先說「初階改寫」再傳圖 → 保留原意修正文法（A2-B1）
-  - 先說「進階改寫」再傳圖 → 全面提升至母語水準（B2-C1）
+- **自由對話／解題雙模式（2026-10-05，與 Frank 一致）**：
+  - **自由對話（預設）＝完全不自動回覆**，文字與圖片都交由老師本人回覆；原本的文法問答/單字查詢自動回覆（`handleWisdomTextMessage`）因此在 webhook 中不再被呼叫（函式仍保留）
+  - **解題模式**：輸入「開始解題」（或 Rich Menu postback `solve_mode=on`）進入，文字 → `handleWisdomTextSolve`、照片 → `handleWisdomImageSolve`（皆用 Claude haiku，Frank 則用 OpenAI）；輸入「自由對話」（`solve_mode=off`）切回。與 Frank **共用** `/pending-solve/{userId}`、`SOLVE_MODE_TTL_MINUTES`（10 分鐘，連續解題自動延長）、`isFrankSolveModeActive`/`refreshFrankSolveMode`/`handleSolveModeToggle(on,…,botConfig)`（提示文字依 bot 切換「老師」/「Frank 老師」）
+  - **作文功能保留**：「初階改寫」「進階改寫」文字指令、`essay_mode=` postback、作文對話記憶照舊。圖片優先序：`pending-rewrite` > `essay-context` > 解題模式 > 靜默。**直接傳圖不再自動批改**（需先選作文模式）
+  - **Rich Menu**：`node setup-rich-menu-wisdom.js`（讀 `rich-menu-wisdom-design.html`，用 `LINE_CHANNEL_ACCESS_TOKEN_BOT3`），上排 開始解題／自由對話，下排 作文批改／初階／進階改寫，與 Frank 同版面
 - **圖片狀態**：存於 `/pending-rewrite/{userId}`，5 分鐘 TTL
-- **專屬回覆**：問「功能」→ 只顯示功能清單（不加抱歉）；非英文問題 → 加抱歉前言再顯示功能清單
-- **關鍵函式**（勿刪）：`WISDOM_FEATURE_LIST`、`handleRewriteRequest`、`handleImageMessage`、`handleWisdomTextMessage`、`fetchLineImageAsBase64`
+- **關鍵函式**（勿刪）：`WISDOM_FEATURE_LIST`、`handleRewriteRequest`、`handleImageMessage`、`handleWisdomTextMessage`、`handleWisdomTextSolve`、`handleWisdomImageSolve`、`fetchLineImageAsBase64`
 
 ### Firebase Realtime DB 結構
 
