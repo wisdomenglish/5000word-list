@@ -556,6 +556,9 @@ header{top:52px!important;}
 .home-wotd-title{color:#fff;font-weight:700;font-size:1rem;}
 .home-wotd-sub{color:rgba(255,255,255,.92);font-size:0.75rem;margin-top:2px;}
 .home-wotd-arrow{color:rgba(255,255,255,.95);font-size:1.5rem;flex-shrink:0;}
+/* 更多題庫 — teal, distinct from orange WOTD / blue hero */
+.home-more-card{display:flex;align-items:center;gap:12px;margin:0 16px 12px;padding:14px 16px;border-radius:16px;cursor:pointer;background:linear-gradient(135deg,#0D9488 0%,#2DD4BF 100%);box-shadow:0 4px 16px rgba(13,148,136,.28);transition:transform .15s,box-shadow .2s;}
+.home-more-card:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(13,148,136,.4);}
 .home-quick-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 16px 12px;}
 .home-quick-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 8px;cursor:pointer;transition:all .15s;box-shadow:var(--shadow);text-align:center;}
 .home-quick-card:hover{border-color:rgba(67,97,238,.3);box-shadow:0 4px 20px rgba(67,97,238,.12);transform:translateY(-1px);}
@@ -941,7 +944,7 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
 @media print{
   #globalTopBar,#bottomNav,#sideDrawer,#drawerOverlay,
   #homeSection,#dictSection,#quizSection,#myWordsSection,
-  #paragraphSection,#magazineSection,#progressSection,#newsSection,
+  #paragraphSection,#magazineSection,#moreSection,#progressSection,#newsSection,
   #wordModal,#phraseModal,#addWordModal,#reportModal,#announceModal,
   #exShareModal,#statsShareModal,#focusModal,#wotdModal,#profileModal{display:none !important;}
   body{padding:0 !important;margin:0 !important;background:#fff !important;}
@@ -1158,6 +1161,7 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
 <div id="myWordsSection" style="display:none"></div>
 <div id="paragraphSection" style="display:none"></div>
 <div id="magazineSection" style="display:none"></div>
+<div id="moreSection" style="display:none"></div>
 <div id="progressSection" style="display:none"></div>
 <div id="newsSection" style="display:none">
   <div class="news-wrap">
@@ -3109,10 +3113,11 @@ function switchTab(tab){
   document.getElementById('myWordsSection').style.display    = tab==='mywords'   ? '' : 'none';
   document.getElementById('paragraphSection').style.display  = tab==='paragraph' ? '' : 'none';
   document.getElementById('magazineSection').style.display   = tab==='magazine'  ? '' : 'none';
+  document.getElementById('moreSection').style.display       = tab==='more'      ? '' : 'none';
   document.getElementById('progressSection').style.display   = tab==='progress'  ? '' : 'none';
   document.getElementById('newsSection').style.display       = tab==='news'      ? '' : 'none';
   /* bottom nav active state */
-  const bnavMap = {home:'bnavHome',dict:'bnavDict',quiz:'bnavQuiz',mywords:'bnavMywords',progress:'bnavProgress',news:'bnavProgress',paragraph:null,magazine:null};
+  const bnavMap = {home:'bnavHome',dict:'bnavDict',quiz:'bnavQuiz',mywords:'bnavMywords',progress:'bnavProgress',news:'bnavProgress',paragraph:null,magazine:null,more:null};
   document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active'));
   const activeBnavId = bnavMap[tab];
   if(activeBnavId) document.getElementById(activeBnavId)?.classList.add('active');
@@ -3124,6 +3129,7 @@ function switchTab(tab){
   if(tab==='mywords')   renderMyWords();
   if(tab==='paragraph') renderParagraphTab();
   if(tab==='magazine')  renderMagazineList();
+  if(tab==='more')      renderMoreList();
   if(tab==='progress')  renderProgress();
 }
 
@@ -3235,6 +3241,14 @@ function renderHome(){
       <div class="home-wotd-text">
         <div class="home-wotd-title">每日一字</div>
         <div class="home-wotd-sub">看今天的單字 · 可分享到限動 / 貼文</div>
+      </div>
+      <div class="home-wotd-arrow">›</div>
+    </div>
+    <div class="home-more-card" onclick="switchTab('more')">
+      <div class="home-wotd-spark">📘</div>
+      <div class="home-wotd-text">
+        <div class="home-wotd-title">更多題庫</div>
+        <div class="home-wotd-sub">高中課本 · 時事新聞 · 英檢 · 多益 · 學測聽力</div>
       </div>
       <div class="home-wotd-arrow">›</div>
     </div>
@@ -4362,6 +4376,125 @@ function saveMzMistakes(){ localStorage.setItem(MZ_MISTAKES_KEY, JSON.stringify(
 function mzCurrentMag(){ return MAGAZINES.find(m=>m.id===mzMagazineId) || null; }
 function mzCurrentUnitData(){ const mag=mzCurrentMag(); return (mag && mag.data && mzUnitKey) ? mag.data[mzUnitKey] : null; }
 function mzIsUnlocked(mag){ return !mag.passcodeHash || localStorage.getItem(MZ_UNLOCK_PREFIX+mag.id)===mag.passcodeHash; }
+
+/* ── 更多題庫（首頁「更多題庫」入口，2026-10-08 新增，內容待日後實作，目前僅建好導覽骨架）── */
+const RES_CATEGORIES = [
+  { id:'textbook',   icon:'📘', label:'高中課本', desc:'高一／高二 · 龍騰／三民乙／三民', color:'#4361EE' },
+  { id:'news',       icon:'📰', label:'時事新聞', desc:'時事英文閱讀',                    color:'#F97316' },
+  { id:'gept',        icon:'🎓', label:'英檢',     desc:'中級／中高級',                    color:'#10B981' },
+  { id:'toeic',       icon:'💼', label:'多益',     desc:'TOEIC 題庫',                      color:'#8B5CF6' },
+  { id:'listening',   icon:'🎧', label:'學測聽力', desc:'大考中心聽力測驗',                color:'#0D9488' }
+];
+const RES_TEXTBOOK_GRADES = ['高一','高二'];
+const RES_TEXTBOOK_PUBLISHERS = ['龍騰','三民乙','三民'];
+const RES_GEPT_LEVELS = ['中級','中高級'];
+
+function renderMoreList(){
+  const section = document.getElementById('moreSection');
+  section.innerHTML = `
+    <div class="mz-wrap">
+      <div class="mz-topbar">
+        <button class="mz-back" onclick="switchTab('home')">‹ 返回</button>
+        <div class="mz-topbar-title">📘 更多題庫</div>
+        <div style="width:56px"></div>
+      </div>
+      <div class="mz-list-sub">選擇類別，查看可用的練習題庫</div>
+      <div class="mz-mag-grid">
+        ${RES_CATEGORIES.map(c=>`
+          <div class="mz-mag-card" style="border-top-color:${c.color}" onclick="openResCategory('${c.id}')">
+            <div class="mz-mag-icon" style="background:${c.color}1f;color:${c.color};">${c.icon}</div>
+            <div class="mz-mag-label">${c.label}</div>
+            <div class="mz-mag-desc">${_escH(c.desc)}</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function openResCategory(id){
+  if(id==='textbook'){ renderTextbookGrades(); return; }
+  if(id==='gept'){ renderGeptLevels(); return; }
+  const cat = RES_CATEGORIES.find(c=>c.id===id);
+  if(cat) renderResComingSoon(cat);
+}
+
+function renderResComingSoon(cat){
+  const section = document.getElementById('moreSection');
+  section.innerHTML = `
+    <div class="mz-wrap">
+      <div class="mz-topbar">
+        <button class="mz-back" onclick="renderMoreList()">‹ 返回</button>
+        <div class="mz-topbar-title">${cat.icon} ${_escH(cat.label)}</div>
+        <div style="width:56px"></div>
+      </div>
+      <div class="mz-empty">
+        <div class="mz-empty-ico">${cat.icon}</div>
+        <p>${_escH(cat.label)} 題庫即將推出，敬請期待！</p>
+      </div>
+    </div>`;
+}
+
+function renderTextbookGrades(){
+  const section = document.getElementById('moreSection');
+  section.innerHTML = `
+    <div class="mz-wrap">
+      <div class="mz-topbar">
+        <button class="mz-back" onclick="renderMoreList()">‹ 返回</button>
+        <div class="mz-topbar-title">📘 高中課本</div>
+        <div style="width:56px"></div>
+      </div>
+      <div class="mz-list-sub">選擇年級</div>
+      <div class="mz-mag-grid">
+        ${RES_TEXTBOOK_GRADES.map(g=>`
+          <div class="mz-mag-card" style="border-top-color:#4361EE" onclick="openTextbookGrade('${g}')">
+            <div class="mz-mag-icon" style="background:#4361EE1f;color:#4361EE;">📖</div>
+            <div class="mz-mag-label">${g}</div>
+            <div class="mz-mag-desc">龍騰 · 三民乙 · 三民</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function openTextbookGrade(grade){
+  const section = document.getElementById('moreSection');
+  section.innerHTML = `
+    <div class="mz-wrap">
+      <div class="mz-topbar">
+        <button class="mz-back" onclick="renderTextbookGrades()">‹ 返回</button>
+        <div class="mz-topbar-title">📘 ${_escH(grade)}</div>
+        <div style="width:56px"></div>
+      </div>
+      <div class="mz-list-sub">選擇版本</div>
+      <div class="mz-mag-grid">
+        ${RES_TEXTBOOK_PUBLISHERS.map(p=>`
+          <div class="mz-mag-card disabled" style="border-top-color:#94A3B8">
+            <div class="mz-mag-icon" style="background:#94A3B81f;color:#94A3B8;">📖</div>
+            <div class="mz-mag-label">${p}</div>
+            <div class="mz-mag-desc">即將推出</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function renderGeptLevels(){
+  const section = document.getElementById('moreSection');
+  section.innerHTML = `
+    <div class="mz-wrap">
+      <div class="mz-topbar">
+        <button class="mz-back" onclick="renderMoreList()">‹ 返回</button>
+        <div class="mz-topbar-title">🎓 英檢</div>
+        <div style="width:56px"></div>
+      </div>
+      <div class="mz-list-sub">選擇級別</div>
+      <div class="mz-mag-grid">
+        ${RES_GEPT_LEVELS.map(lv=>`
+          <div class="mz-mag-card disabled" style="border-top-color:#94A3B8">
+            <div class="mz-mag-icon" style="background:#94A3B81f;color:#94A3B8;">🎓</div>
+            <div class="mz-mag-label">${lv}</div>
+            <div class="mz-mag-desc">即將推出</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
 
 function renderMagazineList(){
   const section = document.getElementById('magazineSection');

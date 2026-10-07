@@ -174,6 +174,16 @@
 - **閱讀測驗錯題卡片內嵌原文（2026-10-01 新增）**：`mzRenderMistakesTab()` 對 `m.tab==='reading'` 的錯題卡，額外抓該 Unit 的 `passage`（優先讀當下 `MAGAZINES` 資料，抓不到才退回錯題物件自己存的 `m.passage` 快照）渲染在題幹上方，`mzTogglePassage(id)` 控制收合/展開（`mzExpandedPassages` 狀態，預設展開）
 - 每次修改 `magazine-{id}-data.js` 或新增雜誌後，記得升版 `sw.js` 的 `CACHE` 常數（比照 vocabulary-data.js/phrases-data.js 慣例），並視需要把新資料檔加進 `sw.js` 的 `addAll` 預快取清單
 
+### 更多題庫架構（2026-10-08 新增，首頁入口，目前僅導覽骨架，內容待日後實作）
+
+- **入口**：首頁深藍 hero 卡下方的綠色橫幅卡 `.home-more-card`（`onclick="switchTab('more')"`），比照 `.home-wotd-card` 版面、teal 漸層配色區隔；`#moreSection`（比照 `#magazineSection` 慣例，新增 tab 不進 `bnavMap`，無底部導覽對應項）
+- **5 大類別**（`RES_CATEGORIES` 陣列，`renderMoreList()` 渲染成卡片）：📘 高中課本 / 📰 時事新聞 / 🎓 英檢 / 💼 多益 / 🎧 學測聽力，點擊 `openResCategory(id)` 分派
+- **高中課本**（唯一三層導覽）：`renderTextbookGrades()` 先選 `RES_TEXTBOOK_GRADES`（高一／高二）→ `openTextbookGrade(grade)` 顯示 `RES_TEXTBOOK_PUBLISHERS`（龍騰／三民乙／三民，皆 `.mz-mag-card.disabled` 「即將推出」，不可點擊）
+- **英檢**（兩層導覽）：`renderGeptLevels()` 顯示 `RES_GEPT_LEVELS`（中級／中高級），同樣皆為 disabled 佔位卡
+- **時事新聞／多益／學測聽力**：單層 `renderResComingSoon(cat)`，沿用錯題本已有的 `.mz-empty`/`.mz-empty-ico` 空狀態樣式顯示「即將推出，敬請期待！」
+- 全部畫面重用雜誌題庫既有的 `.mz-wrap`/`.mz-topbar`/`.mz-back`/`.mz-list-sub`/`.mz-mag-grid`/`.mz-mag-card` 通用 class（這些 class 未綁定 `#magazineSection`，可直接跨 section 沿用），**沒有新增任何 CSS**
+- 之後要幫某個類別補實際內容，直接把對應的 `disabled`/`renderResComingSoon` 分支換成真正的資料驅動渲染即可，架構（首頁卡→類別→細分→內容）已經搭好
+
 ### 單字資料夾架構（含片語）
 
 - **資料結構**：`wordFolders`（`let`，存 `localStorage['vocab_folders']`），每個資料夾物件為 `{ id, name, words:[字串], phrases:[字串] }`
