@@ -4379,8 +4379,10 @@ function mzIsUnlocked(mag){ return !mag.passcodeHash || localStorage.getItem(MZ_
 
 /* ── 更多題庫（首頁「更多題庫」入口，2026-10-08 新增，內容待日後實作，目前僅建好導覽骨架）── */
 const RES_CATEGORIES = [
-  { id:'textbook',   icon:'📘', label:'高中課本', desc:'高一／高二 · 龍騰／三民乙／三民', color:'#4361EE' },
-  { id:'news',       icon:'📰', label:'時事新聞', desc:'時事英文閱讀',                    color:'#F97316' },
+  { id:'textbook',    icon:'📘', label:'高中課本', desc:'高一／高二 · 龍騰／三民乙／三民', color:'#4361EE' },
+  { id:'news',        icon:'📰', label:'時事新聞', desc:'時事英文閱讀',                    color:'#F97316' },
+  { id:'translation', icon:'🔤', label:'時事翻譯', desc:'學測中譯英 · 時事取材',            color:'#F72585',
+    note:'說明：請將以下兩句中文譯成正確、通順、達意的英文。' },
   { id:'gept',        icon:'🎓', label:'英檢',     desc:'中級／中高級',                    color:'#10B981' },
   { id:'toeic',       icon:'💼', label:'多益',     desc:'TOEIC 題庫',                      color:'#8B5CF6' },
   { id:'listening',   icon:'🎧', label:'學測聽力', desc:'大考中心聽力測驗',                color:'#0D9488' }
@@ -4429,6 +4431,7 @@ function renderResComingSoon(cat){
       <div class="mz-empty">
         <div class="mz-empty-ico">${cat.icon}</div>
         <p>${_escH(cat.label)} 題庫即將推出，敬請期待！</p>
+        ${cat.note ? `<p style="margin-top:10px;font-size:.78rem;color:var(--text)">${_escH(cat.note)}</p>` : ''}
       </div>
     </div>`;
 }

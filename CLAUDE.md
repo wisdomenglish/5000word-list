@@ -177,7 +177,8 @@
 ### 更多題庫架構（2026-10-08 新增，首頁入口，目前僅導覽骨架，內容待日後實作）
 
 - **入口**：首頁深藍 hero 卡下方的綠色橫幅卡 `.home-more-card`（`onclick="switchTab('more')"`），比照 `.home-wotd-card` 版面、teal 漸層配色區隔；`#moreSection`（比照 `#magazineSection` 慣例，新增 tab 不進 `bnavMap`，無底部導覽對應項）
-- **5 大類別**（`RES_CATEGORIES` 陣列，`renderMoreList()` 渲染成卡片）：📘 高中課本 / 📰 時事新聞 / 🎓 英檢 / 💼 多益 / 🎧 學測聽力，點擊 `openResCategory(id)` 分派
+- **6 大類別**（`RES_CATEGORIES` 陣列，`renderMoreList()` 渲染成卡片）：📘 高中課本 / 📰 時事新聞 / 🔤 時事翻譯 / 🎓 英檢 / 💼 多益 / 🎧 學測聽力，點擊 `openResCategory(id)` 分派
+  - **時事翻譯**（2026-10-12 新增）：內容規格比照學測中譯英題型（「請將以下兩句中文譯成正確、通順、達意的英文」），`renderResComingSoon()` 支援 `cat.note` 欄位在空狀態頁多印一行補充說明；實際題目內容由 Notion 端產製管線供應（見下方「時事翻譯題庫 Notion 產製管線」），**尚未接上 PWA 前端**，目前仍是「即將推出」佔位頁
 - **高中課本**（唯一三層導覽）：`renderTextbookGrades()` 先選 `RES_TEXTBOOK_GRADES`（高一／高二）→ `openTextbookGrade(grade)` 顯示 `RES_TEXTBOOK_PUBLISHERS`（龍騰／三民乙／三民，皆 `.mz-mag-card.disabled` 「即將推出」，不可點擊）
 - **英檢**（兩層導覽）：`renderGeptLevels()` 顯示 `RES_GEPT_LEVELS`（中級／中高級），同樣皆為 disabled 佔位卡
 - **時事新聞／多益／學測聽力**：單層 `renderResComingSoon(cat)`，沿用錯題本已有的 `.mz-empty`/`.mz-empty-ico` 空狀態樣式顯示「即將推出，敬請期待！」
