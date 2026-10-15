@@ -1218,6 +1218,23 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
     <div class="news-index-section">
       <div class="news-index-section-title">📋 更新紀錄</div>
 
+      <!-- 2026-10-15 雜誌題庫 10月號上架 -->
+      <div class="news-index-entry">
+        <div class="news-index-item" onclick="toggleNewsDetail(this.parentElement)">
+          <span class="news-date">2026-10-15</span>
+          <span class="news-type feature">新內容</span>
+          <span class="ni-title">📚 雜誌題庫 10月號上架・共 5 本</span>
+          <span class="news-arrow">›</span>
+        </div>
+        <div class="news-detail">
+          <ul class="news-list">
+            <li><strong>新增 5 本 10 月號</strong>：<strong>Live 互動英語</strong>、<strong>ALL+ 互動英語</strong>、<strong>Studio Classroom</strong>、<strong>空中美語 4U</strong>、<strong>空中美語 Digest</strong>，從首頁「📚 雜誌題庫」進入。</li>
+            <li>每篇文章都有 <strong>課文精讀（單字／文法／句型標註＋中譯）</strong>，以及單字、克漏字、文意選填、篇章結構、閱讀測驗五種題型。</li>
+            <li>答錯的題目會自動收進 <strong>📕 錯題本</strong>，也可以列印成 PDF 試卷。</li>
+          </ul>
+        </div>
+      </div>
+
       <!-- 2026-10-01 雜誌題庫上線 -->
       <div class="news-index-entry">
         <div class="news-index-item" onclick="toggleNewsDetail(this.parentElement)">
@@ -1695,15 +1712,16 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
 <!-- 新功能公告 Modal -->
 <div id="announceModal" style="display:none">
   <div class="announce-card">
-    <div class="announce-emoji">🛟</div>
-    <div class="announce-badge">新功能</div>
-    <div class="announce-title">遇到問題，跟我們說！</div>
+    <div class="announce-emoji">📚</div>
+    <div class="announce-badge">新內容上架</div>
+    <div class="announce-title">10月號雜誌題庫來了！</div>
     <div class="announce-body">
-      發現 <strong>bug</strong>、<strong>單字解釋怪怪的</strong>，或有任何建議嗎？<br>
-      現在可從右上角 <strong>☰ 選單 → 🛟 回報問題</strong> 直接告訴我們，還能<strong>附上截圖</strong> 📷
+      首頁 <strong>📚 雜誌題庫</strong> 新增 5 本 10 月號：<br>
+      <strong>Live 互動英語</strong>、<strong>ALL+ 互動英語</strong>、<strong>Studio Classroom</strong>、<strong>空中美語 4U</strong>、<strong>空中美語 Digest</strong><br>
+      每篇都有課文精讀、單字、克漏字、文意選填、篇章結構、閱讀測驗 ✍️
     </div>
     <div class="announce-actions">
-      <button class="announce-primary" onclick="openReportFromAnnounce()">立即試試 →</button>
+      <button class="announce-primary" onclick="openMagazineFromAnnounce()">馬上去練習 →</button>
       <button class="announce-secondary" onclick="closeAnnounce()">知道了</button>
     </div>
   </div>
@@ -6438,7 +6456,7 @@ function getWotdWord(){
 }
 
 /* 新功能公告（一次性）：優先於每日一字顯示，避免兩個彈窗疊在一起 */
-const ANNOUNCE_KEY = 'vocab_announce_report_v1';
+const ANNOUNCE_KEY = 'vocab_announce_magazine_202510';
 function maybeShowAnnounce(){
   if(localStorage.getItem(ANNOUNCE_KEY)) return false;
   document.getElementById('announceModal').style.display = 'flex';
@@ -6448,9 +6466,9 @@ function closeAnnounce(){
   localStorage.setItem(ANNOUNCE_KEY, '1');
   document.getElementById('announceModal').style.display = 'none';
 }
-function openReportFromAnnounce(){
+function openMagazineFromAnnounce(){
   closeAnnounce();
-  openReportModal();
+  switchTab('magazine');
 }
 
 function showWotdIfNeeded(){
