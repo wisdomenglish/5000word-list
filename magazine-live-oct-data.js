@@ -90,19 +90,19 @@ Without its gold and jewels, the statue was removed to make room for a new one. 
       ]
     },
     vocab: [
-      { id: 1, question: "A bronze ______ of the city's founder stands in the central square.", options: ["A. statue", "B. document", "C. shadow", "D. ceremony"], answer: "A", explanation: "【選項解析】\n- (A) statue (n.) 雕像 (正解)\n- (B) document (n.) 文件\n- (C) shadow (n.) 影子\n- (D) ceremony (n.) 典禮" },
-      { id: 2, question: "After months of travel, the family finally ______ in a small coastal town.", options: ["A. settled", "B. escaped", "C. argued", "D. borrowed"], answer: "A", explanation: "【選項解析】\n- (A) settled (v.) 安頓、落腳 (正解)\n- (B) escaped (v.) 逃離\n- (C) argued (v.) 爭論\n- (D) borrowed (v.) 借入" },
-      { id: 3, question: "The old factory will be ______ to make way for a new park.", options: ["A. removed", "B. repeated", "C. translated", "D. praised"], answer: "A", explanation: "【選項解析】\n- (A) removed (v.) 移除、拆除 (正解)\n- (B) repeated (v.) 重複\n- (C) translated (v.) 翻譯\n- (D) praised (v.) 讚美" },
-      { id: 4, question: "She keeps her grandmother's ring as a ______ reminder of their time together.", options: ["A. precious", "B. clumsy", "C. temporary", "D. ordinary"], answer: "A", explanation: "【選項解析】\n- (A) precious (adj.) 珍貴的 (正解)\n- (B) clumsy (adj.) 笨拙的\n- (C) temporary (adj.) 暫時的\n- (D) ordinary (adj.) 普通的" }
+      { id: 1, question: "A bronze ______ of the city's founder stands in the central square.", options: ["A. shadow", "B. ceremony", "C. statue", "D. document"], answer: "C", explanation: "【選項解析】\n- (A) shadow (n.) 影子\n- (B) ceremony (n.) 典禮\n- (C) statue (n.) 雕像 (正解)\n- (D) document (n.) 文件" },
+      { id: 2, question: "After months of travel, the family finally ______ in a small coastal town.", options: ["A. settled", "B. argued", "C. borrowed", "D. escaped"], answer: "A", explanation: "【選項解析】\n- (A) settled (v.) 安頓、落腳 (正解)\n- (B) argued (v.) 爭論\n- (C) borrowed (v.) 借入\n- (D) escaped (v.) 逃離" },
+      { id: 3, question: "The old factory will be ______ to make way for a new park.", options: ["A. translated", "B. removed", "C. repeated", "D. praised"], answer: "B", explanation: "【選項解析】\n- (A) translated (v.) 翻譯\n- (B) removed (v.) 移除、拆除 (正解)\n- (C) repeated (v.) 重複\n- (D) praised (v.) 讚美" },
+      { id: 4, question: "She keeps her grandmother's ring as a ______ reminder of their time together.", options: ["A. ordinary", "B. temporary", "C. precious", "D. clumsy"], answer: "C", explanation: "【選項解析】\n- (A) ordinary (adj.) 普通的\n- (B) temporary (adj.) 暫時的\n- (C) precious (adj.) 珍貴的 (正解)\n- (D) clumsy (adj.) 笨拙的" },
     ],
     cloze: {
       text: "Oscar Wilde's \"The Happy Prince\" tells the story of a gold-covered statue who watches over a city full of suffering. Though his heart is made [1] lead, the prince is moved by what he sees and asks a swallow to carry his jewels and gold to the poor, piece [2] piece. The swallow, who was supposed to fly south for the winter, chooses [3] stay and help the prince instead. By the time winter arrives, the swallow has grown too weak [4] the cold and dies at the statue's feet, and the prince's lead heart breaks from grief. In the end, it is not gold or jewels [5] the kindness of the prince and the loyalty of the swallow that God values most.",
       questions: [
-        { id: 1, options: ["A. of", "B. in", "C. for", "D. with"], answer: "A", explanation: "be made of 表「由…製成」，指材質，故選 of。" },
-        { id: 2, options: ["A. by", "B. for", "C. from", "D. with"], answer: "A", explanation: "piece by piece 為固定片語，表「一片接一片地」。" },
-        { id: 3, options: ["A. to", "B. staying", "C. stay", "D. stayed"], answer: "A", explanation: "choose 後接不定詞 to V. 表「選擇做某事」。" },
-        { id: 4, options: ["A. for", "B. to", "C. with", "D. in"], answer: "A", explanation: "too weak for + N. 表「對…而言太虛弱」，承接前面提到的寒冷。" },
-        { id: 5, options: ["A. but", "B. or", "C. so", "D. yet"], answer: "A", explanation: "not A but B 表「不是A而是B」，呼應句意：上帝看重的不是金銀珠寶，而是善良與忠誠。" }
+        { id: 1, options: ["A. of", "B. for", "C. in", "D. with"], answer: "A", explanation: "be made of 表「由…製成」，指材質，故選 of。" },
+        { id: 2, options: ["A. by", "B. from", "C. for", "D. with"], answer: "A", explanation: "piece by piece 為固定片語，表「一片接一片地」。" },
+        { id: 3, options: ["A. to", "B. stayed", "C. stay", "D. staying"], answer: "A", explanation: "choose 後接不定詞 to V. 表「選擇做某事」。" },
+        { id: 4, options: ["A. to", "B. in", "C. for", "D. with"], answer: "C", explanation: "too weak for + N. 表「對…而言太虛弱」，承接前面提到的寒冷。" },
+        { id: 5, options: ["A. or", "B. but", "C. yet", "D. so"], answer: "B", explanation: "not A but B 表「不是A而是B」，呼應句意：上帝看重的不是金銀珠寶，而是善良與忠誠。" },
       ]
     },
     wordBank: {
@@ -112,11 +112,11 @@ Without its gold and jewels, the statue was removed to make room for a new one. 
     },
     discourse: {
       options: [
-        "A. Readers often assume that wealth and comfort naturally lead to happiness, yet the prince's story challenges this idea from the very beginning.",
-        "B. The swallow, by contrast, has nothing but its wings and a few months of freedom before winter arrives.",
-        "C. Each time the prince gives something away, he loses a little more of his former beauty, but he feels a new kind of joy he never knew while alive.",
-        "D. As a result, the city eventually melts down the statue's lead heart along with ordinary scrap metal, unaware of what it has truly destroyed.",
-        "E. Modern readers are drawn to such tales because they still long for stories where small sacrifices carry lasting meaning."
+        "A. As a result, the city eventually melts down the statue's lead heart along with ordinary scrap metal, unaware of what it has truly destroyed.",
+        "B. Modern readers are drawn to such tales because they still long for stories where small sacrifices carry lasting meaning.",
+        "C. Readers often assume that wealth and comfort naturally lead to happiness, yet the prince's story challenges this idea from the very beginning.",
+        "D. The swallow, by contrast, has nothing but its wings and a few months of freedom before winter arrives.",
+        "E. Each time the prince gives something away, he loses a little more of his former beauty, but he feels a new kind of joy he never knew while alive."
       ],
       paragraphs: [
         "Oscar Wilde wrote \"The Happy Prince\" as a fairy tale, but its message about generosity still resonates with readers today. The story begins with a golden statue admired by everyone who passes beneath it.",
@@ -124,7 +124,7 @@ Without its gold and jewels, the statue was removed to make room for a new one. 
         "[2] Despite this difference, the two form an unlikely partnership built on trust. [3] This pattern repeats with each sapphire eye and every leaf of gold, until the once-splendid statue is left plain and grey.",
         "[4] Even so, the story does not end in despair, for an angel carries the swallow and the broken heart to heaven, where God declares them the most precious things in the city."
       ],
-      answers: { 1: "A", 2: "B", 3: "C", 4: "D" }
+      answers: { 1: "C", 2: "D", 3: "E", 4: "A" }
     },
     reading: {
       questions: [
@@ -222,19 +222,19 @@ As you can see, military history has had a significant influence on modern fashi
       ]
     },
     vocab: [
-      { id: 1, question: "The new office chairs were designed to be ______ rather than simply decorative.", options: ["A. functional", "B. accidental", "C. emotional", "D. historical"], answer: "A", explanation: "【選項解析】\n- (A) functional (adj.) 功能性的 (正解)\n- (B) accidental (adj.) 意外的\n- (C) emotional (adj.) 情感的\n- (D) historical (adj.) 歷史的" },
-      { id: 2, question: "Many new students ______ with the heavy workload during their first semester.", options: ["A. struggle", "B. celebrate", "C. apologize", "D. retire"], answer: "A", explanation: "【選項解析】\n- (A) struggle (v.) 吃力應付、掙扎 (正解)\n- (B) celebrate (v.) 慶祝\n- (C) apologize (v.) 道歉\n- (D) retire (v.) 退休" },
-      { id: 3, question: "The word \"chocolate\" has its ______ in an ancient Mesoamerican language.", options: ["A. origins", "B. shadows", "C. penalties", "D. apologies"], answer: "A", explanation: "【選項解析】\n- (A) origins (n.) 起源 (正解)\n- (B) shadows (n.) 影子\n- (C) penalties (n.) 處罰\n- (D) apologies (n.) 道歉" },
-      { id: 4, question: "The singer's voice is so ______ that fans can identify her in seconds.", options: ["A. recognizable", "B. invisible", "C. forgettable", "D. accidental"], answer: "A", explanation: "【選項解析】\n- (A) recognizable (adj.) 可辨識的 (正解)\n- (B) invisible (adj.) 隱形的\n- (C) forgettable (adj.) 不難忘的\n- (D) accidental (adj.) 意外的" }
+      { id: 1, question: "The new office chairs were designed to be ______ rather than simply decorative.", options: ["A. historical", "B. accidental", "C. emotional", "D. functional"], answer: "D", explanation: "【選項解析】\n- (A) historical (adj.) 歷史的\n- (B) accidental (adj.) 意外的\n- (C) emotional (adj.) 情感的\n- (D) functional (adj.) 功能性的 (正解)" },
+      { id: 2, question: "Many new students ______ with the heavy workload during their first semester.", options: ["A. struggle", "B. apologize", "C. celebrate", "D. retire"], answer: "A", explanation: "【選項解析】\n- (A) struggle (v.) 吃力應付、掙扎 (正解)\n- (B) apologize (v.) 道歉\n- (C) celebrate (v.) 慶祝\n- (D) retire (v.) 退休" },
+      { id: 3, question: "The word \"chocolate\" has its ______ in an ancient Mesoamerican language.", options: ["A. apologies", "B. penalties", "C. origins", "D. shadows"], answer: "C", explanation: "【選項解析】\n- (A) apologies (n.) 道歉\n- (B) penalties (n.) 處罰\n- (C) origins (n.) 起源 (正解)\n- (D) shadows (n.) 影子" },
+      { id: 4, question: "The singer's voice is so ______ that fans can identify her in seconds.", options: ["A. invisible", "B. recognizable", "C. accidental", "D. forgettable"], answer: "B", explanation: "【選項解析】\n- (A) invisible (adj.) 隱形的\n- (B) recognizable (adj.) 可辨識的 (正解)\n- (C) accidental (adj.) 意外的\n- (D) forgettable (adj.) 不難忘的" },
     ],
     cloze: {
       text: "Military clothing has shaped fashion [1] than most people realize. The bomber jacket, for instance, was created to keep pilots warm in freezing, open cockpits, not to look stylish on the street. [2] the T-shirt began as underwear for navy sailors working in hot engine rooms. It was only after actors wore T-shirts in films [3] the public began to see them as fashionable rather than merely functional. Cargo pants followed a similar path: soldiers needed extra pockets to carry supplies [4] using their hands. Decades later, skateboarders adopted the loose, practical pants for comfort. [5] these examples show, clothing designed purely for survival or duty can eventually become part of everyday style.",
       questions: [
-        { id: 1, options: ["A. more", "B. less", "C. most", "D. least"], answer: "A", explanation: "more...than 表比較，指軍事服裝對時尚的影響「比多數人所想的更大」。" },
-        { id: 2, options: ["A. Similarly", "B. However", "C. Therefore", "D. Otherwise"], answer: "A", explanation: "此句承接上段「同樣地」介紹另一個源自軍隊的服飾例子，語意銜接需用 Similarly。" },
-        { id: 3, options: ["A. that", "B. which", "C. when", "D. where"], answer: "A", explanation: "It is/was not until... that... 為強調句型，表「直到…才…」，固定搭配 that。" },
-        { id: 4, options: ["A. without", "B. despite", "C. unless", "D. besides"], answer: "A", explanation: "without + V-ing 表「不…地」，指士兵攜帶物資同時不佔用雙手。" },
-        { id: 5, options: ["A. As", "B. Despite", "C. Unless", "D. Although"], answer: "A", explanation: "As + 子句，置於句首表「正如…」，引出下文對前述例子的總結。" }
+        { id: 1, options: ["A. less", "B. least", "C. most", "D. more"], answer: "D", explanation: "more...than 表比較，指軍事服裝對時尚的影響「比多數人所想的更大」。" },
+        { id: 2, options: ["A. Therefore", "B. Similarly", "C. However", "D. Otherwise"], answer: "B", explanation: "此句承接上段「同樣地」介紹另一個源自軍隊的服飾例子，語意銜接需用 Similarly。" },
+        { id: 3, options: ["A. that", "B. where", "C. which", "D. when"], answer: "A", explanation: "It is/was not until... that... 為強調句型，表「直到…才…」，固定搭配 that。" },
+        { id: 4, options: ["A. besides", "B. unless", "C. without", "D. despite"], answer: "C", explanation: "without + V-ing 表「不…地」，指士兵攜帶物資同時不佔用雙手。" },
+        { id: 5, options: ["A. Unless", "B. As", "C. Although", "D. Despite"], answer: "B", explanation: "As + 子句，置於句首表「正如…」，引出下文對前述例子的總結。" },
       ]
     },
     wordBank: {
@@ -244,11 +244,11 @@ As you can see, military history has had a significant influence on modern fashi
     },
     discourse: {
       options: [
-        "A. Fashion historians often point out that war has indirectly influenced clothing design more than any single designer.",
-        "B. The jacket's practical features, such as its tight cuffs and warm lining, later became appealing details rather than obstacles.",
-        "C. Hollywood played a surprisingly large role in turning this once-hidden garment into a symbol of youth and rebellion.",
-        "D. Comfort, rather than appearance, was the army's only real concern when the pants were first issued to troops.",
-        "E. None of this was planned by the soldiers who first wore these clothes for purely practical reasons."
+        "A. Comfort, rather than appearance, was the army's only real concern when the pants were first issued to troops.",
+        "B. Hollywood played a surprisingly large role in turning this once-hidden garment into a symbol of youth and rebellion.",
+        "C. None of this was planned by the soldiers who first wore these clothes for purely practical reasons.",
+        "D. Fashion historians often point out that war has indirectly influenced clothing design more than any single designer.",
+        "E. The jacket's practical features, such as its tight cuffs and warm lining, later became appealing details rather than obstacles."
       ],
       paragraphs: [
         "It is easy to assume that fashion trends begin on runways or in designer studios, but history tells a different story. Many of today's most familiar clothing items were never meant to be fashionable at all.",
@@ -256,7 +256,7 @@ As you can see, military history has had a significant influence on modern fashi
         "The T-shirt followed an even more unexpected path. Originally issued as simple underwear for navy sailors, it was considered too plain to be worn alone in public. [3] Once actors began wearing T-shirts on screen, audiences everywhere began to copy the look.",
         "Cargo pants tell a similar story of quiet transformation. [4] Only decades later did skateboarders and young people embrace the loose fit and extra pockets as a comfortable, casual style."
       ],
-      answers: { 1: "A", 2: "B", 3: "C", 4: "D" }
+      answers: { 1: "D", 2: "E", 3: "B", 4: "A" }
     },
     reading: {
       questions: [
@@ -323,19 +323,19 @@ After all, in real life, the ability to handle uncomfortable situations comes fr
       ]
     },
     vocab: [
-      { id: 1, question: "Many companies now use ______ to answer simple customer questions online.", options: ["A. chatbots", "B. contracts", "C. ceremonies", "D. shortcuts"], answer: "A", explanation: "【選項解析】\n- (A) chatbots (n.) 聊天機器人 (正解)\n- (B) contracts (n.) 合約\n- (C) ceremonies (n.) 典禮\n- (D) shortcuts (n.) 捷徑" },
-      { id: 2, question: "Scientists ______ that rising sea levels could affect millions of people.", options: ["A. warn", "B. forgive", "C. celebrate", "D. ignore"], answer: "A", explanation: "【選項解析】\n- (A) warn (v.) 警告 (正解)\n- (B) forgive (v.) 原諒\n- (C) celebrate (v.) 慶祝\n- (D) ignore (v.) 忽視" },
+      { id: 1, question: "Many companies now use ______ to answer simple customer questions online.", options: ["A. contracts", "B. ceremonies", "C. chatbots", "D. shortcuts"], answer: "C", explanation: "【選項解析】\n- (A) contracts (n.) 合約\n- (B) ceremonies (n.) 典禮\n- (C) chatbots (n.) 聊天機器人 (正解)\n- (D) shortcuts (n.) 捷徑" },
+      { id: 2, question: "Scientists ______ that rising sea levels could affect millions of people.", options: ["A. ignore", "B. warn", "C. forgive", "D. celebrate"], answer: "B", explanation: "【選項解析】\n- (A) ignore (v.) 忽視\n- (B) warn (v.) 警告 (正解)\n- (C) forgive (v.) 原諒\n- (D) celebrate (v.) 慶祝" },
       { id: 3, question: "After months of practice, she felt ______ enough to perform in public.", options: ["A. confident", "B. anxious", "C. invisible", "D. guilty"], answer: "A", explanation: "【選項解析】\n- (A) confident (adj.) 有自信的 (正解)\n- (B) anxious (adj.) 焦慮的\n- (C) invisible (adj.) 隱形的\n- (D) guilty (adj.) 有罪惡感的" },
-      { id: 4, question: "No app can fully ______ the support of a caring friend.", options: ["A. replace", "B. apologize", "C. donate", "D. forgive"], answer: "A", explanation: "【選項解析】\n- (A) replace (v.) 取代 (正解)\n- (B) apologize (v.) 道歉\n- (C) donate (v.) 捐贈\n- (D) forgive (v.) 原諒" }
+      { id: 4, question: "No app can fully ______ the support of a caring friend.", options: ["A. donate", "B. replace", "C. apologize", "D. forgive"], answer: "B", explanation: "【選項解析】\n- (A) donate (v.) 捐贈\n- (B) replace (v.) 取代 (正解)\n- (C) apologize (v.) 道歉\n- (D) forgive (v.) 原諒" },
     ],
     cloze: {
       text: "A recent Stanford study raises concerns about how AI chatbots interact with users. Researchers tested eleven systems and found that these programs tend to agree with people far more often than a typical human [1]. This pattern may feel pleasant at first, but experts worry it could make users less willing [2] admit their own mistakes. The lead researcher, Myra Cheng, is especially concerned [3] teenagers, who may rely on AI for emotional support during a time when honest feedback matters most. [4] AI can offer quick, comforting responses, it cannot replace the kind of real, sometimes uncomfortable conversations that help people grow. [5] a result, experts recommend treating AI as a supplement, not a substitute, for real human relationships.",
       questions: [
-        { id: 1, options: ["A. would", "B. does", "C. did", "D. has"], answer: "A", explanation: "than humans would (agree) 為比較句型，省略重複動詞，would 表假設性的一般人類反應。" },
-        { id: 2, options: ["A. to", "B. for", "C. of", "D. with"], answer: "A", explanation: "willing to V. 為固定搭配，表「願意做…」。" },
-        { id: 3, options: ["A. about", "B. on", "C. at", "D. in"], answer: "A", explanation: "be concerned about + N. 表「對…感到擔憂」。" },
-        { id: 4, options: ["A. While", "B. Unless", "C. Because", "D. Since"], answer: "A", explanation: "While 引導對比子句，表「雖然…」，呼應後句語氣轉折 cannot replace。" },
-        { id: 5, options: ["A. As", "B. For", "C. By", "D. With"], answer: "A", explanation: "As a result 為固定片語，表「因此、結果是」。" }
+        { id: 1, options: ["A. did", "B. would", "C. does", "D. has"], answer: "B", explanation: "than humans would (agree) 為比較句型，省略重複動詞，would 表假設性的一般人類反應。" },
+        { id: 2, options: ["A. to", "B. with", "C. for", "D. of"], answer: "A", explanation: "willing to V. 為固定搭配，表「願意做…」。" },
+        { id: 3, options: ["A. at", "B. about", "C. in", "D. on"], answer: "B", explanation: "be concerned about + N. 表「對…感到擔憂」。" },
+        { id: 4, options: ["A. Unless", "B. Since", "C. Because", "D. While"], answer: "D", explanation: "While 引導對比子句，表「雖然…」，呼應後句語氣轉折 cannot replace。" },
+        { id: 5, options: ["A. For", "B. With", "C. By", "D. As"], answer: "D", explanation: "As a result 為固定片語，表「因此、結果是」。" },
       ]
     },
     wordBank: {
@@ -346,10 +346,10 @@ After all, in real life, the ability to handle uncomfortable situations comes fr
     discourse: {
       options: [
         "A. In fact, the study found that these systems agreed with user opinions in a striking majority of cases, no matter how questionable those opinions were.",
-        "B. This is not entirely surprising, since companies often design chatbots to keep users satisfied and engaged for as long as possible.",
-        "C. Teenagers, who are still developing the emotional skills needed to handle disagreement, may be especially vulnerable to this pattern.",
-        "D. Experts argue that occasional discomfort is not something to be avoided, but rather a necessary part of becoming a mature, resilient adult.",
-        "E. None of this means AI chatbots are useless, only that their honesty has clear limits that users should keep in mind."
+        "B. Teenagers, who are still developing the emotional skills needed to handle disagreement, may be especially vulnerable to this pattern.",
+        "C. This is not entirely surprising, since companies often design chatbots to keep users satisfied and engaged for as long as possible.",
+        "D. None of this means AI chatbots are useless, only that their honesty has clear limits that users should keep in mind.",
+        "E. Experts argue that occasional discomfort is not something to be avoided, but rather a necessary part of becoming a mature, resilient adult."
       ],
       paragraphs: [
         "AI chatbots have quickly become a popular source of advice for everything from schoolwork to personal relationships. A recent Stanford study, however, raises a troubling question about how trustworthy this advice really is.",
@@ -357,7 +357,7 @@ After all, in real life, the ability to handle uncomfortable situations comes fr
         "The consequences of this pattern may be most serious for younger users. [3] If they grow accustomed to constant agreement from AI, they may struggle later to accept honest criticism from classmates, teachers, or employers.",
         "Researchers are not suggesting that people abandon AI tools altogether. [4]"
       ],
-      answers: { 1: "A", 2: "B", 3: "C", 4: "D" }
+      answers: { 1: "A", 2: "C", 3: "B", 4: "E" }
     },
     reading: {
       questions: [
@@ -596,19 +596,19 @@ S：沒問題，我們馬上為您寄出。`,
       ]
     },
     vocab: [
-      { id: 1, question: "You must spend a ______ of $500 to qualify for the discount.", options: ["A. minimum", "B. relief", "C. refund", "D. alley"], answer: "A", explanation: "【選項解析】\n- (A) minimum (n.) 最低限度 (正解)\n- (B) relief (n.) 寬慰\n- (C) refund (n.) 退款\n- (D) alley (n.) 巷子" },
-      { id: 2, question: "I ______ deleted the file before saving a backup copy.", options: ["A. accidentally", "B. politely", "C. nervously", "D. formally"], answer: "A", explanation: "【選項解析】\n- (A) accidentally (adv.) 不小心地 (正解)\n- (B) politely (adv.) 禮貌地\n- (C) nervously (adv.) 緊張地\n- (D) formally (adv.) 正式地" },
-      { id: 3, question: "Finding her lost wallet was such a ______ after a stressful day.", options: ["A. relief", "B. penalty", "C. shortcut", "D. ceremony"], answer: "A", explanation: "【選項解析】\n- (A) relief (n.) 寬慰 (正解)\n- (B) penalty (n.) 懲罰\n- (C) shortcut (n.) 捷徑\n- (D) ceremony (n.) 典禮" },
-      { id: 4, question: "The store offered a full ______ after the product arrived damaged.", options: ["A. refund", "B. alley", "C. origin", "D. cockpit"], answer: "A", explanation: "【選項解析】\n- (A) refund (n.) 退款 (正解)\n- (B) alley (n.) 巷子\n- (C) origin (n.) 起源\n- (D) cockpit (n.) 駕駛艙" }
+      { id: 1, question: "You must spend a ______ of $500 to qualify for the discount.", options: ["A. relief", "B. refund", "C. minimum", "D. alley"], answer: "C", explanation: "【選項解析】\n- (A) relief (n.) 寬慰\n- (B) refund (n.) 退款\n- (C) minimum (n.) 最低限度 (正解)\n- (D) alley (n.) 巷子" },
+      { id: 2, question: "I ______ deleted the file before saving a backup copy.", options: ["A. nervously", "B. accidentally", "C. politely", "D. formally"], answer: "B", explanation: "【選項解析】\n- (A) nervously (adv.) 緊張地\n- (B) accidentally (adv.) 不小心地 (正解)\n- (C) politely (adv.) 禮貌地\n- (D) formally (adv.) 正式地" },
+      { id: 3, question: "Finding her lost wallet was such a ______ after a stressful day.", options: ["A. relief", "B. ceremony", "C. shortcut", "D. penalty"], answer: "A", explanation: "【選項解析】\n- (A) relief (n.) 寬慰 (正解)\n- (B) ceremony (n.) 典禮\n- (C) shortcut (n.) 捷徑\n- (D) penalty (n.) 懲罰" },
+      { id: 4, question: "The store offered a full ______ after the product arrived damaged.", options: ["A. alley", "B. cockpit", "C. refund", "D. origin"], answer: "C", explanation: "【選項解析】\n- (A) alley (n.) 巷子\n- (B) cockpit (n.) 駕駛艙\n- (C) refund (n.) 退款 (正解)\n- (D) origin (n.) 起源" },
     ],
     cloze: {
       text: "Ordering food through a delivery app usually goes smoothly, but small problems can still come up. Customers sometimes enter the wrong address [1] mistake, so most apps allow users to contact the driver directly and correct the [2] before the food arrives. Drivers, on the other hand, may have trouble finding a building, especially [3] it is located down a narrow alley or behind another structure; in that case, clear directions from the customer make a big difference. Occasionally, an item is accidentally left [4] of the order altogether. In such cases, most restaurants will either send the missing item right away [5] offer a refund, depending on what the customer prefers.",
       questions: [
-        { id: 1, options: ["A. by", "B. in", "C. on", "D. for"], answer: "A", explanation: "by mistake 為固定片語，表「不小心地、因錯誤」。" },
-        { id: 2, options: ["A. location", "B. relief", "C. minimum", "D. refund"], answer: "A", explanation: "對應上文「enter the wrong address」，此處需填入「位置」，呼應對話中 update the location。" },
-        { id: 3, options: ["A. when", "B. despite", "C. although", "D. unless"], answer: "A", explanation: "when 引導時間子句，表「當…時」，說明建築物位置不易尋找的情況。" },
-        { id: 4, options: ["A. out", "B. off", "C. over", "D. behind"], answer: "A", explanation: "leave out 為固定片語，表「遺漏、省略」，與對話中 left out 用法相同。" },
-        { id: 5, options: ["A. or", "B. so", "C. but", "D. yet"], answer: "A", explanation: "either A or B 表「不是A就是B」，指餐廳可選擇補寄餐點「或」辦理退款。" }
+        { id: 1, options: ["A. in", "B. for", "C. on", "D. by"], answer: "D", explanation: "by mistake 為固定片語，表「不小心地、因錯誤」。" },
+        { id: 2, options: ["A. refund", "B. relief", "C. location", "D. minimum"], answer: "C", explanation: "對應上文「enter the wrong address」，此處需填入「位置」，呼應對話中 update the location。" },
+        { id: 3, options: ["A. despite", "B. when", "C. although", "D. unless"], answer: "B", explanation: "when 引導時間子句，表「當…時」，說明建築物位置不易尋找的情況。" },
+        { id: 4, options: ["A. behind", "B. over", "C. off", "D. out"], answer: "D", explanation: "leave out 為固定片語，表「遺漏、省略」，與對話中 left out 用法相同。" },
+        { id: 5, options: ["A. so", "B. yet", "C. but", "D. or"], answer: "D", explanation: "either A or B 表「不是A就是B」，指餐廳可選擇補寄餐點「或」辦理退款。" },
       ]
     },
     wordBank: {
@@ -618,10 +618,10 @@ S：沒問題，我們馬上為您寄出。`,
     },
     discourse: {
       options: [
-        "A. A short phone call at this stage can save everyone a great deal of unnecessary frustration later on.",
-        "B. Luckily, most delivery drivers are patient and willing to wait a few extra minutes for clear directions.",
-        "C. The customer, in turn, usually has two choices: waiting for a replacement item or requesting money back.",
-        "D. Even a small typo, such as swapping two digits in a building number, can send a driver to the wrong address entirely.",
+        "A. Even a small typo, such as swapping two digits in a building number, can send a driver to the wrong address entirely.",
+        "B. The customer, in turn, usually has two choices: waiting for a replacement item or requesting money back.",
+        "C. A short phone call at this stage can save everyone a great deal of unnecessary frustration later on.",
+        "D. Luckily, most delivery drivers are patient and willing to wait a few extra minutes for clear directions.",
         "E. Clear communication, more than anything else, is what keeps the entire delivery process running smoothly."
       ],
       paragraphs: [
@@ -630,7 +630,7 @@ S：沒問題，我們馬上為您寄出。`,
         "Locating an unfamiliar building presents another common challenge, especially when it sits behind other structures or down a quiet alley. [3] Giving directions using nearby landmarks, such as a library or a convenience store, usually helps the driver find the way quickly.",
         "Occasionally, something goes wrong on the restaurant's end, such as a missing item inside the bag. [4]"
       ],
-      answers: { 1: "D", 2: "A", 3: "B", 4: "C" }
+      answers: { 1: "A", 2: "C", 3: "D", 4: "B" }
     },
     reading: {
       questions: [
@@ -728,19 +728,19 @@ Devoted fans even hold special festivals to celebrate the herb, and there are no
       ]
     },
     vocab: [
-      { id: 1, question: "Whether school uniforms should be required is a widely ______ topic.", options: ["A. debated", "B. donated", "C. translated", "D. recognized"], answer: "A", explanation: "【選項解析】\n- (A) debated (adj.) 受爭議的 (正解)\n- (B) donated (adj.) 被捐贈的\n- (C) translated (adj.) 被翻譯的\n- (D) recognized (adj.) 被認可的" },
-      { id: 2, question: "His skin is very ______ , so he always wears sunscreen.", options: ["A. sensitive", "B. functional", "C. precious", "D. confident"], answer: "A", explanation: "【選項解析】\n- (A) sensitive (adj.) 敏感的 (正解)\n- (B) functional (adj.) 功能性的\n- (C) precious (adj.) 珍貴的\n- (D) confident (adj.) 有自信的" },
-      { id: 3, question: "Salt has long been used to ______ fish and meat for long journeys.", options: ["A. preserve", "B. replace", "C. remove", "D. settle"], answer: "A", explanation: "【選項解析】\n- (A) preserve (v.) 保存 (正解)\n- (B) replace (v.) 取代\n- (C) remove (v.) 移除\n- (D) settle (v.) 安頓" },
-      { id: 4, question: "The band's most ______ fans traveled across the country to see every show.", options: ["A. devoted", "B. missing", "C. accidental", "D. recognizable"], answer: "A", explanation: "【選項解析】\n- (A) devoted (adj.) 忠實的、熱衷的 (正解)\n- (B) missing (adj.) 遺漏的\n- (C) accidental (adj.) 意外的\n- (D) recognizable (adj.) 可辨識的" }
+      { id: 1, question: "Whether school uniforms should be required is a widely ______ topic.", options: ["A. recognized", "B. translated", "C. debated", "D. donated"], answer: "C", explanation: "【選項解析】\n- (A) recognized (adj.) 被認可的\n- (B) translated (adj.) 被翻譯的\n- (C) debated (adj.) 受爭議的 (正解)\n- (D) donated (adj.) 被捐贈的" },
+      { id: 2, question: "His skin is very ______ , so he always wears sunscreen.", options: ["A. confident", "B. precious", "C. sensitive", "D. functional"], answer: "C", explanation: "【選項解析】\n- (A) confident (adj.) 有自信的\n- (B) precious (adj.) 珍貴的\n- (C) sensitive (adj.) 敏感的 (正解)\n- (D) functional (adj.) 功能性的" },
+      { id: 3, question: "Salt has long been used to ______ fish and meat for long journeys.", options: ["A. remove", "B. preserve", "C. replace", "D. settle"], answer: "B", explanation: "【選項解析】\n- (A) remove (v.) 移除\n- (B) preserve (v.) 保存 (正解)\n- (C) replace (v.) 取代\n- (D) settle (v.) 安頓" },
+      { id: 4, question: "The band's most ______ fans traveled across the country to see every show.", options: ["A. missing", "B. recognizable", "C. devoted", "D. accidental"], answer: "C", explanation: "【選項解析】\n- (A) missing (adj.) 遺漏的\n- (B) recognizable (adj.) 可辨識的\n- (C) devoted (adj.) 忠實的、熱衷的 (正解)\n- (D) accidental (adj.) 意外的" },
     ],
     cloze: {
       text: "Few herbs divide opinion quite like coriander. Some people describe its taste as fresh and citrusy, [1] others insist it tastes like soap. Scientists have traced this disagreement to a specific gene that makes certain people especially sensitive [2] chemicals called aldehydes, which also appear in soap. People who grow up eating coriander regularly, however, are [3] likely to dislike it, suggesting that early exposure may play a role as well. Beyond biology, coriander also carries a long cultural history, [4] ancient Rome to modern Taiwan, where unusual coriander snacks have become surprisingly popular. [5] love it or hate it, few herbs spark as much passionate debate at the dinner table.",
       questions: [
-        { id: 1, options: ["A. while", "B. so", "C. since", "D. unless"], answer: "A", explanation: "while 表對比，連接兩種相反的味覺評價：有人覺得清新，有人覺得像肥皂。" },
-        { id: 2, options: ["A. to", "B. for", "C. with", "D. of"], answer: "A", explanation: "sensitive to + N. 為固定搭配，表「對…敏感」。" },
-        { id: 3, options: ["A. less", "B. more", "C. most", "D. much"], answer: "A", explanation: "承接上文「regularly eating」的對照，指這類人較「不」容易討厭香菜，故選 less。" },
-        { id: 4, options: ["A. from", "B. by", "C. at", "D. in"], answer: "A", explanation: "from A to B 表「從A到B」，描述香菜文化史橫跨古羅馬到現代台灣。" },
-        { id: 5, options: ["A. Whether", "B. Despite", "C. Although", "D. Unless"], answer: "A", explanation: "Whether...or... 表「無論…或是…」，呼應原文 Love it or hate it 的對比概念。" }
+        { id: 1, options: ["A. unless", "B. so", "C. since", "D. while"], answer: "D", explanation: "while 表對比，連接兩種相反的味覺評價：有人覺得清新，有人覺得像肥皂。" },
+        { id: 2, options: ["A. for", "B. to", "C. with", "D. of"], answer: "B", explanation: "sensitive to + N. 為固定搭配，表「對…敏感」。" },
+        { id: 3, options: ["A. more", "B. much", "C. less", "D. most"], answer: "C", explanation: "承接上文「regularly eating」的對照，指這類人較「不」容易討厭香菜，故選 less。" },
+        { id: 4, options: ["A. at", "B. from", "C. in", "D. by"], answer: "B", explanation: "from A to B 表「從A到B」，描述香菜文化史橫跨古羅馬到現代台灣。" },
+        { id: 5, options: ["A. Despite", "B. Whether", "C. Although", "D. Unless"], answer: "B", explanation: "Whether...or... 表「無論…或是…」，呼應原文 Love it or hate it 的對比概念。" },
       ]
     },
     wordBank: {
@@ -750,11 +750,11 @@ Devoted fans even hold special festivals to celebrate the herb, and there are no
     },
     discourse: {
       options: [
-        "A. For decades, scientists assumed the dislike was simply a matter of personal taste, with no deeper explanation behind it.",
-        "B. This genetic link helps explain why entire families sometimes share the same strong reaction to the herb.",
-        "C. Long before modern debates over taste began, ancient civilizations were already using the plant for practical purposes.",
-        "D. Food brands have taken notice, releasing everything from coriander-flavored chips to limited-edition coriander desserts.",
-        "E. It seems unlikely that such a divisive herb will ever disappear quietly from kitchens around the world."
+        "A. Long before modern debates over taste began, ancient civilizations were already using the plant for practical purposes.",
+        "B. Food brands have taken notice, releasing everything from coriander-flavored chips to limited-edition coriander desserts.",
+        "C. For decades, scientists assumed the dislike was simply a matter of personal taste, with no deeper explanation behind it.",
+        "D. It seems unlikely that such a divisive herb will ever disappear quietly from kitchens around the world.",
+        "E. This genetic link helps explain why entire families sometimes share the same strong reaction to the herb."
       ],
       paragraphs: [
         "Coriander may be one of the most argued-about ingredients in the kitchen. While some diners sprinkle it generously over nearly every dish, others avoid it entirely, insisting that it tastes unpleasant.",
@@ -762,7 +762,7 @@ Devoted fans even hold special festivals to celebrate the herb, and there are no
         "Coriander's story is not only about biology, however. [3] The Romans used it to flavor bread and preserve meat, and over centuries it slowly spread from Europe into kitchens across Asia and the Americas.",
         "In recent years, coriander has taken on a new life in popular culture, especially in Taiwan. [4]"
       ],
-      answers: { 1: "A", 2: "B", 3: "C", 4: "D" }
+      answers: { 1: "C", 2: "E", 3: "A", 4: "B" }
     },
     reading: {
       questions: [
@@ -859,19 +859,19 @@ The result of this bold decision was the album eternal sunshine, which dropped i
       ]
     },
     vocab: [
-      { id: 1, question: "With a strong lead and a loyal fan base, the team looked completely ______ this season.", options: ["A. unstoppable", "B. sensitive", "C. missing", "D. functional"], answer: "A", explanation: "【選項解析】\n- (A) unstoppable (adj.) 勢不可擋的 (正解)\n- (B) sensitive (adj.) 敏感的\n- (C) missing (adj.) 遺漏的\n- (D) functional (adj.) 功能性的" },
-      { id: 2, question: "The sudden loss of their home was a ______ the family never fully recovered from.", options: ["A. tragedy", "B. relief", "C. alley", "D. origin"], answer: "A", explanation: "【選項解析】\n- (A) tragedy (n.) 悲劇 (正解)\n- (B) relief (n.) 寬慰\n- (C) alley (n.) 巷子\n- (D) origin (n.) 起源" },
-      { id: 3, question: "After the accident, she felt too ______ to drive for several weeks.", options: ["A. shaken", "B. devoted", "C. bold", "D. functional"], answer: "A", explanation: "【選項解析】\n- (A) shaken (adj.) 震驚動搖的 (正解)\n- (B) devoted (adj.) 忠實的\n- (C) bold (adj.) 大膽的\n- (D) functional (adj.) 功能性的" },
-      { id: 4, question: "It took real courage to make such a ______ career change at forty.", options: ["A. bold", "B. missing", "C. sensitive", "D. debated"], answer: "A", explanation: "【選項解析】\n- (A) bold (adj.) 大膽的 (正解)\n- (B) missing (adj.) 遺漏的\n- (C) sensitive (adj.) 敏感的\n- (D) debated (adj.) 受爭議的" }
+      { id: 1, question: "With a strong lead and a loyal fan base, the team looked completely ______ this season.", options: ["A. missing", "B. unstoppable", "C. functional", "D. sensitive"], answer: "B", explanation: "【選項解析】\n- (A) missing (adj.) 遺漏的\n- (B) unstoppable (adj.) 勢不可擋的 (正解)\n- (C) functional (adj.) 功能性的\n- (D) sensitive (adj.) 敏感的" },
+      { id: 2, question: "The sudden loss of their home was a ______ the family never fully recovered from.", options: ["A. origin", "B. relief", "C. tragedy", "D. alley"], answer: "C", explanation: "【選項解析】\n- (A) origin (n.) 起源\n- (B) relief (n.) 寬慰\n- (C) tragedy (n.) 悲劇 (正解)\n- (D) alley (n.) 巷子" },
+      { id: 3, question: "After the accident, she felt too ______ to drive for several weeks.", options: ["A. functional", "B. shaken", "C. devoted", "D. bold"], answer: "B", explanation: "【選項解析】\n- (A) functional (adj.) 功能性的\n- (B) shaken (adj.) 震驚動搖的 (正解)\n- (C) devoted (adj.) 忠實的\n- (D) bold (adj.) 大膽的" },
+      { id: 4, question: "It took real courage to make such a ______ career change at forty.", options: ["A. debated", "B. bold", "C. sensitive", "D. missing"], answer: "B", explanation: "【選項解析】\n- (A) debated (adj.) 受爭議的\n- (B) bold (adj.) 大膽的 (正解)\n- (C) sensitive (adj.) 敏感的\n- (D) missing (adj.) 遺漏的" },
     ],
     cloze: {
       text: "Ariana Grande's career has included both extraordinary success and deep personal pain. After the 2017 Manchester bombing, which happened [1] she was performing, Grande struggled to process the tragedy while remaining in the public eye. [2] losing a close friend and ending her engagement soon after, she pushed forward by releasing new music. Still, the accumulated stress nearly convinced her to quit for good [3] 2022, while she was filming Wicked. [4] enough, playing the self-assured witch Glinda seems to have restored her own confidence instead. She returned to music [5] her own terms, resulting in two acclaimed albums, eternal sunshine and petal.",
       questions: [
-        { id: 1, options: ["A. while", "B. despite", "C. unless", "D. because"], answer: "A", explanation: "while 引導時間子句，表「當…的同時」，說明爆炸事件發生於她表演期間。" },
-        { id: 2, options: ["A. After", "B. Despite", "C. Although", "D. Unless"], answer: "A", explanation: "After + V-ing 表「在…之後」，承接上句事件，描述她隨後失去摯友並結束訂婚關係。" },
-        { id: 3, options: ["A. in", "B. on", "C. at", "D. by"], answer: "A", explanation: "in + 年份，表示事件發生的年份，此處指 2022 年。" },
-        { id: 4, options: ["A. Ironically", "B. Similarly", "C. Therefore", "D. Otherwise"], answer: "A", explanation: "Ironically 表「諷刺地」，呼應原文中角色反而拯救了她音樂生涯的意外轉折。" },
-        { id: 5, options: ["A. on", "B. in", "C. at", "D. for"], answer: "A", explanation: "on one's own terms 為固定片語，表「按照自己的方式」。" }
+        { id: 1, options: ["A. while", "B. despite", "C. because", "D. unless"], answer: "A", explanation: "while 引導時間子句，表「當…的同時」，說明爆炸事件發生於她表演期間。" },
+        { id: 2, options: ["A. Although", "B. Despite", "C. After", "D. Unless"], answer: "C", explanation: "After + V-ing 表「在…之後」，承接上句事件，描述她隨後失去摯友並結束訂婚關係。" },
+        { id: 3, options: ["A. in", "B. by", "C. at", "D. on"], answer: "A", explanation: "in + 年份，表示事件發生的年份，此處指 2022 年。" },
+        { id: 4, options: ["A. Therefore", "B. Otherwise", "C. Ironically", "D. Similarly"], answer: "C", explanation: "Ironically 表「諷刺地」，呼應原文中角色反而拯救了她音樂生涯的意外轉折。" },
+        { id: 5, options: ["A. in", "B. at", "C. on", "D. for"], answer: "C", explanation: "on one's own terms 為固定片語，表「按照自己的方式」。" },
       ]
     },
     wordBank: {
@@ -881,11 +881,11 @@ The result of this bold decision was the album eternal sunshine, which dropped i
     },
     discourse: {
       options: [
-        "A. For a performer whose life had already been shaped by public tragedy, this was an alarming admission to make.",
-        "B. Fans and critics alike have noted how differently she now approaches interviews, tours, and even songwriting itself.",
-        "C. Unlike earlier albums written partly to meet outside expectations, this new material reflects choices she made entirely for herself.",
-        "D. Reporters pressed her for details, but she offered only a brief statement before returning to the film set.",
-        "E. It is rare for a single film role to reshape an artist's entire approach to her main career."
+        "A. Reporters pressed her for details, but she offered only a brief statement before returning to the film set.",
+        "B. Unlike earlier albums written partly to meet outside expectations, this new material reflects choices she made entirely for herself.",
+        "C. It is rare for a single film role to reshape an artist's entire approach to her main career.",
+        "D. For a performer whose life had already been shaped by public tragedy, this was an alarming admission to make.",
+        "E. Fans and critics alike have noted how differently she now approaches interviews, tours, and even songwriting itself."
       ],
       paragraphs: [
         "Ariana Grande has spent much of her adult life in the public eye, experiencing both extraordinary success and painful personal loss. By 2022, the accumulated weight of both seemed to be catching up with her.",
@@ -893,7 +893,7 @@ The result of this bold decision was the album eternal sunshine, which dropped i
         "[2] Yet something about playing the endlessly confident witch Glinda appears to have shifted her outlook on her own career. [3]",
         "Since then, Grande has approached her music with a noticeably different mindset. [4] The result, by all accounts, is a more personal and creatively satisfying stage of her career."
       ],
-      answers: { 1: "A", 2: "D", 3: "E", 4: "B" }
+      answers: { 1: "D", 2: "A", 3: "C", 4: "E" }
     },
     reading: {
       questions: [
@@ -965,19 +965,19 @@ As food becomes harder to find due to climate change, bears are coming into town
       ]
     },
     vocab: [
-      { id: 1, question: "The sudden thunderstorm was ______ enough to send everyone running indoors.", options: ["A. frightening", "B. precious", "C. functional", "D. confident"], answer: "A", explanation: "【選項解析】\n- (A) frightening (adj.) 令人害怕的 (正解)\n- (B) precious (adj.) 珍貴的\n- (C) functional (adj.) 功能性的\n- (D) confident (adj.) 有自信的" },
-      { id: 2, question: "The company plans to ______ a new product line next spring.", options: ["A. introduce", "B. remove", "C. settle", "D. replace"], answer: "A", explanation: "【選項解析】\n- (A) introduce (v.) 推出、引進 (正解)\n- (B) remove (v.) 移除\n- (C) settle (v.) 安頓\n- (D) replace (v.) 取代" },
-      { id: 3, question: "There is growing ______ for electric cars as fuel prices continue to rise.", options: ["A. demand", "B. relief", "C. origin", "D. dispute"], answer: "A", explanation: "【選項解析】\n- (A) demand (n.) 需求 (正解)\n- (B) relief (n.) 寬慰\n- (C) origin (n.) 起源\n- (D) dispute (n.) 爭論" },
-      { id: 4, question: "Many young people are moving from ______ areas into big cities for work.", options: ["A. rural", "B. missing", "C. sensitive", "D. bold"], answer: "A", explanation: "【選項解析】\n- (A) rural (adj.) 鄉村的 (正解)\n- (B) missing (adj.) 遺漏的\n- (C) sensitive (adj.) 敏感的\n- (D) bold (adj.) 大膽的" }
+      { id: 1, question: "The sudden thunderstorm was ______ enough to send everyone running indoors.", options: ["A. precious", "B. confident", "C. frightening", "D. functional"], answer: "C", explanation: "【選項解析】\n- (A) precious (adj.) 珍貴的\n- (B) confident (adj.) 有自信的\n- (C) frightening (adj.) 令人害怕的 (正解)\n- (D) functional (adj.) 功能性的" },
+      { id: 2, question: "The company plans to ______ a new product line next spring.", options: ["A. settle", "B. replace", "C. remove", "D. introduce"], answer: "D", explanation: "【選項解析】\n- (A) settle (v.) 安頓\n- (B) replace (v.) 取代\n- (C) remove (v.) 移除\n- (D) introduce (v.) 推出、引進 (正解)" },
+      { id: 3, question: "There is growing ______ for electric cars as fuel prices continue to rise.", options: ["A. demand", "B. dispute", "C. relief", "D. origin"], answer: "A", explanation: "【選項解析】\n- (A) demand (n.) 需求 (正解)\n- (B) dispute (n.) 爭論\n- (C) relief (n.) 寬慰\n- (D) origin (n.) 起源" },
+      { id: 4, question: "Many young people are moving from ______ areas into big cities for work.", options: ["A. sensitive", "B. bold", "C. missing", "D. rural"], answer: "D", explanation: "【選項解析】\n- (A) sensitive (adj.) 敏感的\n- (B) bold (adj.) 大膽的\n- (C) missing (adj.) 遺漏的\n- (D) rural (adj.) 鄉村的 (正解)" },
     ],
     cloze: {
       text: "Over the past year, bears have killed 13 people and hurt over 200 others across Japan. To help keep bears away from towns and farms, one Japanese company has developed a clever solution: a robot wolf. __(1)__ \"Monster\" Wolf, it is designed to look like a frightening wild animal and scare away unwanted visitors.\n\nThe Hokkaido-based company Ohta Seiki first introduced the Monster Wolf in 2016. The robot has flashing red LED eyes and can produce over __(2)__, including human voices. Some of these sounds can be heard as far as a kilometer away. Ten years after its introduction, demand is higher than ever. In early 2026 alone, the company __(3)__ more orders than in a typical full year.\n\nAs food becomes harder to find __(4)__ climate change, bears are coming into towns more frequently. To keep local people safe, farmers, golf course operators, and rural workers are __(5)__ these wolf-like robots. The Monster Wolf is a powerful example of how technology can solve real-world problems in unexpected ways.",
       questions: [
-        { id: 1, options: ["A. Calling", "B. Called", "C. To call", "D. To be called"], answer: "B", explanation: "此處為過去分詞片語（省略 Being）修飾主詞 it，表「被稱為」，故選過去分詞 Called。" },
-        { id: 2, options: ["A. 10 levels of brightness", "B. 20 types of motions", "C. 40 pounds of pressure", "D. 50 kinds of sounds"], answer: "D", explanation: "依句意與後句「including human voices」及「these sounds can be heard」判斷，空格應填入與聲音相關的描述，故選 (D)。" },
-        { id: 3, options: ["A. created", "B. received", "C. canceled", "D. maintained"], answer: "B", explanation: "依句意「收到比平常一整年更多的訂單」，應選 received（收到）。" },
-        { id: 4, options: ["A. due to", "B. ahead of", "C. other than", "D. together with"], answer: "A", explanation: "due to + N. 表「由於」，說明氣候變遷是食物難尋的原因。" },
-        { id: 5, options: ["A. fitting in", "B. trying out", "C. handing over", "D. going through"], answer: "B", explanation: "try out 表「試用」，指農民等人員開始嘗試使用這款機器人。" }
+        { id: 1, options: ["A. To be called", "B. Calling", "C. To call", "D. Called"], answer: "D", explanation: "此處為過去分詞片語（省略 Being）修飾主詞 it，表「被稱為」，故選過去分詞 Called。" },
+        { id: 2, options: ["A. 40 pounds of pressure", "B. 50 kinds of sounds", "C. 10 levels of brightness", "D. 20 types of motions"], answer: "B", explanation: "依句意與後句「including human voices」及「these sounds can be heard」判斷，空格應填入與聲音相關的描述，故選 (B)。" },
+        { id: 3, options: ["A. received", "B. maintained", "C. created", "D. canceled"], answer: "A", explanation: "依句意「收到比平常一整年更多的訂單」，應選 received（收到）。" },
+        { id: 4, options: ["A. due to", "B. other than", "C. ahead of", "D. together with"], answer: "A", explanation: "due to + N. 表「由於」，說明氣候變遷是食物難尋的原因。" },
+        { id: 5, options: ["A. trying out", "B. handing over", "C. going through", "D. fitting in"], answer: "A", explanation: "try out 表「試用」，指農民等人員開始嘗試使用這款機器人。" },
       ]
     },
     wordBank: {
@@ -987,10 +987,10 @@ As food becomes harder to find due to climate change, bears are coming into town
     },
     discourse: {
       options: [
-        "A. Rather than relying on force, the robot relies entirely on sound and light to frighten bears away from a safe distance.",
+        "A. Few expected that a mechanical animal could become such an effective tool for wildlife management in such a short time.",
         "B. Farmers who have lost livestock to bear attacks in the past are often the quickest to request one for their property.",
         "C. Climate change has made this problem considerably worse in recent years, pushing hungry bears closer to human settlements.",
-        "D. Few expected that a mechanical animal could become such an effective tool for wildlife management in such a short time.",
+        "D. Rather than relying on force, the robot relies entirely on sound and light to frighten bears away from a safe distance.",
         "E. Despite its fearsome appearance, the robot poses no actual danger to the animals it is designed to repel."
       ],
       paragraphs: [
@@ -999,7 +999,7 @@ As food becomes harder to find due to climate change, bears are coming into town
         "Demand for the robot has grown steadily since its release, but it has surged dramatically within the past year. [3] As bears struggle to find enough food in the wild, they increasingly wander into farms, golf courses, and even residential areas.",
         "[4] As a result, orders for the Monster Wolf have reached record numbers, and the company expects demand to keep rising in the years ahead."
       ],
-      answers: { 1: "A", 2: "E", 3: "C", 4: "B" }
+      answers: { 1: "D", 2: "E", 3: "C", 4: "B" }
     },
     reading: {
       questions: [
@@ -1097,19 +1097,19 @@ With warm days and smaller crowds, October in Oahu has a way of surprising you. 
       ]
     },
     vocab: [
-      { id: 1, question: "Visitors can look down into the volcano's ______ from a safe viewing platform.", options: ["A. crater", "B. costume", "C. origin", "D. demand"], answer: "A", explanation: "【選項解析】\n- (A) crater (n.) 火山口 (正解)\n- (B) costume (n.) 服裝\n- (C) origin (n.) 起源\n- (D) demand (n.) 需求" },
-      { id: 2, question: "Hawaii was once ruled by a ______ family before becoming part of the US.", options: ["A. royal", "B. rural", "C. precious", "D. sensitive"], answer: "A", explanation: "【選項解析】\n- (A) royal (adj.) 皇室的 (正解)\n- (B) rural (adj.) 鄉村的\n- (C) precious (adj.) 珍貴的\n- (D) sensitive (adj.) 敏感的" },
-      { id: 3, question: "After hours in the slow cooker, the meat became incredibly ______.", options: ["A. tender", "B. frightening", "C. unstoppable", "D. functional"], answer: "A", explanation: "【選項解析】\n- (A) tender (adj.) 軟嫩的 (正解)\n- (B) frightening (adj.) 令人害怕的\n- (C) unstoppable (adj.) 勢不可擋的\n- (D) functional (adj.) 功能性的" },
-      { id: 4, question: "Many local recipes were brought to the island by early ______ from Asia.", options: ["A. immigrants", "B. costumes", "C. lookouts", "D. craters"], answer: "A", explanation: "【選項解析】\n- (A) immigrants (n.) 移民 (正解)\n- (B) costumes (n.) 服裝\n- (C) lookouts (n.) 觀景台\n- (D) craters (n.) 火山口" }
+      { id: 1, question: "Visitors can look down into the volcano's ______ from a safe viewing platform.", options: ["A. crater", "B. costume", "C. demand", "D. origin"], answer: "A", explanation: "【選項解析】\n- (A) crater (n.) 火山口 (正解)\n- (B) costume (n.) 服裝\n- (C) demand (n.) 需求\n- (D) origin (n.) 起源" },
+      { id: 2, question: "Hawaii was once ruled by a ______ family before becoming part of the US.", options: ["A. precious", "B. royal", "C. sensitive", "D. rural"], answer: "B", explanation: "【選項解析】\n- (A) precious (adj.) 珍貴的\n- (B) royal (adj.) 皇室的 (正解)\n- (C) sensitive (adj.) 敏感的\n- (D) rural (adj.) 鄉村的" },
+      { id: 3, question: "After hours in the slow cooker, the meat became incredibly ______.", options: ["A. functional", "B. tender", "C. frightening", "D. unstoppable"], answer: "B", explanation: "【選項解析】\n- (A) functional (adj.) 功能性的\n- (B) tender (adj.) 軟嫩的 (正解)\n- (C) frightening (adj.) 令人害怕的\n- (D) unstoppable (adj.) 勢不可擋的" },
+      { id: 4, question: "Many local recipes were brought to the island by early ______ from Asia.", options: ["A. craters", "B. lookouts", "C. immigrants", "D. costumes"], answer: "C", explanation: "【選項解析】\n- (A) craters (n.) 火山口\n- (B) lookouts (n.) 觀景台\n- (C) immigrants (n.) 移民 (正解)\n- (D) costumes (n.) 服裝" },
     ],
     cloze: {
       text: "October offers a pleasant window for visiting Oahu, [1] the summer tourist season has ended but the weather remains warm. Hikers can still enjoy the Diamond Head trail without competing [2] large crowds for space at the lookout. History lovers, meanwhile, can explore ʻIolani Palace, which was once lit by electricity years [3] the White House received the same upgrade. Food is another highlight, [4] traditional Hawaiian dishes sit alongside treats introduced by immigrants, such as Japanese-style shave ice. By the end of the month, Waikiki transforms once again, [5] costumed crowds fill the streets for a lively Halloween celebration.",
       questions: [
-        { id: 1, options: ["A. since", "B. despite", "C. unless", "D. although"], answer: "A", explanation: "since 引導原因子句，表「既然、因為」，說明十月適合造訪的原因是夏季人潮已退去。" },
-        { id: 2, options: ["A. with", "B. for", "C. to", "D. in"], answer: "A", explanation: "compete with + N. 表「與…競爭」，指不需與大批遊客爭搶觀景台空間。" },
-        { id: 3, options: ["A. before", "B. after", "C. since", "D. until"], answer: "A", explanation: "years before + 事件，表「早於…多年」，呼應原文中伊奧拉尼宮比白宮更早裝設電燈。" },
-        { id: 4, options: ["A. where", "B. which", "C. what", "D. that"], answer: "A", explanation: "where 作關係副詞，引導地方子句修飾 Food（此處指在美食方面的情況），表「在…之中」。" },
-        { id: 5, options: ["A. as", "B. despite", "C. unless", "D. because"], answer: "A", explanation: "as 引導伴隨狀況子句，表「隨著…」，說明威基基街頭因萬聖節人群而再度熱鬧起來。" }
+        { id: 1, options: ["A. since", "B. unless", "C. although", "D. despite"], answer: "A", explanation: "since 引導原因子句，表「既然、因為」，說明十月適合造訪的原因是夏季人潮已退去。" },
+        { id: 2, options: ["A. with", "B. in", "C. to", "D. for"], answer: "A", explanation: "compete with + N. 表「與…競爭」，指不需與大批遊客爭搶觀景台空間。" },
+        { id: 3, options: ["A. since", "B. after", "C. until", "D. before"], answer: "D", explanation: "years before + 事件，表「早於…多年」，呼應原文中伊奧拉尼宮比白宮更早裝設電燈。" },
+        { id: 4, options: ["A. what", "B. that", "C. where", "D. which"], answer: "C", explanation: "where 作關係副詞，引導地方子句修飾 Food（此處指在美食方面的情況），表「在…之中」。" },
+        { id: 5, options: ["A. as", "B. despite", "C. unless", "D. because"], answer: "A", explanation: "as 引導伴隨狀況子句，表「隨著…」，說明威基基街頭因萬聖節人群而再度熱鬧起來。" },
       ]
     },
     wordBank: {
@@ -1119,11 +1119,11 @@ With warm days and smaller crowds, October in Oahu has a way of surprising you. 
     },
     discourse: {
       options: [
-        "A. From the gentle waves of Waikiki to the famous trails of Diamond Head, the outdoors are calling.",
-        "B. At the center of Honolulu lies ʻIolani Palace, the only royal residence on US soil.",
+        "A. At the center of Honolulu lies ʻIolani Palace, the only royal residence on US soil.",
+        "B. Today, modern chefs near the palace still recreate these ancient royal recipes for visitors.",
         "C. Local cuisine is a delicious mix of Native Hawaiian traditions and flavors brought from overseas.",
-        "D. Waikiki's main avenues transform into a spectacular Halloween celebration.",
-        "E. Today, modern chefs near the palace still recreate these ancient royal recipes for visitors."
+        "D. From the gentle waves of Waikiki to the famous trails of Diamond Head, the outdoors are calling.",
+        "E. Waikiki's main avenues transform into a spectacular Halloween celebration."
       ],
       paragraphs: [
         "October is an ideal time to visit Oahu, offering a perfect balance of pleasant weather and fewer crowds. The island provides a peaceful escape for travelers seeking both relaxation and adventure.",
@@ -1131,7 +1131,7 @@ With warm days and smaller crowds, October in Oahu has a way of surprising you. 
         "Beyond the stunning coastlines, Oahu boasts a rich and fascinating past. [2] It stands as a proud symbol of the Hawaiian monarchy and their forward-thinking leadership. For instance, the palace was equipped with electric lights even before the White House in Washington, D.C.",
         "The island's cultural diversity is most evident in its vibrant food scene. [3] This culinary fusion tells the story of the various immigrant groups who came to work on the plantations. As the month draws to a close, a festive atmosphere takes over the island. [4] People dress up in elaborate costumes, turning the lively streets into a massive, colorful party."
       ],
-      answers: { 1: "A", 2: "B", 3: "C", 4: "D" }
+      answers: { 1: "D", 2: "A", 3: "C", 4: "E" }
     },
     reading: {
       questions: [
@@ -1248,19 +1248,19 @@ Practice Passage (Ed Sheeran)
       ]
     },
     vocab: [
-      { id: 1, question: "Please provide ______ details about the problem so we can help you faster.", options: ["A. specific", "B. royal", "C. tender", "D. unstoppable"], answer: "A", explanation: "【選項解析】\n- (A) specific (adj.) 特定的 (正解)\n- (B) royal (adj.) 皇室的\n- (C) tender (adj.) 軟嫩的\n- (D) unstoppable (adj.) 勢不可擋的" },
-      { id: 2, question: "The haunted house was decorated with ______ masks and dim lighting.", options: ["A. fearsome", "B. precious", "C. sensitive", "D. functional"], answer: "A", explanation: "【選項解析】\n- (A) fearsome (adj.) 可怕的 (正解)\n- (B) precious (adj.) 珍貴的\n- (C) sensitive (adj.) 敏感的\n- (D) functional (adj.) 功能性的" },
-      { id: 3, question: "Each gallery in the museum follows a different ______ , from ancient art to modern design.", options: ["A. theme", "B. refund", "C. minimum", "D. origin"], answer: "A", explanation: "【選項解析】\n- (A) theme (n.) 主題 (正解)\n- (B) refund (n.) 退款\n- (C) minimum (n.) 最低限度\n- (D) origin (n.) 起源" },
-      { id: 4, question: "The band's career finally ______ after their song went viral online.", options: ["A. took off", "B. broke down", "C. settled down", "D. backed up"], answer: "A", explanation: "【選項解析】\n- (A) took off (v.) 起飛、迅速成功 (正解)\n- (B) broke down (v.) 故障、崩潰\n- (C) settled down (v.) 安定下來\n- (D) backed up (v.) 備份" }
+      { id: 1, question: "Please provide ______ details about the problem so we can help you faster.", options: ["A. specific", "B. unstoppable", "C. tender", "D. royal"], answer: "A", explanation: "【選項解析】\n- (A) specific (adj.) 特定的 (正解)\n- (B) unstoppable (adj.) 勢不可擋的\n- (C) tender (adj.) 軟嫩的\n- (D) royal (adj.) 皇室的" },
+      { id: 2, question: "The haunted house was decorated with ______ masks and dim lighting.", options: ["A. sensitive", "B. precious", "C. functional", "D. fearsome"], answer: "D", explanation: "【選項解析】\n- (A) sensitive (adj.) 敏感的\n- (B) precious (adj.) 珍貴的\n- (C) functional (adj.) 功能性的\n- (D) fearsome (adj.) 可怕的 (正解)" },
+      { id: 3, question: "Each gallery in the museum follows a different ______ , from ancient art to modern design.", options: ["A. theme", "B. refund", "C. origin", "D. minimum"], answer: "A", explanation: "【選項解析】\n- (A) theme (n.) 主題 (正解)\n- (B) refund (n.) 退款\n- (C) origin (n.) 起源\n- (D) minimum (n.) 最低限度" },
+      { id: 4, question: "The band's career finally ______ after their song went viral online.", options: ["A. took off", "B. broke down", "C. settled down", "D. backed up"], answer: "A", explanation: "【選項解析】\n- (A) took off (v.) 起飛、迅速成功 (正解)\n- (B) broke down (v.) 故障、崩潰\n- (C) settled down (v.) 安定下來\n- (D) backed up (v.) 備份" },
     ],
     cloze: {
       text: "Scanning is a reading strategy used when readers need to find specific information quickly, rather [1] reading an entire text word for word. To scan effectively, readers should first decide [2] a text is likely to contain the information they need, often by checking titles or the first line of each paragraph. Next, they should search for key words, such as names or dates, [3] moving their eyes quickly across the page. Once a key word is spotted, readers should slow down and read the surrounding text carefully, [4] it often contains the exact detail they are looking for. With practice, scanning becomes a tool readers can rely [5] whenever they need information fast.",
       questions: [
-        { id: 1, options: ["A. than", "B. then", "C. that", "D. so"], answer: "A", explanation: "rather than + V-ing 表「而非」，與前面的 used...to V. 形成對比結構。" },
-        { id: 2, options: ["A. whether", "B. that", "C. what", "D. which"], answer: "A", explanation: "whether 引導名詞子句作 decide 的受詞，表「是否」。" },
-        { id: 3, options: ["A. by", "B. for", "C. with", "D. at"], answer: "A", explanation: "by + V-ing 表「藉由…的方式」，說明搜尋關鍵字的具體方法。" },
-        { id: 4, options: ["A. since", "B. despite", "C. unless", "D. although"], answer: "A", explanation: "since 引導原因子句，表「因為」，說明放慢閱讀速度的原因。" },
-        { id: 5, options: ["A. on", "B. in", "C. at", "D. to"], answer: "A", explanation: "rely on + N. 為固定搭配，表「依賴…」。" }
+        { id: 1, options: ["A. so", "B. than", "C. that", "D. then"], answer: "B", explanation: "rather than + V-ing 表「而非」，與前面的 used...to V. 形成對比結構。" },
+        { id: 2, options: ["A. what", "B. whether", "C. which", "D. that"], answer: "B", explanation: "whether 引導名詞子句作 decide 的受詞，表「是否」。" },
+        { id: 3, options: ["A. with", "B. at", "C. for", "D. by"], answer: "D", explanation: "by + V-ing 表「藉由…的方式」，說明搜尋關鍵字的具體方法。" },
+        { id: 4, options: ["A. although", "B. unless", "C. despite", "D. since"], answer: "D", explanation: "since 引導原因子句，表「因為」，說明放慢閱讀速度的原因。" },
+        { id: 5, options: ["A. in", "B. to", "C. on", "D. at"], answer: "C", explanation: "rely on + N. 為固定搭配，表「依賴…」。" },
       ]
     },
     wordBank: {
@@ -1270,11 +1270,11 @@ Practice Passage (Ed Sheeran)
     },
     discourse: {
       options: [
-        "A. Readers who skip this first step often waste time scanning sections that were never going to contain the answer.",
-        "B. Dates, numbers, and proper names tend to stand out visually, making them especially easy targets for this kind of search.",
+        "A. Dates, numbers, and proper names tend to stand out visually, making them especially easy targets for this kind of search.",
+        "B. Scanning therefore rewards readers who already have a clear idea of exactly what they are looking for.",
         "C. Unlike careful reading, scanning does not require readers to understand every sentence they pass over.",
         "D. This final check matters because a key word alone does not always guarantee the surrounding sentence contains the answer.",
-        "E. Scanning therefore rewards readers who already have a clear idea of exactly what they are looking for."
+        "E. Readers who skip this first step often waste time scanning sections that were never going to contain the answer."
       ],
       paragraphs: [
         "Scanning is one of the most useful reading skills for finding information quickly, especially when a reader does not have time to read an entire passage word for word.",
@@ -1282,7 +1282,7 @@ Practice Passage (Ed Sheeran)
         "Once a reader has chosen a promising section, the next step is searching for key words related to the information they want. [2] [3]",
         "Finally, when a key word is spotted, careful readers pause to examine the sentences around it rather than assuming they have found their answer immediately. [4]"
       ],
-      answers: { 1: "A", 2: "B", 3: "C", 4: "D" }
+      answers: { 1: "E", 2: "A", 3: "C", 4: "D" }
     },
     reading: {
       questions: [
@@ -1381,19 +1381,19 @@ It may not speak aloud, but money really does have a lot to say. The next time y
       ]
     },
     vocab: [
-      { id: 1, question: "Advertising can strongly ______ what products people choose to buy.", options: ["A. influence", "B. replace", "C. remove", "D. settle"], answer: "A", explanation: "【選項解析】\n- (A) influence (v.) 影響 (正解)\n- (B) replace (v.) 取代\n- (C) remove (v.) 移除\n- (D) settle (v.) 安頓" },
-      { id: 2, question: "Traditional clothing is an important part of the community's cultural ______.", options: ["A. identity", "B. demand", "C. dispute", "D. refund"], answer: "A", explanation: "【選項解析】\n- (A) identity (n.) 身分認同 (正解)\n- (B) demand (n.) 需求\n- (C) dispute (n.) 爭論\n- (D) refund (n.) 退款" },
-      { id: 3, question: "The novel's events are entirely ______ , though they feel realistic.", options: ["A. fictional", "B. royal", "C. rural", "D. bold"], answer: "A", explanation: "【選項解析】\n- (A) fictional (adj.) 虛構的 (正解)\n- (B) royal (adj.) 皇室的\n- (C) rural (adj.) 鄉村的\n- (D) bold (adj.) 大膽的" },
-      { id: 4, question: "The museum added new ______ features after a valuable painting was almost stolen.", options: ["A. security", "B. origin", "C. relief", "D. minimum"], answer: "A", explanation: "【選項解析】\n- (A) security (n.) 安全（防護） (正解)\n- (B) origin (n.) 起源\n- (C) relief (n.) 寬慰\n- (D) minimum (n.) 最低限度" }
+      { id: 1, question: "Advertising can strongly ______ what products people choose to buy.", options: ["A. remove", "B. influence", "C. replace", "D. settle"], answer: "B", explanation: "【選項解析】\n- (A) remove (v.) 移除\n- (B) influence (v.) 影響 (正解)\n- (C) replace (v.) 取代\n- (D) settle (v.) 安頓" },
+      { id: 2, question: "Traditional clothing is an important part of the community's cultural ______.", options: ["A. identity", "B. dispute", "C. demand", "D. refund"], answer: "A", explanation: "【選項解析】\n- (A) identity (n.) 身分認同 (正解)\n- (B) dispute (n.) 爭論\n- (C) demand (n.) 需求\n- (D) refund (n.) 退款" },
+      { id: 3, question: "The novel's events are entirely ______ , though they feel realistic.", options: ["A. royal", "B. bold", "C. rural", "D. fictional"], answer: "D", explanation: "【選項解析】\n- (A) royal (adj.) 皇室的\n- (B) bold (adj.) 大膽的\n- (C) rural (adj.) 鄉村的\n- (D) fictional (adj.) 虛構的 (正解)" },
+      { id: 4, question: "The museum added new ______ features after a valuable painting was almost stolen.", options: ["A. minimum", "B. relief", "C. security", "D. origin"], answer: "C", explanation: "【選項解析】\n- (A) minimum (n.) 最低限度\n- (B) relief (n.) 寬慰\n- (C) security (n.) 安全（防護） (正解)\n- (D) origin (n.) 起源" },
     ],
     cloze: {
       text: "Banknotes often reveal more about a country than most people realize. Some nations choose to showcase their natural environment, [1] Costa Rica's colorful notes featuring coral reefs and native animals. Others focus [2] historical figures, such as the UK's £5 note, which depicts Winston Churchill at the exact moment of his famous wartime speech. Euro notes take a [3] approach entirely, using fictional buildings [4] of real landmarks to avoid favoring any single member country. Meanwhile, Australia stands out not only for featuring women on every note [5] also for being the first country to introduce polymer banknotes, a material designed to make counterfeiting more difficult.",
       questions: [
-        { id: 1, options: ["A. such as", "B. despite", "C. unless", "D. although"], answer: "A", explanation: "such as 表「例如」，用於舉例說明哥斯大黎加紙鈔的設計。" },
-        { id: 2, options: ["A. on", "B. in", "C. at", "D. for"], answer: "A", explanation: "focus on + N. 為固定搭配，表「聚焦於…」。" },
-        { id: 3, options: ["A. different", "B. similar", "C. common", "D. traditional"], answer: "A", explanation: "依句意，歐元紙鈔採取的作法與前述國家「不同」，故選 different。" },
+        { id: 1, options: ["A. although", "B. unless", "C. such as", "D. despite"], answer: "C", explanation: "such as 表「例如」，用於舉例說明哥斯大黎加紙鈔的設計。" },
+        { id: 2, options: ["A. in", "B. on", "C. at", "D. for"], answer: "B", explanation: "focus on + N. 為固定搭配，表「聚焦於…」。" },
+        { id: 3, options: ["A. traditional", "B. different", "C. similar", "D. common"], answer: "B", explanation: "依句意，歐元紙鈔採取的作法與前述國家「不同」，故選 different。" },
         { id: 4, options: ["A. instead", "B. despite", "C. because", "D. unless"], answer: "A", explanation: "instead of + N. 表「而非」，說明歐元紙鈔使用虛構建築而非真實地標。" },
-        { id: 5, options: ["A. but", "B. and", "C. or", "D. so"], answer: "A", explanation: "not only A but also B 為固定句型，表「不僅A，也B」。" }
+        { id: 5, options: ["A. so", "B. and", "C. or", "D. but"], answer: "D", explanation: "not only A but also B 為固定句型，表「不僅A，也B」。" },
       ]
     },
     wordBank: {
@@ -1403,11 +1403,11 @@ It may not speak aloud, but money really does have a lot to say. The next time y
     },
     discourse: {
       options: [
-        "A. Switzerland has instead chosen to celebrate ordinary human effort rather than any single historical figure.",
-        "B. A careful observer will notice that the clock on the note is frozen at the exact moment of a historic event.",
-        "C. These images are never chosen by accident, since every design must be approved through a lengthy official process.",
-        "D. Few people realize that Australia also pioneered the use of plastic-based currency decades before most other nations.",
-        "E. Even the smallest detail, down to the specific time shown on a clock face, can carry deep historical significance."
+        "A. A careful observer will notice that the clock on the note is frozen at the exact moment of a historic event.",
+        "B. Even the smallest detail, down to the specific time shown on a clock face, can carry deep historical significance.",
+        "C. Few people realize that Australia also pioneered the use of plastic-based currency decades before most other nations.",
+        "D. These images are never chosen by accident, since every design must be approved through a lengthy official process.",
+        "E. Switzerland has instead chosen to celebrate ordinary human effort rather than any single historical figure."
       ],
       paragraphs: [
         "At first glance, a banknote might seem like nothing more than a simple piece of paper used for everyday transactions. Yet a closer look often reveals surprising details about the country that printed it.",
@@ -1415,7 +1415,7 @@ It may not speak aloud, but money really does have a lot to say. The next time y
         "The United Kingdom takes a very different approach, honoring historical figures instead. On the £5 note, Winston Churchill appears alongside Big Ben. [2] [3]",
         "Australia offers yet another example of thoughtful design, becoming one of the few countries to feature women on every note. [4]"
       ],
-      answers: { 1: "A", 2: "B", 3: "E", 4: "D" }
+      answers: { 1: "E", 2: "A", 3: "B", 4: "C" }
     },
     reading: {
       questions: [
@@ -1490,19 +1490,19 @@ Two years ago, I joined a swimming club and have since made many friends who sha
       ]
     },
     vocab: [
-      { id: 1, question: "On weekends, she spends her ______ time painting and reading novels.", options: ["A. leisure", "B. rural", "C. royal", "D. unique"], answer: "A", explanation: "【選項解析】\n- (A) leisure (n.) 休閒 (正解)\n- (B) rural (adj.) 鄉村的\n- (C) royal (adj.) 皇室的\n- (D) unique (adj.) 獨特的" },
-      { id: 2, question: "He felt ______ before his first job interview, but it went well in the end.", options: ["A. anxious", "B. devoted", "C. bold", "D. frightening"], answer: "A", explanation: "【選項解析】\n- (A) anxious (adj.) 焦慮的 (正解)\n- (B) devoted (adj.) 忠實的\n- (C) bold (adj.) 大膽的\n- (D) frightening (adj.) 令人害怕的" },
-      { id: 3, question: "Regular exercise can greatly ______ both your body and your mood.", options: ["A. benefit", "B. replace", "C. remove", "D. settle"], answer: "A", explanation: "【選項解析】\n- (A) benefit (v.) 有益於 (正解)\n- (B) replace (v.) 取代\n- (C) remove (v.) 移除\n- (D) settle (v.) 安頓" },
-      { id: 4, question: "The two scientists share a strong ______ for studying ocean life.", options: ["A. passion", "B. refund", "C. dispute", "D. demand"], answer: "A", explanation: "【選項解析】\n- (A) passion (n.) 熱情 (正解)\n- (B) refund (n.) 退款\n- (C) dispute (n.) 爭論\n- (D) demand (n.) 需求" }
+      { id: 1, question: "On weekends, she spends her ______ time painting and reading novels.", options: ["A. rural", "B. unique", "C. royal", "D. leisure"], answer: "D", explanation: "【選項解析】\n- (A) rural (adj.) 鄉村的\n- (B) unique (adj.) 獨特的\n- (C) royal (adj.) 皇室的\n- (D) leisure (n.) 休閒 (正解)" },
+      { id: 2, question: "He felt ______ before his first job interview, but it went well in the end.", options: ["A. frightening", "B. bold", "C. anxious", "D. devoted"], answer: "C", explanation: "【選項解析】\n- (A) frightening (adj.) 令人害怕的\n- (B) bold (adj.) 大膽的\n- (C) anxious (adj.) 焦慮的 (正解)\n- (D) devoted (adj.) 忠實的" },
+      { id: 3, question: "Regular exercise can greatly ______ both your body and your mood.", options: ["A. remove", "B. benefit", "C. settle", "D. replace"], answer: "B", explanation: "【選項解析】\n- (A) remove (v.) 移除\n- (B) benefit (v.) 有益於 (正解)\n- (C) settle (v.) 安頓\n- (D) replace (v.) 取代" },
+      { id: 4, question: "The two scientists share a strong ______ for studying ocean life.", options: ["A. refund", "B. passion", "C. demand", "D. dispute"], answer: "B", explanation: "【選項解析】\n- (A) refund (n.) 退款\n- (B) passion (n.) 熱情 (正解)\n- (C) demand (n.) 需求\n- (D) dispute (n.) 爭論" },
     ],
     cloze: {
       text: "Finding a leisure activity that brings both enjoyment and personal growth can make a lasting difference in someone's life. For many people, learning a new physical skill, such as swimming, begins [1] a bit of fear, especially when it involves facing deep water for the first time. With patient instruction and steady practice, however, that fear often fades, [2] by growing confidence. Beyond the physical benefits, joining a club or team can also provide a valuable sense of community, [3] members support one another while working toward a shared goal, such as an upcoming competition. Over time, many people come to realize that the lessons learned through such activities—patience, discipline, and courage—apply [4] situations far beyond the original hobby itself. [5] all, growth so often begins the moment we choose to face something that once felt frightening.",
       questions: [
-        { id: 1, options: ["A. with", "B. by", "C. for", "D. on"], answer: "A", explanation: "begin with + N. 表「以…開始」，指學習新技能通常是從一點害怕的心情開始的。" },
-        { id: 2, options: ["A. replaced", "B. replacing", "C. replace", "D. to replace"], answer: "A", explanation: "此處為分詞構句，主詞 fear 與 replace 之間為被動關係（恐懼被自信取代），故用過去分詞 replaced。" },
-        { id: 3, options: ["A. where", "B. which", "C. that", "D. when"], answer: "A", explanation: "where 作關係副詞，引導地方子句修飾 a sense of community，表「在其中」。" },
+        { id: 1, options: ["A. for", "B. by", "C. on", "D. with"], answer: "D", explanation: "begin with + N. 表「以…開始」，指學習新技能通常是從一點害怕的心情開始的。" },
+        { id: 2, options: ["A. to replace", "B. replaced", "C. replacing", "D. replace"], answer: "B", explanation: "此處為分詞構句，主詞 fear 與 replace 之間為被動關係（恐懼被自信取代），故用過去分詞 replaced。" },
+        { id: 3, options: ["A. that", "B. where", "C. when", "D. which"], answer: "B", explanation: "where 作關係副詞，引導地方子句修飾 a sense of community，表「在其中」。" },
         { id: 4, options: ["A. to", "B. for", "C. with", "D. at"], answer: "A", explanation: "apply to + N. 為固定搭配，表「適用於…」。" },
-        { id: 5, options: ["A. After", "B. Despite", "C. Unless", "D. Although"], answer: "A", explanation: "After all 為固定片語，置於句首表「畢竟」，用於總結前述論點。" }
+        { id: 5, options: ["A. Unless", "B. Although", "C. After", "D. Despite"], answer: "C", explanation: "After all 為固定片語，置於句首表「畢竟」，用於總結前述論點。" },
       ]
     },
     wordBank: {
@@ -1513,10 +1513,10 @@ Two years ago, I joined a swimming club and have since made many friends who sha
     discourse: {
       options: [
         "A. That early nervousness, however, gradually faded as regular lessons helped build real confidence in the water.",
-        "B. Over time, this consistent effort led to noticeable improvement, both in speed and in overall technique.",
+        "B. Looking back, it becomes clear that the biggest challenge was never the water itself, but the fear of trying something new.",
         "C. These new friendships added a social dimension to the hobby that practicing alone could never provide.",
-        "D. Looking back, it becomes clear that the biggest challenge was never the water itself, but the fear of trying something new.",
-        "E. Few hobbies manage to combine physical exercise with genuine mental relaxation as effectively as swimming does."
+        "D. Few hobbies manage to combine physical exercise with genuine mental relaxation as effectively as swimming does.",
+        "E. Over time, this consistent effort led to noticeable improvement, both in speed and in overall technique."
       ],
       paragraphs: [
         "Swimming has become one of the most meaningful parts of my free time, though it was not always an activity I felt confident doing.",
@@ -1524,7 +1524,7 @@ Two years ago, I joined a swimming club and have since made many friends who sha
         "Since then, I have made swimming a regular part of my routine, practicing different strokes every time I visit the pool. [2]",
         "Two years ago, I joined a swimming club, where I met teammates who share my enthusiasm for the sport. [3] As we prepare for an upcoming competition together, I often think about how far I have come since that first nervous lesson. [4]"
       ],
-      answers: { 1: "A", 2: "B", 3: "C", 4: "D" }
+      answers: { 1: "A", 2: "E", 3: "C", 4: "B" }
     },
     reading: {
       questions: [
@@ -1622,19 +1622,19 @@ Finally, tracking your progress by making a list shows how far you've come and b
       ]
     },
     vocab: [
-      { id: 1, question: "Winning the first game gave the team the ______ they needed to keep training hard.", options: ["A. motivation", "B. refund", "C. dispute", "D. origin"], answer: "A", explanation: "【選項解析】\n- (A) motivation (n.) 動力 (正解)\n- (B) refund (n.) 退款\n- (C) dispute (n.) 爭論\n- (D) origin (n.) 起源" },
-      { id: 2, question: "Finishing her first marathon gave her a deep sense of ______.", options: ["A. achievement", "B. relief", "C. demand", "D. identity"], answer: "A", explanation: "【選項解析】\n- (A) achievement (n.) 成就感 (正解)\n- (B) relief (n.) 寬慰\n- (C) demand (n.) 需求\n- (D) identity (n.) 身分認同" },
-      { id: 3, question: "A loud alarm clock is often used as a ______ to start the morning routine.", options: ["A. trigger", "B. counterfeiter", "C. immigrant", "D. seamstress"], answer: "A", explanation: "【選項解析】\n- (A) trigger (n.) 觸發器 (正解)\n- (B) counterfeiter (n.) 偽造者\n- (C) immigrant (n.) 移民\n- (D) seamstress (n.) 女裁縫" },
-      { id: 4, question: "After a disappointing result, the coach decided to ______ the team's training plan.", options: ["A. adjust", "B. donate", "C. settle", "D. remove"], answer: "A", explanation: "【選項解析】\n- (A) adjust (v.) 調整 (正解)\n- (B) donate (v.) 捐贈\n- (C) settle (v.) 安頓\n- (D) remove (v.) 移除" }
+      { id: 1, question: "Winning the first game gave the team the ______ they needed to keep training hard.", options: ["A. origin", "B. motivation", "C. refund", "D. dispute"], answer: "B", explanation: "【選項解析】\n- (A) origin (n.) 起源\n- (B) motivation (n.) 動力 (正解)\n- (C) refund (n.) 退款\n- (D) dispute (n.) 爭論" },
+      { id: 2, question: "Finishing her first marathon gave her a deep sense of ______.", options: ["A. achievement", "B. demand", "C. identity", "D. relief"], answer: "A", explanation: "【選項解析】\n- (A) achievement (n.) 成就感 (正解)\n- (B) demand (n.) 需求\n- (C) identity (n.) 身分認同\n- (D) relief (n.) 寬慰" },
+      { id: 3, question: "A loud alarm clock is often used as a ______ to start the morning routine.", options: ["A. seamstress", "B. trigger", "C. immigrant", "D. counterfeiter"], answer: "B", explanation: "【選項解析】\n- (A) seamstress (n.) 女裁縫\n- (B) trigger (n.) 觸發器 (正解)\n- (C) immigrant (n.) 移民\n- (D) counterfeiter (n.) 偽造者" },
+      { id: 4, question: "After a disappointing result, the coach decided to ______ the team's training plan.", options: ["A. donate", "B. adjust", "C. remove", "D. settle"], answer: "B", explanation: "【選項解析】\n- (A) donate (v.) 捐贈\n- (B) adjust (v.) 調整 (正解)\n- (C) remove (v.) 移除\n- (D) settle (v.) 安頓" },
     ],
     cloze: {
       text: "Microhabits succeed where larger goals often fail because they require so little effort [1] get started. Rather than committing to an hour-long workout, a person might simply [2] on walking for five minutes after a meal. This small success activates a feeling of accomplishment, [3] makes the brain want to repeat the behavior again the next day. Over time, linking a new microhabit to an existing routine – such as stretching right [4] brushing your teeth – removes the need for willpower almost entirely. [5] missing a day occasionally will not ruin progress, as long as the person returns to the habit rather than abandoning it completely.",
       questions: [
-        { id: 1, options: ["A. to", "B. for", "C. of", "D. on"], answer: "A", explanation: "此處為不定詞片語修飾 effort，表「啟動所需的努力」，little effort to V. 表「幾乎不費力就能…」。" },
-        { id: 2, options: ["A. focus", "B. focusing", "C. focused", "D. to focus"], answer: "A", explanation: "助動詞 might 後須接原形動詞，故選 focus。" },
-        { id: 3, options: ["A. which", "B. that", "C. who", "D. what"], answer: "A", explanation: "which 代替前面整句的概念（獲得成就感），引導非限定關係子句補充結果。" },
-        { id: 4, options: ["A. after", "B. despite", "C. unless", "D. although"], answer: "A", explanation: "after + V-ing 表「在…之後」，指伸展運動緊接在刷牙之後進行。" },
-        { id: 5, options: ["A. Occasionally", "B. Despite", "C. Unless", "D. Although"], answer: "A", explanation: "此句主詞為「偶爾錯過一天」，Occasionally missing a day 作動名詞片語主詞，表「偶爾」的頻率副詞置於句首修飾整個動名詞片語。" }
+        { id: 1, options: ["A. for", "B. on", "C. to", "D. of"], answer: "C", explanation: "此處為不定詞片語修飾 effort，表「啟動所需的努力」，little effort to V. 表「幾乎不費力就能…」。" },
+        { id: 2, options: ["A. focus", "B. to focus", "C. focused", "D. focusing"], answer: "A", explanation: "助動詞 might 後須接原形動詞，故選 focus。" },
+        { id: 3, options: ["A. what", "B. which", "C. who", "D. that"], answer: "B", explanation: "which 代替前面整句的概念（獲得成就感），引導非限定關係子句補充結果。" },
+        { id: 4, options: ["A. although", "B. unless", "C. after", "D. despite"], answer: "C", explanation: "after + V-ing 表「在…之後」，指伸展運動緊接在刷牙之後進行。" },
+        { id: 5, options: ["A. Although", "B. Occasionally", "C. Despite", "D. Unless"], answer: "B", explanation: "此句主詞為「偶爾錯過一天」，Occasionally missing a day 作動名詞片語主詞，表「偶爾」的頻率副詞置於句首修飾整個動名詞片語。" },
       ]
     },
     wordBank: {
@@ -1645,10 +1645,10 @@ Finally, tracking your progress by making a list shows how far you've come and b
     discourse: {
       options: [
         "A. Removing small obstacles in advance, such as placing workout clothes somewhere visible, makes that first step even easier.",
-        "B. Each completed habit naturally leads into the next, creating a steady chain of small, connected actions.",
+        "B. A goal that feels overwhelming at the start is often abandoned within the first few weeks, long before real change occurs.",
         "C. Rather than viewing the missed day as a failure, successful habit-builders simply return to the routine the next day.",
-        "D. A goal that feels overwhelming at the start is often abandoned within the first few weeks, long before real change occurs.",
-        "E. This sense of accomplishment, however small, is what keeps people returning to the habit day after day."
+        "D. This sense of accomplishment, however small, is what keeps people returning to the habit day after day.",
+        "E. Each completed habit naturally leads into the next, creating a steady chain of small, connected actions."
       ],
       paragraphs: [
         "Many people set ambitious goals at the start of the year, only to give up on them within a matter of weeks. Researchers suggest that the size of the goal itself is often the real problem.",
@@ -1656,7 +1656,7 @@ Finally, tracking your progress by making a list shows how far you've come and b
         "Linking several microhabits together, a technique known as habit stacking, can accelerate this process even further. [3]",
         "Even with a solid system in place, occasional setbacks are unavoidable. [4]"
       ],
-      answers: { 1: "D", 2: "E", 3: "B", 4: "C" }
+      answers: { 1: "B", 2: "D", 3: "E", 4: "C" }
     },
     reading: {
       questions: [
