@@ -4398,7 +4398,9 @@ const MZ_UNLOCK_PREFIX = 'vocab_magazine_unlock_';
 // 換密碼：console 跑 `await _sha256('新密碼')` 貼進來，所有人都要重新輸入一次。
 const MZ_SECTION_HASH = 'ff77961f1c7f519be4054e986e23857efb0e31098ad3d90c0debaa8fec16099c';
 const MZ_SECTION_UNLOCK_KEY = 'vocab_magazine_section_unlock';
-function mzSectionUnlocked(){ try{ return localStorage.getItem(MZ_SECTION_UNLOCK_KEY)===MZ_SECTION_HASH; }catch(e){ return false; } }
+// 開關：false＝暫停整區密碼（2026-10-21 使用者要求先撤掉，之後要啟用改回 true 並升 sw.js 即可）
+const MZ_SECTION_LOCK_ENABLED = false;
+function mzSectionUnlocked(){ if(!MZ_SECTION_LOCK_ENABLED) return true; try{ return localStorage.getItem(MZ_SECTION_UNLOCK_KEY)===MZ_SECTION_HASH; }catch(e){ return false; } }
 let mzMagazineId = null;
 let mzUnitKey = null;
 let mzTab = 'passage';
