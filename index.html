@@ -774,7 +774,7 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
 
 .mz-wrap{min-height:90vh;padding:14px 0 40px;}
 .mz-topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 16px 14px;}
-.mz-back{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:7px 12px;font-size:.75rem;font-weight:700;color:var(--accent);cursor:pointer;white-space:nowrap;}
+.mz-back{min-height:44px;display:inline-flex;align-items:center;justify-content:center;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:7px 12px;font-size:.75rem;font-weight:700;color:var(--accent);cursor:pointer;white-space:nowrap;}
 .mz-topbar-title{font-size:.86rem;font-weight:800;color:var(--text);text-align:center;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
 .mz-unit-list{display:grid;gap:10px;padding:0 16px;}
@@ -4371,18 +4371,34 @@ function renderQuizResult(){
 // 要幫某一期單獨設密碼：在瀏覽器 console 跑 `await _sha256('你要的密碼')`，把結果貼進對應 passcodeHash。
 // color：卡片識別色（還沒有封面縮圖時的 fallback）。cover：封面縮圖路徑/URL，設定後卡片改顯示縮圖。
 const MAGAZINES = [
-  { id:'202509', label:'9月號', desc:'Live 互動英語', passcodeHash:null, color:'#4361EE', cover:null, data: (typeof MAGAZINE_UNITS_202509!=='undefined') ? MAGAZINE_UNITS_202509 : null },
-  { id:'sc202509', label:'9月號', desc:'Studio Classroom', passcodeHash:null, color:'#F97316', cover:null, data: (typeof MAGAZINE_UNITS_SC202509!=='undefined') ? MAGAZINE_UNITS_SC202509 : null },
-  { id:'4u202509', label:'9月號', desc:'空中美語 4U', passcodeHash:null, color:'#10B981', cover:null, data: (typeof MAGAZINE_UNITS_4U202509!=='undefined') ? MAGAZINE_UNITS_4U202509 : null },
-  { id:'all202509', label:'9月號', desc:'ALL+互動英語', passcodeHash:null, color:'#8B5CF6', cover:null, data: (typeof MAGAZINE_UNITS_ALL202509!=='undefined') ? MAGAZINE_UNITS_ALL202509 : null },
-  { id:'202510', label:'10月號', desc:'Live 互動英語', passcodeHash:null, color:'#0EA5E9', cover:null, data: (typeof MAGAZINE_UNITS_202510!=='undefined') ? MAGAZINE_UNITS_202510 : null },
-  { id:'all202510', label:'10月號', desc:'ALL+互動英語', passcodeHash:null, color:'#8B5CF6', cover:null, data: (typeof MAGAZINE_UNITS_ALL202510!=='undefined') ? MAGAZINE_UNITS_ALL202510 : null },
-  { id:'sc202510', label:'10月號', desc:'Studio Classroom', passcodeHash:null, color:'#F97316', cover:null, data: (typeof MAGAZINE_UNITS_SC202510!=='undefined') ? MAGAZINE_UNITS_SC202510 : null },
-  { id:'4u202510', label:'10月號', desc:'空中美語 4U', passcodeHash:null, color:'#10B981', cover:null, data: (typeof MAGAZINE_UNITS_4U202510!=='undefined') ? MAGAZINE_UNITS_4U202510 : null },
-  { id:'digest202510', label:'10月號', desc:'空中美語 Digest', passcodeHash:null, color:'#0D9488', cover:null, data: (typeof MAGAZINE_UNITS_DIGEST202510!=='undefined') ? MAGAZINE_UNITS_DIGEST202510 : null }
+  { id:'202509', brand:'live', label:'9月號', desc:'Live 互動英語', passcodeHash:null, color:'#4361EE', cover:null, data: (typeof MAGAZINE_UNITS_202509!=='undefined') ? MAGAZINE_UNITS_202509 : null },
+  { id:'sc202509', brand:'sc', label:'9月號', desc:'Studio Classroom', passcodeHash:null, color:'#F97316', cover:null, data: (typeof MAGAZINE_UNITS_SC202509!=='undefined') ? MAGAZINE_UNITS_SC202509 : null },
+  { id:'4u202509', brand:'4u', label:'9月號', desc:'空中美語 4U', passcodeHash:null, color:'#10B981', cover:null, data: (typeof MAGAZINE_UNITS_4U202509!=='undefined') ? MAGAZINE_UNITS_4U202509 : null },
+  { id:'all202509', brand:'all', label:'9月號', desc:'ALL+互動英語', passcodeHash:null, color:'#8B5CF6', cover:null, data: (typeof MAGAZINE_UNITS_ALL202509!=='undefined') ? MAGAZINE_UNITS_ALL202509 : null },
+  { id:'202510', brand:'live', label:'10月號', desc:'Live 互動英語', passcodeHash:null, color:'#0EA5E9', cover:null, data: (typeof MAGAZINE_UNITS_202510!=='undefined') ? MAGAZINE_UNITS_202510 : null },
+  { id:'all202510', brand:'all', label:'10月號', desc:'ALL+互動英語', passcodeHash:null, color:'#8B5CF6', cover:null, data: (typeof MAGAZINE_UNITS_ALL202510!=='undefined') ? MAGAZINE_UNITS_ALL202510 : null },
+  { id:'sc202510', brand:'sc', label:'10月號', desc:'Studio Classroom', passcodeHash:null, color:'#F97316', cover:null, data: (typeof MAGAZINE_UNITS_SC202510!=='undefined') ? MAGAZINE_UNITS_SC202510 : null },
+  { id:'4u202510', brand:'4u', label:'10月號', desc:'空中美語 4U', passcodeHash:null, color:'#10B981', cover:null, data: (typeof MAGAZINE_UNITS_4U202510!=='undefined') ? MAGAZINE_UNITS_4U202510 : null },
+  { id:'digest202510', brand:'digest', label:'10月號', desc:'空中美語 Digest', passcodeHash:null, color:'#0D9488', cover:null, data: (typeof MAGAZINE_UNITS_DIGEST202510!=='undefined') ? MAGAZINE_UNITS_DIGEST202510 : null }
 ];
+// 雜誌品牌（第一層分類）：MAGAZINES 每期用 brand 欄位對應這裡的 id；新增一期只要在 MAGAZINES 尾端加一筆並填 brand。
+// 新品牌才需要在這裡加一筆。品牌內的月份依 MAGAZINES 陣列順序倒序顯示（越晚加入的越上面）。
+const MZ_BRANDS = [
+  { id:'live',   name:'Live 互動英語',     color:'#4361EE' },
+  { id:'all',    name:'ALL+ 互動英語',     color:'#8B5CF6' },
+  { id:'sc',     name:'Studio Classroom', color:'#F97316' },
+  { id:'4u',     name:'空中美語 4U',       color:'#10B981' },
+  { id:'digest', name:'空中美語 Digest',   color:'#0D9488' }
+];
+let mzBrandId = null;
+function mzBrandIssues(brandId){ return MAGAZINES.filter(m=>m.brand===brandId).reverse(); }
 const MZ_MISTAKES_KEY = 'vocab_magazine_mistakes';
 const MZ_UNLOCK_PREFIX = 'vocab_magazine_unlock_';
+// 整個「雜誌題庫」區域的通行密碼（在 App 登入密碼之外再加一層）。只存 SHA-256，不放明碼；
+// 換密碼：console 跑 `await _sha256('新密碼')` 貼進來，所有人都要重新輸入一次。
+const MZ_SECTION_HASH = 'ff77961f1c7f519be4054e986e23857efb0e31098ad3d90c0debaa8fec16099c';
+const MZ_SECTION_UNLOCK_KEY = 'vocab_magazine_section_unlock';
+function mzSectionUnlocked(){ try{ return localStorage.getItem(MZ_SECTION_UNLOCK_KEY)===MZ_SECTION_HASH; }catch(e){ return false; } }
 let mzMagazineId = null;
 let mzUnitKey = null;
 let mzTab = 'passage';
@@ -4526,7 +4542,7 @@ function renderGeptLevels(){
     </div>`;
 }
 
-function renderMagazineList(){
+function renderMagazineSectionGate(){
   const section = document.getElementById('magazineSection');
   section.innerHTML = `
     <div class="mz-wrap">
@@ -4535,28 +4551,105 @@ function renderMagazineList(){
         <div class="mz-topbar-title">📚 雜誌題庫</div>
         <div style="width:56px"></div>
       </div>
-      <div class="mz-list-sub">選擇雜誌期數，開始精讀與測驗</div>
+      <div class="mz-passcode-box">
+        <div class="mz-passcode-ico">🔒</div>
+        <div class="mz-passcode-title">雜誌題庫需要通行密碼</div>
+        <div class="mz-passcode-sub">請輸入老師提供的密碼，輸入一次後這台裝置就不用再輸入</div>
+        <input type="password" id="mzSectionPassInput" class="mz-passcode-input" placeholder="請輸入通行密碼" autocomplete="off" onkeydown="if(event.key==='Enter') mzVerifySectionPasscode()">
+        <div id="mzSectionPassError" class="mz-passcode-error"></div>
+        <button type="button" class="mz-grade-btn" onclick="mzVerifySectionPasscode()">驗證並進入</button>
+      </div>
+    </div>`;
+  setTimeout(()=>document.getElementById('mzSectionPassInput')?.focus(), 100);
+}
+
+async function mzVerifySectionPasscode(){
+  const input = document.getElementById('mzSectionPassInput');
+  const h = await _sha256((input ? input.value : '').trim());
+  if(h === MZ_SECTION_HASH){
+    try{ localStorage.setItem(MZ_SECTION_UNLOCK_KEY, h); }catch(e){}
+    renderMagazineList();
+  } else {
+    const err = document.getElementById('mzSectionPassError');
+    if(err) err.textContent = '密碼錯誤，請重新輸入';
+  }
+}
+
+function renderMagazineList(){
+  if(!mzSectionUnlocked()){ renderMagazineSectionGate(); return; }
+  const section = document.getElementById('magazineSection');
+  section.innerHTML = `
+    <div class="mz-wrap">
+      <div class="mz-topbar">
+        <button class="mz-back" onclick="switchTab('home')">‹ 返回</button>
+        <div class="mz-topbar-title">📚 雜誌題庫</div>
+        <div style="width:56px"></div>
+      </div>
+      <div class="mz-list-sub">選擇雜誌，再挑月份開始精讀與測驗</div>
       <div class="mz-mag-grid">
-        ${MAGAZINES.map(m=>{
-          const color = m.color || '#94A3B8';
-          const iconStyle = m.cover
-            ? `background-image:url('${m.cover}');background-size:cover;background-position:center;`
-            : `background:${color}1f;color:${color};`;
+        ${MZ_BRANDS.map(b=>{
+          const issues = mzBrandIssues(b.id).filter(m=>m.data);
+          const ok = issues.length>0;
           return `
-          <div class="mz-mag-card ${m.data?'':'disabled'}" style="border-top-color:${color}" ${m.data?`onclick="openMagazine('${m.id}')"`:''}>
-            <div class="mz-mag-icon" style="${iconStyle}">${m.cover?'':'📖'}</div>
-            <div class="mz-mag-label">${m.label}</div>
-            <div class="mz-mag-desc">${_escH(m.data ? m.desc : '即將推出')}</div>
+          <div class="mz-mag-card ${ok?'':'disabled'}" style="border-top-color:${b.color}" ${ok?`onclick="openMagazineBrand('${b.id}')"`:''}>
+            <div class="mz-mag-icon" style="background:${b.color}1f;color:${b.color};">📖</div>
+            <div class="mz-mag-label">${_escH(b.name)}</div>
+            <div class="mz-mag-desc">${ok ? `${issues.length} 期 · 最新 ${_escH(issues[0].label)}` : '即將推出'}</div>
           </div>`;
         }).join('')}
       </div>
     </div>`;
 }
 
+function openMagazineBrand(brandId){
+  mzBrandId = brandId;
+  renderMagazineBrandIssues();
+}
+
+function renderMagazineBrandIssues(){
+  if(!mzSectionUnlocked()){ renderMagazineSectionGate(); return; }
+  const brand = MZ_BRANDS.find(b=>b.id===mzBrandId);
+  if(!brand){ renderMagazineList(); return; }
+  const issues = mzBrandIssues(brand.id);
+  const section = document.getElementById('magazineSection');
+  section.innerHTML = `
+    <div class="mz-wrap">
+      <div class="mz-topbar">
+        <button class="mz-back" onclick="renderMagazineList()">‹ 雜誌</button>
+        <div class="mz-topbar-title">${_escH(brand.name)}</div>
+        <div style="width:56px"></div>
+      </div>
+      <div class="mz-list-sub">選擇月份</div>
+      <div class="mz-mag-grid">
+        ${issues.map(m=>{
+          const color = m.color || brand.color;
+          const iconStyle = m.cover
+            ? `background-image:url('${m.cover}');background-size:cover;background-position:center;`
+            : `background:${color}1f;color:${color};`;
+          const count = m.data ? Object.keys(m.data).length : 0;
+          return `
+          <div class="mz-mag-card ${m.data?'':'disabled'}" style="border-top-color:${color}" ${m.data?`onclick="openMagazine('${m.id}')"`:''}>
+            <div class="mz-mag-icon" style="${iconStyle}">${m.cover?'':'📅'}</div>
+            <div class="mz-mag-label">${_escH(m.label)}</div>
+            <div class="mz-mag-desc">${m.data ? `${count} 篇` : '即將推出'}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+// 從單元清單／密碼頁往上一層：回到該期所屬品牌的月份清單
+function mzBackToBrand(){
+  const mag = mzCurrentMag();
+  if(mag && mag.brand){ mzBrandId = mag.brand; renderMagazineBrandIssues(); }
+  else renderMagazineList();
+}
+
 function openMagazine(id){
   const mag = MAGAZINES.find(m=>m.id===id);
   if(!mag || !mag.data) return;
   mzMagazineId = id;
+  if(mag.brand) mzBrandId = mag.brand;
   if(!mzIsUnlocked(mag)){ renderMagazinePasscodeGate(); return; }
   renderMagazineUnitList();
 }
@@ -4567,7 +4660,7 @@ function renderMagazinePasscodeGate(){
   section.innerHTML = `
     <div class="mz-wrap">
       <div class="mz-topbar">
-        <button class="mz-back" onclick="renderMagazineList()">‹ 返回</button>
+        <button class="mz-back" onclick="mzBackToBrand()">‹ 返回</button>
         <div class="mz-topbar-title">${_escH(mag.label)}</div>
         <div style="width:56px"></div>
       </div>
@@ -4598,6 +4691,7 @@ async function mzVerifyMagazinePasscode(){
 }
 
 function renderMagazineUnitList(){
+  if(!mzSectionUnlocked()){ renderMagazineSectionGate(); return; }
   const mag = mzCurrentMag();
   const section = document.getElementById('magazineSection');
   if(!mag || !mag.data){ renderMagazineList(); return; }
@@ -4607,7 +4701,7 @@ function renderMagazineUnitList(){
   section.innerHTML = `
     <div class="mz-wrap">
       <div class="mz-topbar">
-        <button class="mz-back" onclick="renderMagazineList()">‹ 返回</button>
+        <button class="mz-back" onclick="mzBackToBrand()">‹ 返回</button>
         <div class="mz-topbar-title">${_escH(mag.label)} · ${_escH(mag.desc)}</div>
         <button class="mz-back" onclick="openMagazineMistakes('${mag.id}')">📕 錯題(${mistakeCount})</button>
       </div>
@@ -5353,6 +5447,7 @@ function mzDownloadPdf(){
 }
 
 function renderMagazineUnit(){
+  if(!mzSectionUnlocked()){ renderMagazineSectionGate(); return; }
   const mag = mzCurrentMag();
   const u = mzCurrentUnitData();
   const section = document.getElementById('magazineSection');
