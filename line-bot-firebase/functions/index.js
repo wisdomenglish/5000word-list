@@ -3967,49 +3967,105 @@ function sanitizeQuizQuestion(q) {
   return q;
 }
 
-exports.generateVocabQuiz = onRequest({ cors: true, invoker: "public" }, async (req, res) => {
-  if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
-  const { words, cefrLevel } = req.body || {};
-  if (!words || !words.length) return res.status(400).json({ error: "Missing words" });
+// ── 唯一解檢查（2026-10-22）──
+// 生成模型常把正解的近義詞當干擾項（例：sufficient 配 adequate），造成兩個選項都對。
+// 用第二個模型逐題列出「所有放進空格都正確的選項」，有多個就換掉干擾項再檢查一次，仍不唯一就丟棄。
+// 通過的題目標 v=QUIZ_VERIFIED_VERSION；快取與客戶端都只信任有這個標記的題目。
+const QUIZ_VERIFIED_VERSION = 2;
+const QUIZ_VERIFY_MODEL = "claude-haiku-5-5";
 
-  try {
-    const list = words.slice(0, 40);
+async function judgeQuizQuestions(client, qs) {
+  const letters = ["A", "B", "C", "D", "E", "F"];
+  const items = qs.map((q, i) => {
+    const opts = q.options.map((o, j) => `${letters[j]}. ${o}`).join("  ");
+    return `#${i}\nSentence: ${q.sentence}\nOptions: ${opts}\nIntended answer: ${letters[q.answer]}`;
+  }).join("\n\n");
 
-    // ── 1. 先查 Firebase 共享快取（跨所有學生只生成一次）──
-    let db = null;
-    try { initializeFirebase(); db = dbRef; } catch (e) { console.error("[quizCache] firebase init fail:", e.message); }
+  const prompt = `You are a strict English test reviewer. Each item is a fill-in-the-blank question with exactly one intended answer. Your job is to find questions where MORE THAN ONE option would be accepted as correct.
 
-    const cachedByWord = {};   // word -> question
-    if (db) {
-      await Promise.all(list.map(async (w) => {
-        try {
-          const snap = await db.ref(`/quiz-cache/${quizCacheKey(w.word, cefrLevel)}`).get();
-          if (snap.exists()) {
-            const v = snap.val();
-            // 舊的壞題（正解非被考單字）視為未快取，丟回去重新生成覆蓋
-            if (v && v.q && sanitizeQuizQuestion(v.q)) cachedByWord[w.word] = v.q;
-          }
-        } catch (e) { /* 單筆讀取失敗就當未快取 */ }
-      }));
-    }
+For each item, imagine putting each option into the blank (______) and reading both sentences together. List EVERY option that a careful English teacher would accept as correct — grammatical, natural collocation, and consistent in meaning with both sentences. Be strict: if a synonym or near-synonym of the intended answer also fits, it counts as acceptable.
 
-    const toGen = list.filter(w => !cachedByWord[w.word]);
-    console.log(`[quizCache] requested=${list.length} cached=${list.length - toGen.length} generate=${toGen.length}`);
+For every acceptable option OTHER than the intended answer, propose a replacement word that:
+- has the same part of speech and grammatical form as the intended answer,
+- clearly does NOT fit this context (different meaning — not a synonym or near-synonym of the intended answer),
+- is a common English word and is not already one of the options.
 
-    // ── 2. 只對「沒快取」的單字呼叫 Claude ──
-    let generated = [];
-    if (toGen.length) {
-      const apiKey = process.env.ANTHROPIC_API_KEY;
-      if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY");
-      const client = new AnthropicQuiz({ apiKey });
+If the intended answer itself does not fit the blank, set "broken": true.
 
-      const wordList = toGen.map(w => `${w.word} (${w.pos || "?"}, ${w.zh || ""})`).join("\n");
-      const count = toGen.length;
-      const cefrRule = cefrLevel
-        ? `- Sentences must be at ${cefrLevel} reading level: short (under 15 words), simple vocabulary, clear everyday context`
-        : "";
+${items}
 
-      const prompt = `Create ${count} fill-in-the-blank vocabulary quiz questions for these English words:
+Respond ONLY with a JSON array, one object per item, no extra text:
+[{"i":0,"acceptable":["C"],"replace":{}},{"i":1,"acceptable":["B","C"],"replace":{"B":"meager"}}]`;
+
+  const message = await client.messages.create({
+    model: QUIZ_VERIFY_MODEL,
+    max_tokens: 16000,
+    output_config: { effort: "medium" },
+    messages: [{ role: "user", content: prompt }],
+  });
+  if (message.stop_reason === "refusal") throw new Error("quiz verifier refused");
+  const parsed = extractJsonFromClaudeReply(extractTextFromClaudeMessage(message));
+  const byIndex = {};
+  (Array.isArray(parsed) ? parsed : []).forEach(r => { if (r && Number.isInteger(r.i)) byIndex[r.i] = r; });
+  return qs.map((q, i) => {
+    const r = byIndex[i];
+    if (!r || !Array.isArray(r.acceptable)) return { status: "unknown" };
+    if (r.broken) return { status: "fail" };
+    const acceptIdx = r.acceptable.map(l => letters.indexOf(String(l).trim().toUpperCase())).filter(n => n >= 0);
+    const extras = acceptIdx.filter(n => n !== q.answer);
+    if (!acceptIdx.includes(q.answer)) return { status: "fail" };
+    if (!extras.length) return { status: "pass" };
+    return { status: "ambiguous", extras, replace: r.replace || {} };
+  });
+}
+
+// 回傳 { good: 通過唯一解檢查的題目（已標 v）, failed: 沒通過的題目 }。
+// 檢查服務本身出錯時拋出例外，由呼叫端決定如何處理。
+async function verifyAndRepairQuizQuestions(client, qs) {
+  const letters = ["A", "B", "C", "D", "E", "F"];
+  const good = [], failed = [];
+  if (!qs.length) return { good, failed };
+  const norm = (s) => String(s).toLowerCase().trim();
+
+  const first = await judgeQuizQuestions(client, qs);
+  const toRecheck = [];
+  first.forEach((v, i) => {
+    const q = qs[i];
+    if (v.status === "pass") { q.v = QUIZ_VERIFIED_VERSION; good.push(q); return; }
+    if (v.status !== "ambiguous") { failed.push(q); return; }
+    // 換掉所有「也說得通」的干擾項；任何一個沒有可用替換字就整題放棄
+    const fixed = { ...q, options: q.options.slice() };
+    const ok = v.extras.every(n => {
+      const rep = String(v.replace[letters[n]] || "").trim();
+      if (!rep || fixed.options.some(o => norm(o) === norm(rep))) return false;
+      fixed.options[n] = rep;
+      return true;
+    });
+    if (ok) toRecheck.push(fixed); else failed.push(q);
+  });
+
+  if (toRecheck.length) {
+    const second = await judgeQuizQuestions(client, toRecheck);
+    second.forEach((v, i) => {
+      const q = toRecheck[i];
+      if (v.status === "pass") { q.v = QUIZ_VERIFIED_VERSION; good.push(q); }
+      else failed.push(q);
+    });
+  }
+  console.log(`[quizVerify] checked=${qs.length} pass=${good.length} repaired=${good.length - first.filter(v => v.status === "pass").length} failed=${failed.length}`);
+  return { good, failed };
+}
+
+// 呼叫生成模型產生題目（只做基本格式修正，唯一解交給 verifyAndRepairQuizQuestions）
+async function generateQuizQuestionsRaw(client, toGen, cefrLevel) {
+  if (!toGen.length) return [];
+  const wordList = toGen.map(w => `${w.word} (${w.pos || "?"}, ${w.zh || ""})`).join("\n");
+  const count = toGen.length;
+  const cefrRule = cefrLevel
+    ? `- Sentences must be at ${cefrLevel} reading level: short (under 15 words), simple vocabulary, clear everyday context`
+    : "";
+
+  const prompt = `Create ${count} fill-in-the-blank vocabulary quiz questions for these English words:
 ${wordList}
 
 Respond ONLY with a valid JSON array, no markdown, no extra text:
@@ -4031,34 +4087,94 @@ Rules:
 - Each sentence must use ______ (6 underscores) as the blank — only in the first sentence
 - "answer" is the index (0-3) of the correct option in "options"
 - Shuffle so the correct answer is NOT always index 0
-- Distractors should be clearly wrong when the second sentence is read — mentally insert each distractor and verify the two-sentence combination sounds wrong or contradicts the second sentence
+- CRITICAL — NO SYNONYMS AS DISTRACTORS: each distractor must have the same part of speech and form as the tested word but a clearly DIFFERENT meaning. Never use a synonym or near-synonym of the tested word (e.g. for "sufficient" do NOT use "adequate", "enough", "ample", "plenty"; for "huge" do NOT use "enormous", "vast"). Prefer words whose meaning is unrelated to the sentence.
+- Before finalizing, mentally insert EACH distractor into the blank and read both sentences: if a fluent speaker could accept it as correct, replace that distractor
 - CRITICAL: Only ONE option must work across both sentences combined. The second sentence must eliminate all three distractors, not just hint at the answer
 - Do NOT repeat the target word or its direct synonym in the second sentence
 ${cefrRule}
 - ALL Chinese text must be in Traditional Chinese (繁體中文), NOT Simplified Chinese (簡體中文)
 - Output ONLY the JSON array, nothing else`;
 
-      const message = await client.messages.create({
-        model: "claude-haiku-4-5-20251001",
-        max_tokens: 16000,
-        messages: [{ role: "user", content: prompt }],
-      });
+  const message = await client.messages.create({
+    model: "claude-haiku-4-5-20251001",
+    max_tokens: 16000,
+    messages: [{ role: "user", content: prompt }],
+  });
 
-      let raw = message.content[0].text.trim();
-      if (raw.startsWith("```"))
-        raw = raw.replace(/^```json?\s*/, "").replace(/\s*```$/, "").trim();
-      generated = JSON.parse(raw);
-      if (!Array.isArray(generated)) generated = generated.questions || [];
-      // 過濾＋修正：正解必須等於被考單字，壞題直接丟棄（不快取、不回傳）
-      generated = generated.map(sanitizeQuizQuestion).filter(Boolean);
+  let generated = extractJsonFromClaudeReply(extractTextFromClaudeMessage(message));
+  if (!Array.isArray(generated)) generated = generated.questions || [];
+  // 過濾＋修正：正解必須等於被考單字，壞題直接丟棄（不快取、不回傳）
+  return generated.map(sanitizeQuizQuestion).filter(Boolean);
+}
 
-      // ── 3. 寫回共享快取 ──
+exports.generateVocabQuiz = onRequest({ cors: true, invoker: "public", timeoutSeconds: 180 }, async (req, res) => {
+  if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
+  const { words, cefrLevel } = req.body || {};
+  if (!words || !words.length) return res.status(400).json({ error: "Missing words" });
+
+  try {
+    const list = words.slice(0, 40);
+    const norm = (s) => String(s).toLowerCase().trim();
+    const reqByNorm = {};
+    list.forEach(w => { reqByNorm[norm(w.word)] = w; });
+
+    // ── 1. 先查 Firebase 共享快取（跨所有學生只生成一次）──
+    let db = null;
+    try { initializeFirebase(); db = dbRef; } catch (e) { console.error("[quizCache] firebase init fail:", e.message); }
+
+    const trusted = {};      // 已通過唯一解檢查（v>=2）的快取題目
+    const unverified = [];   // 舊快取題目（沒檢查過）→ 先檢查再決定要不要用
+    if (db) {
+      await Promise.all(list.map(async (w) => {
+        try {
+          const snap = await db.ref(`/quiz-cache/${quizCacheKey(w.word, cefrLevel)}`).get();
+          if (!snap.exists()) return;
+          const v = snap.val();
+          // 舊的壞題（正解非被考單字）視為未快取，丟回去重新生成覆蓋
+          const q = v && v.q && sanitizeQuizQuestion(v.q);
+          if (!q) return;
+          if ((q.v || 0) >= QUIZ_VERIFIED_VERSION) trusted[norm(w.word)] = q;
+          else unverified.push(q);
+        } catch (e) { /* 單筆讀取失敗就當未快取 */ }
+      }));
+    }
+    const haveNorm = new Set([...Object.keys(trusted), ...unverified.map(q => norm(q.word))]);
+    const toGen = list.filter(w => !haveNorm.has(norm(w.word)));
+    console.log(`[quizCache] requested=${list.length} trusted=${Object.keys(trusted).length} unverified=${unverified.length} generate=${toGen.length}`);
+
+    const verified = [];          // 這次新通過檢查、要寫回快取的題目
+    let unverifiedFallback = [];  // 檢查服務出錯時，暫時回傳但不標記為已檢查
+    if (toGen.length || unverified.length) {
+      const apiKey = process.env.ANTHROPIC_API_KEY;
+      if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY");
+      const client = new AnthropicQuiz({ apiKey });
+
+      // ── 2. 只對「沒快取」的單字呼叫生成模型 ──
+      const generated = await generateQuizQuestionsRaw(client, toGen, cefrLevel);
+      const candidates = [...unverified, ...generated];
+
+      // ── 3. 唯一解檢查；沒通過的單字重新生成一次再檢查 ──
+      try {
+        const r1 = await verifyAndRepairQuizQuestions(client, candidates);
+        verified.push(...r1.good);
+        const okNorm = new Set(r1.good.map(q => norm(q.word)));
+        const retryWords = list.filter(w => !trusted[norm(w.word)] && !okNorm.has(norm(w.word)));
+        if (retryWords.length) {
+          const regen = await generateQuizQuestionsRaw(client, retryWords, cefrLevel);
+          const r2 = await verifyAndRepairQuizQuestions(client, regen);
+          verified.push(...r2.good);
+          console.log(`[quizVerify] regenerated=${retryWords.length} pass=${r2.good.length}`);
+        }
+      } catch (e) {
+        console.error("[quizVerify] verifier error, returning unverified questions:", e.message);
+        unverifiedFallback = candidates.filter(q => !verified.some(g => norm(g.word) === norm(q.word)));
+      }
+
+      // ── 4. 寫回共享快取：通過的標 v；檢查失敗的新題也先存（不標 v，下次會再檢查）──
       if (db) {
-        const byNorm = {};
-        toGen.forEach(w => { byNorm[String(w.word).toLowerCase().trim()] = w.word; });
-        await Promise.all(generated.map(async (q) => {
-          if (!q || !q.word || !Array.isArray(q.options)) return;
-          const orig = byNorm[String(q.word).toLowerCase().trim()] || q.word;
+        const toWrite = [...verified, ...unverifiedFallback.filter(q => !q.v)];
+        await Promise.all(toWrite.map(async (q) => {
+          const orig = (reqByNorm[norm(q.word)] || {}).word || q.word;
           try {
             await db.ref(`/quiz-cache/${quizCacheKey(orig, cefrLevel)}`).set({ q, createdAt: Date.now() });
           } catch (e) { /* 寫入失敗不影響回傳 */ }
@@ -4066,18 +4182,12 @@ ${cefrRule}
       }
     }
 
-    // ── 4. 合併（依原請求順序）回傳 ──
-    const genByNorm = {};
-    generated.forEach(q => { if (q && q.word) genByNorm[String(q.word).toLowerCase().trim()] = q; });
-    const result = [];
-    for (const w of list) {
-      if (cachedByWord[w.word]) result.push(cachedByWord[w.word]);
-      else {
-        const g = genByNorm[String(w.word).toLowerCase().trim()];
-        if (g) result.push(g);
-      }
-    }
-    res.json(result.length ? result : generated);
+    // ── 5. 合併（依原請求順序）回傳；兩輪都沒通過的單字直接不出題 ──
+    const outByNorm = {};
+    [...unverifiedFallback, ...verified].forEach(q => { outByNorm[norm(q.word)] = q; });
+    Object.assign(outByNorm, trusted);
+    const result = list.map(w => outByNorm[norm(w.word)]).filter(Boolean);
+    res.json(result);
   } catch (e) {
     console.error("[ERROR] generateVocabQuiz:", e.message);
     res.status(500).json({ error: e.message });

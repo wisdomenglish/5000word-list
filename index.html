@@ -3900,7 +3900,8 @@ async function startQuiz(){
       const c = localStorage.getItem('vocab_quiz_' + w.word);
       if(c){
         const q = _fixQuizQ(JSON.parse(c));
-        if(q) cachedQ[w.word] = q;                       // 壞題不採用 → 落入 needGen 重抓
+        // 只信任伺服器通過「唯一解檢查」的題目（v>=2，2026-10-22 起）；舊快取一律重抓
+        if(q && (q.v||0) >= 2) cachedQ[w.word] = q;      // 壞題／未檢查題不採用 → 落入 needGen 重抓
         else localStorage.removeItem('vocab_quiz_' + w.word);
       }
     } catch(e){}
@@ -3926,7 +3927,7 @@ async function startQuiz(){
       // 寫入客戶端快取（對應回原單字，避免大小寫不符）
       const normToOrig={}; needGen.forEach(w=>{ normToOrig[w.word.toLowerCase().trim()]=w.word; });
       fetched.forEach(q=>{
-        if(!q||!q.word) return;
+        if(!q||!q.word||(q.v||0)<2) return;           // 未通過唯一解檢查的題目只用這一次，不存本機
         const orig=normToOrig[String(q.word).toLowerCase().trim()]||q.word;
         try{ localStorage.setItem('vocab_quiz_'+orig, JSON.stringify(q)); }catch(e){}
       });
