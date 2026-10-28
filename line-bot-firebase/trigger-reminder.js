@@ -182,9 +182,9 @@ function parseEventTarget(title) {
   return { names, cleanTitle };
 }
 
-async function sendPush(to, text) {
+async function sendPush(to, message) {
   return new Promise((resolve, reject) => {
-    const data = JSON.stringify({ to, messages: [{ type: "text", text }] });
+    const data = JSON.stringify({ to, messages: [message] });
     const req = https.request({
       hostname: "api.line.me", port: 443, path: "/v2/bot/message/push",
       method: "POST",
@@ -408,16 +408,9 @@ async function main() {
         console.log(`    SKIP ${userId} (already sent)`);
         continue;
       }
-      let msg = evt.isToday
-        ? `嗨！提醒老師，今天是【${cleanTitle}】喔！`
-        : `嗨！提醒老師，記得明天是【${cleanTitle}】喔！`;
-      if (evt.location) msg += `\n📍 地點：${evt.location}`;
-      if (evt.description) msg += `\n📝 備註：${evt.description}`;
-      msg += evt.isToday
-        ? `\n\n今天加油！💪`
-        : `\n\n請做好準備，加油！💪`;
-      msg += `\n\n若老師尚未完成，請回覆：\n「${cleanTitle}尚未完成，預計[日期]前完成」`;
-
+      // 只在真的要發送時才載入，--cache-only（GitHub Actions 每天 07:00）不需要這個模組
+      const { buildReminderFlex } = require("./functions/reminder-card");
+      const msg = buildReminderFlex(evt, cleanTitle, evt.isToday);
       await sendPush(userId, msg);
       newSentRecords[key] = { sentAt: Date.now(), eventTitle: evt.title, eventStart: evt.start };
     }

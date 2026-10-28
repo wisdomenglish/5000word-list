@@ -10,6 +10,7 @@ const { Anthropic } = require("@anthropic-ai/sdk");
 const admin = require("firebase-admin");
 const crypto = require("crypto");
 const express = require("express");
+const { buildReminderFlex } = require("./reminder-card");
 
 // ========== Bot Config ==========
 const BOT_CONFIG = {
@@ -1204,20 +1205,6 @@ async function saveTaskReport(userId, taskTitle, status) {
     taskTitle
   });
   console.log(`[INFO] Task report saved: ${userId} "${taskTitle}" → ${status}`);
-}
-
-function buildReminderMessage(evt, cleanTitle, isToday = false) {
-  const displayTitle = cleanTitle || evt.title;
-  let msg = isToday
-    ? `嗨！提醒老師，今天是【${displayTitle}】喔！`
-    : `嗨！提醒老師，記得明天是【${displayTitle}】喔！`;
-  if (evt.location) msg += `\n📍 地點：${evt.location}`;
-  if (evt.description) msg += `\n📝 備註：${evt.description}`;
-  msg += isToday
-    ? `\n\n今天加油！💪`
-    : `\n\n請做好準備，加油！💪`;
-  msg += `\n\n若老師尚未完成，請回覆：\n「${displayTitle}尚未完成，預計[日期]前完成」`;
-  return msg;
 }
 
 // ========== Notion 素材庫（Bot 2「Wisdom Assistant」專用：老師傳連結自動建立「新聞素材庫 Content Intake」頁面）==========
@@ -3649,9 +3636,9 @@ exports.calendarReminder = onSchedule({
             console.log(`[INFO] Event "${evt.title}" already sent to ${userId}, skipping`);
             continue;
           }
-          const message = buildReminderMessage(evt, cleanTitle, isToday);
+          const message = buildReminderFlex(evt, cleanTitle, isToday);
           try {
-            await pushLineMessage(userId, { type: "text", text: message }, token);
+            await pushLineMessage(userId, message, token);
             console.log(`[INFO] Sent "${evt.title}" to ${userId}`);
           } catch (pushError) {
             console.error(`[ERROR] Failed to push to ${userId}:`, pushError.message);
