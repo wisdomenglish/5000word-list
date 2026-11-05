@@ -965,6 +965,9 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
 <script src="magazine-all-oct-data.js"></script>
 <script src="magazine-studioclassroom-oct-data.js"></script>
 <script src="magazine-4u-oct-data.js"></script>
+<script src="magazine-4u-nov-data.js"></script>
+<script src="magazine-studioclassroom-nov-data.js"></script>
+<script src="magazine-all-nov-data.js"></script>
 <script src="magazine-digest-oct-data.js"></script>
 </head>
 <body>
@@ -4380,7 +4383,10 @@ const MAGAZINES = [
   { id:'all202510', brand:'all', label:'10月號', desc:'ALL+互動英語', passcodeHash:null, color:'#8B5CF6', cover:null, data: (typeof MAGAZINE_UNITS_ALL202510!=='undefined') ? MAGAZINE_UNITS_ALL202510 : null },
   { id:'sc202510', brand:'sc', label:'10月號', desc:'Studio Classroom', passcodeHash:null, color:'#F97316', cover:null, data: (typeof MAGAZINE_UNITS_SC202510!=='undefined') ? MAGAZINE_UNITS_SC202510 : null },
   { id:'4u202510', brand:'4u', label:'10月號', desc:'空中美語 4U', passcodeHash:null, color:'#10B981', cover:null, data: (typeof MAGAZINE_UNITS_4U202510!=='undefined') ? MAGAZINE_UNITS_4U202510 : null },
-  { id:'digest202510', brand:'digest', label:'10月號', desc:'空中美語 Digest', passcodeHash:null, color:'#0D9488', cover:null, data: (typeof MAGAZINE_UNITS_DIGEST202510!=='undefined') ? MAGAZINE_UNITS_DIGEST202510 : null }
+  { id:'digest202510', brand:'digest', label:'10月號', desc:'空中美語 Digest', passcodeHash:null, color:'#0D9488', cover:null, data: (typeof MAGAZINE_UNITS_DIGEST202510!=='undefined') ? MAGAZINE_UNITS_DIGEST202510 : null },
+  { id:'4u202511', brand:'4u', label:'11月號', desc:'空中美語 4U', passcodeHash:null, color:'#10B981', cover:null, data: (typeof MAGAZINE_UNITS_4U202511!=='undefined') ? MAGAZINE_UNITS_4U202511 : null },
+  { id:'sc202511', brand:'sc', label:'11月號', desc:'Studio Classroom', passcodeHash:null, color:'#F97316', cover:null, data: (typeof MAGAZINE_UNITS_SC202511!=='undefined') ? MAGAZINE_UNITS_SC202511 : null },
+  { id:'all202511', brand:'all', label:'11月號', desc:'ALL+互動英語', passcodeHash:null, color:'#8B5CF6', cover:null, data: (typeof MAGAZINE_UNITS_ALL202511!=='undefined') ? MAGAZINE_UNITS_ALL202511 : null }
 ];
 // 雜誌品牌（第一層分類）：MAGAZINES 每期用 brand 欄位對應這裡的 id；新增一期只要在 MAGAZINES 尾端加一筆並填 brand。
 // 新品牌才需要在這裡加一筆。品牌內的月份依 MAGAZINES 陣列順序倒序顯示（越晚加入的越上面）。
@@ -5023,11 +5029,12 @@ function mzRenderClozeTab(u){
 }
 
 function mzRenderWordBankTab(u){
-  const letters=['A','B','C','D','E','F','G','H','I','J'];
+  // 選項數跟著題目走（一般 10 個 A–J；雜誌原題可能較少，例如 4U 11月號 Unit 12 只有 A–F）
+  const letters=['A','B','C','D','E','F','G','H','I','J'].slice(0, Math.max(1, Math.min(10, u.wordBank.words.length)));
   return `
     <div class="mz-tab-head">
       <h3>文意選填 (Fill-in-the-Blank with Word Bank)</h3>
-      <p>從上方 10 個單字選項中選出最適當者，無重複使用。</p>
+      <p>從上方 ${letters.length} 個單字選項中選出最適當者，無重複使用。</p>
     </div>
     <div class="mz-wordbank-box">
       <h4>選項單字庫 (Word Bank)</h4>
