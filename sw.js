@@ -1,10 +1,10 @@
-const CACHE = 'vocab-app-v137';
+const CACHE = 'vocab-app-v138';
 const BASE  = '/5000word-list';
 
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE)
-      .then(c => c.addAll([BASE + '/', BASE + '/index.html', BASE + '/vocabulary-data.js', BASE + '/phrases-data.js', BASE + '/magazine-sept-data.js', BASE + '/magazine-studioclassroom-sept-data.js', BASE + '/magazine-4u-sept-data.js', BASE + '/magazine-all-sept-data.js', BASE + '/magazine-live-oct-data.js', BASE + '/magazine-all-oct-data.js', BASE + '/magazine-studioclassroom-oct-data.js', BASE + '/magazine-4u-oct-data.js', BASE + '/magazine-digest-oct-data.js', BASE + '/magazine-4u-nov-data.js', BASE + '/magazine-studioclassroom-nov-data.js', BASE + '/magazine-all-nov-data.js']))
+      .then(c => c.addAll([BASE + '/', BASE + '/index.html', BASE + '/vocabulary-data.js', BASE + '/phrases-data.js', BASE + '/magazine-sept-data.js', BASE + '/magazine-studioclassroom-sept-data.js', BASE + '/magazine-4u-sept-data.js', BASE + '/magazine-all-sept-data.js', BASE + '/magazine-live-oct-data.js', BASE + '/magazine-all-oct-data.js', BASE + '/magazine-studioclassroom-oct-data.js', BASE + '/magazine-4u-oct-data.js', BASE + '/magazine-digest-oct-data.js', BASE + '/magazine-4u-nov-data.js', BASE + '/magazine-studioclassroom-nov-data.js', BASE + '/magazine-all-nov-data.js', BASE + '/magazine-digest-nov-data.js']))
       .then(() => self.skipWaiting())
   );
 });
