@@ -10,7 +10,7 @@ const { Anthropic } = require("@anthropic-ai/sdk");
 const admin = require("firebase-admin");
 const crypto = require("crypto");
 const express = require("express");
-const { buildReminderFlex } = require("./reminder-card");
+const { buildReminderFlex, buildFollowUpFlex } = require("./reminder-card");
 
 // ========== Bot Config ==========
 const BOT_CONFIG = {
@@ -3690,12 +3690,15 @@ exports.eveningFollowUp = onSchedule({
     }
 
     // 從 key 末端擷取 userId（格式固定：U + 32 hex）
-    const sentToday = new Set();
+    // userId → 今天提醒過的工作名稱（去掉 [老師名] 前綴），卡片上逐件列出
+    const sentToday = new Map();
     sentSnap.forEach(child => {
       const data = child.val();
       if (data.sentAt >= todayStart && data.sentAt < todayEnd && data.eventStart === dateStr) {
         const match = child.key.match(/U[0-9a-fA-F]{32}$/);
-        if (match) sentToday.add(match[0]);
+        if (!match) return;
+        if (!sentToday.has(match[0])) sentToday.set(match[0], []);
+        if (data.eventTitle) sentToday.get(match[0]).push(parseEventTarget(data.eventTitle).cleanTitle);
       }
     });
 
@@ -3711,7 +3714,7 @@ exports.eveningFollowUp = onSchedule({
     console.log(`[INFO] ${reportedUsers.size} users have submitted reports today`);
 
     // 找出有收到提醒但尚未回報的老師
-    const unreplied = [...sentToday].filter(uid => !reportedUsers.has(uid));
+    const unreplied = [...sentToday.keys()].filter(uid => !reportedUsers.has(uid));
     console.log(`[INFO] ${unreplied.length} users have not replied yet`);
 
     if (unreplied.length === 0) {
@@ -3719,11 +3722,9 @@ exports.eveningFollowUp = onSchedule({
       return;
     }
 
-    const followUpMessage = `⏰ 溫馨提醒\n\n老師好！今天尚有工作進度未回報，請記得回報工作進度喔😊\n\n回報方式：\n✅ 完成 工作名稱\n📝 未完成 工作名稱`;
-
     for (const userId of unreplied) {
       try {
-        await pushLineMessage(userId, { type: "text", text: followUpMessage }, token);
+        await pushLineMessage(userId, buildFollowUpFlex(sentToday.get(userId)), token);
         console.log(`[INFO] Follow-up sent to ${userId}`);
       } catch (pushError) {
         console.error(`[ERROR] Failed to send follow-up to ${userId}:`, pushError.message);

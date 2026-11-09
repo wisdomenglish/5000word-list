@@ -135,4 +135,59 @@ function buildReminderFlex(evt, cleanTitle, isToday) {
   };
 }
 
-module.exports = { buildReminderFlex };
+// 23:00 未回報催促卡片：列出今天提醒過、但老師還沒回報的工作，每件各附一組回報按鈕
+const FOLLOW_UP_MAX_TASKS = 5;
+
+function buildFollowUpFlex(titles) {
+  const tasks = [...new Set((titles || []).map(t => String(t || "").trim()).filter(Boolean))];
+  const shown = tasks.slice(0, FOLLOW_UP_MAX_TASKS);
+
+  const taskBlocks = shown.map((title, i) => {
+    const reportTitle = title.slice(0, 280);
+    return {
+      type: "box",
+      layout: "vertical",
+      spacing: "sm",
+      margin: i === 0 ? "lg" : "xl",
+      contents: [
+        infoRow("工作", title),
+        {
+          type: "box",
+          layout: "horizontal",
+          spacing: "sm",
+          contents: [
+            outlineButton("尚未完成", { type: "message", label: "尚未完成", text: `未完成 ${reportTitle}` }),
+            filledButton("回報已完成", { type: "message", label: "回報已完成", text: `完成 ${reportTitle}` })
+          ]
+        }
+      ]
+    };
+  });
+
+  const note = tasks.length > shown.length
+    ? `另有 ${tasks.length - shown.length} 項，可直接回覆「完成 工作名稱」或「未完成 工作名稱」`
+    : "也可直接回覆「完成 工作名稱」或「未完成 工作名稱」";
+
+  return {
+    type: "flex",
+    altText: "⏰ 溫馨提醒：今天尚有工作進度未回報",
+    contents: {
+      type: "bubble",
+      size: "mega",
+      body: {
+        type: "box",
+        layout: "vertical",
+        spacing: "md",
+        paddingAll: "xl",
+        contents: [
+          { type: "text", text: "工作進度回報提醒", weight: "bold", size: "xl", color: "#333333" },
+          { type: "text", text: "老師好！今天尚有工作進度未回報，請記得回報喔😊", size: "sm", color: "#999999", wrap: true },
+          ...taskBlocks,
+          { type: "box", layout: "vertical", margin: "xl", contents: [infoRow("備註", note)] }
+        ]
+      }
+    }
+  };
+}
+
+module.exports = { buildReminderFlex, buildFollowUpFlex };
