@@ -193,6 +193,15 @@
 - **閱讀測驗錯題卡片內嵌原文（2026-10-01 新增）**：`mzRenderMistakesTab()` 對 `m.tab==='reading'` 的錯題卡，額外抓該 Unit 的 `passage`（優先讀當下 `MAGAZINES` 資料，抓不到才退回錯題物件自己存的 `m.passage` 快照）渲染在題幹上方，`mzTogglePassage(id)` 控制收合/展開（`mzExpandedPassages` 狀態，預設展開）
 - 每次修改 `magazine-{id}-data.js` 或新增雜誌後，記得升版 `sw.js` 的 `CACHE` 常數（比照 vocabulary-data.js/phrases-data.js 慣例），並視需要把新資料檔加進 `sw.js` 的 `addAll` 預快取清單
 
+### 歷屆翻譯架構（2026-11-14 新增）
+
+- **入口**：首頁紫色橫幅卡 `.home-tr-card`（在「更多題庫」下方）→ `switchTab('translation')` → `#translationSection`（不進 `bnavMap`）
+- **資料**：[translation-data.js](translation-data.js) 的 `TRANSLATION_SETS`：`[{id, type, year, title, items:[{zh, en:[參考譯文…], src}]}]`。`type` 為 `學測`／`學測模考`／`指考模考`／`總複習卷`；`src:'模考詳解'` 表示譯文取自考卷詳解，`src:'AI'` 表示原卷未附譯文、由 Claude 撰寫（畫面會標示「AI 參考譯文，僅供參考」）。目前 127 份考卷、254 題（學測 18 份全為 AI 譯文，因官方只公布選擇題答案）
+- **來源**：Google Drive 本機同步資料夾 `G:\我的雲端硬碟\Teaching\高中英文\` 的 `學測歷屆/`（99–115）與 `模擬試題/`（學測模卷、指考模擬試題、妙妙卷總複習卷）。**這些 PDF 用 `pdftotext` 抽不出中文**（官方卷字型沒有 ToUnicode、模考多為掃描檔），做法是：Windows 內建 `Windows.Data.Pdf` 把頁面轉圖 → `Windows.Media.Ocr`（zh-Hant-TW）OCR 只用來**定位**「中譯英」所在頁與位置 → 裁切該區塊後人工判讀轉錄。腳本放在當次 session 的 scratchpad，沒有進 repo；PowerShell 5.1 腳本含中文時要存成 **UTF-8 with BOM**，否則中文與 regex 會亂碼
+- **未收錄**：`111學年全國模擬考2.pdf`、`115 第一次全國公私立高中模擬考.pdf`（掃描頁面旋轉 90 度，OCR 找不到中譯英頁）、`115年中區模考題3.pdf`（PDF 缺第 13 頁）；同一份考卷不同檔名（如 114 全模 E2 與 114 北模 E2）已去重
+- **UI**：`renderTranslationList()`（分類篩選 `trFilter` + 「🎲 隨機抽一題沒練過的」`trRandom()`）→ `openTranslationSet(id)` → `renderTranslationSet()`。每題 textarea（草稿存記憶體 `trDrafts`，切換譯文不會清掉）、「看參考譯文」（`trRevealed`）、「標記已練習」（`localStorage['vocab_translation_done']`，key 為 `{setId}#{index}`，同時 `incrementDailyCount()` 計入今日目標）。點擊全走事件委派 `data-tr-*`
+- **新增考卷**：在 `TRANSLATION_SETS` 加一筆即可（`id` 只能用英數與 `-`），記得升 `sw.js`
+
 ### 更多題庫架構（2026-10-08 新增，首頁入口，目前僅導覽骨架，內容待日後實作）
 
 - **入口**：首頁深藍 hero 卡下方的綠色橫幅卡 `.home-more-card`（`onclick="switchTab('more')"`），比照 `.home-wotd-card` 版面、teal 漸層配色區隔；`#moreSection`（比照 `#magazineSection` 慣例，新增 tab 不進 `bnavMap`，無底部導覽對應項）

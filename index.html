@@ -941,6 +941,38 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
 #mzPrintArea .mzp-ans{background:#EFFAF4;border:1px solid #B6E8CC;border-radius:6px;padding:6px 10px;font-size:.82rem;margin-top:4px;white-space:pre-line;color:#065F46;}
 #mzPrintArea .mzp-blank{font-size:.85rem;color:#555;margin-top:4px;}
 
+/* ── 歷屆翻譯 ── */
+.home-tr-card{display:flex;align-items:center;gap:12px;margin:0 16px 12px;padding:14px 16px;border-radius:16px;cursor:pointer;background:linear-gradient(135deg,#6D28D9 0%,#A78BFA 100%);box-shadow:0 4px 16px rgba(109,40,217,.28);}
+.tr-filter-row{display:flex;gap:8px;overflow-x:auto;padding:0 16px 14px;-webkit-overflow-scrolling:touch;}
+.tr-filter-row .fm-btn{min-height:44px;white-space:nowrap;}
+.tr-random-row{padding:0 16px 14px;}
+.tr-random-btn{width:100%;min-height:44px;border-radius:12px;border:1.5px dashed #A78BFA;background:#F5F3FF;color:#6D28D9;font-size:.88rem;font-weight:700;cursor:pointer;}
+#translationSection .mz-wrap{max-width:820px;margin:0 auto;}
+.tr-set-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;padding:0 16px;}
+.tr-set-card{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto auto;gap:2px 8px;align-items:center;text-align:left;background:var(--surface);border:1px solid var(--border);border-left:4px solid #7C3AED;border-radius:14px;padding:12px 14px;min-height:64px;cursor:pointer;box-shadow:var(--shadow);font:inherit;color:var(--text);}
+.tr-set-card.all-done{border-left-color:#22C55E;}
+.tr-set-type{grid-column:1;font-size:.66rem;font-weight:700;color:#7C3AED;letter-spacing:.04em;}
+.tr-set-card.all-done .tr-set-type{color:#16A34A;}
+.tr-set-title{grid-column:1;font-size:.95rem;font-weight:700;}
+.tr-set-meta{grid-column:1;font-size:.74rem;color:var(--muted);}
+.tr-set-arrow{grid-column:2;grid-row:1/4;font-size:1.4rem;color:var(--muted);}
+#translationSection .mz-list-sub{line-height:1.6;}
+.tr-q{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin:0 16px 12px;box-shadow:var(--shadow);scroll-margin-top:64px;}
+.tr-q-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.tr-q-no{width:28px;height:28px;border-radius:50%;background:#EDE9FE;color:#6D28D9;display:grid;place-items:center;font-weight:800;font-size:.85rem;}
+.tr-q-done{font-size:.74rem;color:#16A34A;font-weight:700;}
+.tr-q-zh{font-size:1.02rem;line-height:1.7;color:var(--text);margin-bottom:10px;}
+.tr-input{width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:12px;padding:10px 12px;font-size:16px;line-height:1.55;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--bg);resize:vertical;outline:none;}
+.tr-input:focus{border-color:#7C3AED;background:var(--surface);}
+.tr-actions{display:flex;gap:8px;margin-top:10px;}
+.tr-btn{flex:1;min-height:44px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:.85rem;font-weight:600;cursor:pointer;}
+.tr-btn.on{background:#DCFCE7;border-color:#86EFAC;color:#15803D;}
+.tr-ans{margin-top:12px;background:#F5F3FF;border:1px solid #DDD6FE;border-radius:12px;padding:12px 14px;}
+.tr-ans-lbl{font-size:.72rem;font-weight:700;color:#6D28D9;margin-bottom:6px;}
+.tr-ans-en{font-size:.95rem;line-height:1.6;color:var(--text);padding:4px 0;}
+.tr-ans-en + .tr-ans-en{border-top:1px dashed #DDD6FE;}
+.tr-ans-src{font-size:.7rem;color:var(--muted);margin-top:6px;}
+
 /* ══ Motion layer（移植自 Fluent motion.css / interactions.css，2026-11-14）══
    靜態外觀放外面；會動的全部包在 prefers-reduced-motion: no-preference 裡，
    系統開「減少動態效果」的人只看到最終狀態。進場動畫用 fill-mode backwards，
@@ -984,6 +1016,7 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
   .quiz-card-wrap.q-enter{animation:dsn-rise .35s var(--ease-out) backwards;}
   .quiz-opt-btn.wrong{animation:dsn-shake .4s ease-in-out;}
   .quiz-opt-btn.correct{animation:dsn-pop .32s var(--ease-spring);}
+  .tr-ans{animation:dsn-check-in .28s var(--ease-out) backwards;}
   .quiz-explain,.quiz-opt-note,.spell-diff-lbl{animation:dsn-check-in .28s var(--ease-out) backwards;}
   .quiz-next{animation:dsn-check-in .28s var(--ease-out) .08s backwards;}
   .spell-input.wrong,.spell-diff{animation:dsn-shake .4s ease-in-out;}
@@ -995,8 +1028,8 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
 
   /* ── B. 全站點擊回饋 ──
      :where() 讓特異性為 0：元件自己寫的 transform / :active 一律優先，不會被這裡蓋掉 */
-  :where(button,.card,.phrase-card,.mz-mag-card,.home-quick-card,.home-wotd-card,.home-more-card){transition:transform .16s var(--ease-out),box-shadow .2s ease,background-color .2s ease,color .2s ease,border-color .2s ease;}
-  :where(button:not(:disabled),.phrase-card,.mz-mag-card:not(.disabled),.home-wotd-card,.home-more-card):active{transform:scale(.96);transition-duration:.08s;}
+  :where(button,.card,.phrase-card,.mz-mag-card,.home-quick-card,.home-wotd-card,.home-more-card,.home-tr-card){transition:transform .16s var(--ease-out),box-shadow .2s ease,background-color .2s ease,color .2s ease,border-color .2s ease;}
+  :where(button:not(:disabled),.phrase-card,.mz-mag-card:not(.disabled),.home-wotd-card,.home-more-card,.home-tr-card):active{transform:scale(.96);transition-duration:.08s;}
   @media (hover:hover){
     .phrase-card:hover,.mz-mag-card:not(.disabled):hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(28,28,30,.12);}
   }
@@ -1041,6 +1074,7 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
 <script src="vocabulary-data.js"></script>
 <script src="levels-data.js"></script>
 <script src="phrases-data.js"></script>
+<script src="translation-data.js"></script>
 <script src="magazine-sept-data.js"></script>
 <script src="magazine-studioclassroom-sept-data.js"></script>
 <script src="magazine-4u-sept-data.js"></script>
@@ -1255,6 +1289,7 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
 <div id="paragraphSection" style="display:none"></div>
 <div id="magazineSection" style="display:none"></div>
 <div id="moreSection" style="display:none"></div>
+<div id="translationSection" style="display:none"></div>
 <div id="progressSection" style="display:none"></div>
 <div id="newsSection" style="display:none">
   <div class="news-wrap">
@@ -1305,6 +1340,24 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
     <!-- ══ 更新紀錄索引 ══ -->
     <div class="news-index-section">
       <div class="news-index-section-title">📋 更新紀錄</div>
+
+      <!-- 2026-11-14 歷屆翻譯 -->
+      <div class="news-index-entry">
+        <div class="news-index-item" onclick="toggleNewsDetail(this.parentElement)">
+          <span class="news-date">2026-11-14</span>
+          <span class="news-type feature">新功能</span>
+          <span class="ni-title">📝 歷屆翻譯：學測與模擬考中譯英 254 題</span>
+          <span class="news-arrow">›</span>
+        </div>
+        <div class="news-detail">
+          <ul class="news-list">
+            <li>首頁新增紫色「<strong>📝 歷屆翻譯</strong>」：收錄 <strong>99–115 學測</strong>、歷屆<strong>學測／指考模擬考</strong>與<strong>總複習卷</strong>的中譯英，共 127 份考卷、254 題。</li>
+            <li>先在框裡寫下自己的翻譯，再按「看參考譯文」對照；練完按「標記已練習」，清單會顯示進度。</li>
+            <li>「🎲 隨機抽一題沒練過的」可以快速複習。原卷沒有附譯文的題目會標示為 AI 參考譯文。</li>
+            <li>答題、測驗與單字卡也加上了搖晃、彈跳等回饋動畫，拼錯時會逐字母標出錯在哪裡。</li>
+          </ul>
+        </div>
+      </div>
 
       <!-- 2026-10-15 雜誌題庫 10月號上架 -->
       <div class="news-index-entry">
@@ -3225,10 +3278,11 @@ function switchTab(tab){
   document.getElementById('paragraphSection').style.display  = tab==='paragraph' ? '' : 'none';
   document.getElementById('magazineSection').style.display   = tab==='magazine'  ? '' : 'none';
   document.getElementById('moreSection').style.display       = tab==='more'      ? '' : 'none';
+  document.getElementById('translationSection').style.display = tab==='translation' ? '' : 'none';
   document.getElementById('progressSection').style.display   = tab==='progress'  ? '' : 'none';
   document.getElementById('newsSection').style.display       = tab==='news'      ? '' : 'none';
   /* bottom nav active state */
-  const bnavMap = {home:'bnavHome',dict:'bnavDict',quiz:'bnavQuiz',mywords:'bnavMywords',progress:'bnavProgress',news:'bnavProgress',paragraph:null,magazine:null,more:null};
+  const bnavMap = {home:'bnavHome',dict:'bnavDict',quiz:'bnavQuiz',mywords:'bnavMywords',progress:'bnavProgress',news:'bnavProgress',paragraph:null,magazine:null,more:null,translation:null};
   document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active'));
   const activeBnavId = bnavMap[tab];
   if(activeBnavId) document.getElementById(activeBnavId)?.classList.add('active');
@@ -3241,6 +3295,7 @@ function switchTab(tab){
   if(tab==='paragraph') renderParagraphTab();
   if(tab==='magazine')  renderMagazineList();
   if(tab==='more')      renderMoreList();
+  if(tab==='translation'){ if(trOpenSetId) renderTranslationSet(); else renderTranslationList(); }
   if(tab==='progress')  renderProgress();
 }
 
@@ -3360,6 +3415,14 @@ function renderHome(){
       <div class="home-wotd-text">
         <div class="home-wotd-title">更多題庫</div>
         <div class="home-wotd-sub">高中課本 · 時事新聞 · 英檢 · 多益 · 學測聽力</div>
+      </div>
+      <div class="home-wotd-arrow">›</div>
+    </div>
+    <div class="home-tr-card" onclick="switchTab('translation')">
+      <div class="home-wotd-spark">📝</div>
+      <div class="home-wotd-text">
+        <div class="home-wotd-title">歷屆翻譯</div>
+        <div class="home-wotd-sub">學測 · 模擬考 中譯英 · 先寫再對照參考譯文</div>
       </div>
       <div class="home-wotd-arrow">›</div>
     </div>
@@ -4573,6 +4636,120 @@ const RES_CATEGORIES = [
 const RES_TEXTBOOK_GRADES = ['高一','高二'];
 const RES_TEXTBOOK_PUBLISHERS = ['龍騰','三民乙','三民'];
 const RES_GEPT_LEVELS = ['中級','中高級'];
+
+// ─── 歷屆翻譯（學測／模考中譯英練習）───
+// 資料來自 translation-data.js 的 TRANSLATION_SETS：[{id,type,year,title,items:[{zh,en:[...],src}]}]
+const TR_DONE_KEY = 'vocab_translation_done';
+const TR_TYPES = ['全部','學測','學測模考','指考模考','總複習卷'];
+let trFilter = '全部', trOpenSetId = null, trRevealed = new Set(), trDrafts = {};
+function _trSets(){ return (typeof TRANSLATION_SETS!=='undefined') ? TRANSLATION_SETS : []; }
+function _trDone(){ try{ return JSON.parse(localStorage.getItem(TR_DONE_KEY)||'{}'); }catch(e){ return {}; } }
+function _trItemId(set,i){ return set.id+'#'+i; }
+function renderTranslationList(){
+  const sec = document.getElementById('translationSection');
+  const sets = _trSets(), done = _trDone();
+  const total = sets.reduce((n,s)=>n+s.items.length,0);
+  const doneN = sets.reduce((n,s)=>n+s.items.filter((_,i)=>done[_trItemId(s,i)]).length,0);
+  const types = TR_TYPES.filter(t=>t==='全部'||sets.some(s=>s.type===t));
+  const shown = sets.filter(s=>trFilter==='全部'||s.type===trFilter);
+  sec.innerHTML = `
+    <div class="mz-wrap">
+      <div class="mz-topbar">
+        <button class="mz-back" onclick="switchTab('home')">‹ 返回</button>
+        <div class="mz-topbar-title">📝 歷屆翻譯</div>
+        <div style="width:56px"></div>
+      </div>
+      <div style="padding:0 16px 14px">
+        <div class="page-hero">
+          <div class="page-hero-eyebrow">中譯英練習</div>
+          <div class="page-hero-title">歷屆翻譯</div>
+          <div class="page-hero-sub">歷屆學測與模擬考的中譯英題目。先自己寫，再對照參考譯文。</div>
+          <div class="page-hero-chips">
+            <span class="page-hero-chip">📚 ${sets.length} 份考卷</span>
+            <span class="page-hero-chip">✏️ ${total} 題</span>
+            <span class="page-hero-chip">✅ 已練 ${doneN} 題</span>
+          </div>
+        </div>
+      </div>
+      <div class="tr-filter-row">
+        ${types.map(t=>`<button class="fm-btn${t===trFilter?' active':''}" data-tr-filter="${t}">${t}</button>`).join('')}
+      </div>
+      <div class="tr-random-row"><button class="tr-random-btn" onclick="trRandom()">🎲 隨機抽一題沒練過的</button></div>
+      ${shown.length?`<div class="tr-set-list">
+        ${shown.map(s=>{
+          const d = s.items.filter((_,i)=>done[_trItemId(s,i)]).length;
+          return `<button class="tr-set-card${d===s.items.length?' all-done':''}" data-tr-set="${s.id}">
+            <span class="tr-set-type">${_escH(s.type)}</span>
+            <span class="tr-set-title">${_escH(s.title)}</span>
+            <span class="tr-set-meta">${s.items.length} 題 · 已練 ${d}</span>
+            <span class="tr-set-arrow">›</span>
+          </button>`;}).join('')}
+      </div>`:`<div class="mz-empty"><div class="mz-empty-ico">📭</div>這個分類目前沒有題目</div>`}
+    </div>`;
+}
+function openTranslationSet(id, focusIdx){
+  trOpenSetId = id;
+  renderTranslationSet();
+  window.scrollTo({top:0});
+  if(focusIdx!=null){
+    const el = document.querySelector(`.tr-q[data-tr-idx="${focusIdx}"]`);
+    if(el) setTimeout(()=>el.scrollIntoView({block:'start',behavior:'smooth'}),60);
+  }
+}
+function renderTranslationSet(){
+  const s = _trSets().find(x=>x.id===trOpenSetId);
+  if(!s){ renderTranslationList(); return; }
+  const done = _trDone();
+  document.getElementById('translationSection').innerHTML = `
+    <div class="mz-wrap">
+      <div class="mz-topbar">
+        <button class="mz-back" onclick="trOpenSetId=null;renderTranslationList();window.scrollTo({top:0})">‹ 清單</button>
+        <div class="mz-topbar-title">${_escH(s.title)}</div>
+        <div style="width:56px"></div>
+      </div>
+      <div class="mz-list-sub">請將下列中文句子譯成正確、通順、達意的英文。先自己寫，再看參考譯文。</div>
+      ${s.items.map((it,i)=>{
+        const id=_trItemId(s,i), rev=trRevealed.has(id), ok=!!done[id];
+        return `<div class="tr-q" data-tr-idx="${i}">
+          <div class="tr-q-head"><span class="tr-q-no">${i+1}</span>${ok?'<span class="tr-q-done">✅ 已練習</span>':''}</div>
+          <div class="tr-q-zh">${_escH(it.zh)}</div>
+          <textarea class="tr-input" data-tr-id="${id}" rows="3" placeholder="在這裡寫下你的英文翻譯…" autocapitalize="sentences" spellcheck="false">${_escH(trDrafts[id]||'')}</textarea>
+          <div class="tr-actions">
+            <button class="tr-btn" data-tr-reveal="${id}">${rev?'🙈 收起譯文':'👀 看參考譯文'}</button>
+            <button class="tr-btn${ok?' on':''}" data-tr-done="${id}">${ok?'✓ 已練習':'☐ 標記已練習'}</button>
+          </div>
+          ${rev?`<div class="tr-ans">
+            <div class="tr-ans-lbl">參考譯文${(it.en||[]).length>1?'（任一皆可）':''}</div>
+            ${(it.en||[]).map(e=>`<div class="tr-ans-en">${_escH(e)}</div>`).join('')}
+            <div class="tr-ans-src">${it.src==='AI'?'🤖 原卷未附譯文，此為 AI 參考譯文，僅供參考':'📄 出自'+_escH(it.src||'考卷詳解')}</div>
+          </div>`:''}
+        </div>`;}).join('')}
+    </div>`;
+}
+function trRandom(){
+  const done=_trDone(), pool=[];
+  _trSets().filter(s=>trFilter==='全部'||s.type===trFilter)
+    .forEach(s=>s.items.forEach((_,i)=>{ if(!done[_trItemId(s,i)]) pool.push([s.id,i]); }));
+  if(!pool.length){ alert('這個分類的題目都練過了 🎉'); return; }
+  const [sid,i]=pool[Math.floor(Math.random()*pool.length)];
+  openTranslationSet(sid,i);
+}
+document.addEventListener('click',e=>{
+  const t=e.target.closest&&e.target.closest('[data-tr-filter],[data-tr-set],[data-tr-reveal],[data-tr-done]');
+  if(!t||!t.closest('#translationSection')) return;
+  if(t.dataset.trFilter){ trFilter=t.dataset.trFilter; renderTranslationList(); return; }
+  if(t.dataset.trSet){ openTranslationSet(t.dataset.trSet); return; }
+  if(t.dataset.trReveal){ const id=t.dataset.trReveal; trRevealed.has(id)?trRevealed.delete(id):trRevealed.add(id); renderTranslationSet(); return; }
+  if(t.dataset.trDone){
+    const id=t.dataset.trDone, d=_trDone();
+    if(d[id]) delete d[id]; else { d[id]=1; haptic(12); incrementDailyCount(); }
+    localStorage.setItem(TR_DONE_KEY, JSON.stringify(d));
+    renderTranslationSet();
+  }
+});
+document.addEventListener('input',e=>{
+  if(e.target.classList&&e.target.classList.contains('tr-input')) trDrafts[e.target.dataset.trId]=e.target.value;
+});
 
 function renderMoreList(){
   const section = document.getElementById('moreSection');
