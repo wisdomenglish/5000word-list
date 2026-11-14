@@ -941,6 +941,90 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
 #mzPrintArea .mzp-ans{background:#EFFAF4;border:1px solid #B6E8CC;border-radius:6px;padding:6px 10px;font-size:.82rem;margin-top:4px;white-space:pre-line;color:#065F46;}
 #mzPrintArea .mzp-blank{font-size:.85rem;color:#555;margin-top:4px;}
 
+/* ══ Motion layer（移植自 Fluent motion.css / interactions.css，2026-11-14）══
+   靜態外觀放外面；會動的全部包在 prefers-reduced-motion: no-preference 裡，
+   系統開「減少動態效果」的人只看到最終狀態。進場動畫用 fill-mode backwards，
+   動畫結束後元素身上不留 transform（避免困住 position:fixed 的子元素）。 */
+:root{--ease-out:cubic-bezier(.2,.8,.2,1);--ease-spring:cubic-bezier(.34,1.56,.64,1);}
+/* 測驗進度點 */
+.progress-dots{display:inline-flex;gap:3px;margin-left:8px;vertical-align:middle;}
+.progress-dots i{width:7px;height:7px;border-radius:50%;border:1.5px solid var(--border);transition:background-color .2s,border-color .2s,transform .2s;}
+.progress-dots i[data-state="done"]{border-color:var(--accent);background:var(--accent);}
+.progress-dots i[data-state="current"]{border-color:var(--accent2);background:var(--accent2);transform:scale(1.25);}
+/* 拼字逐字母比對 */
+.spell-diff{margin-top:4px;padding:12px 10px;border:2px solid #ef4444;border-radius:12px;background:#fef2f2;text-align:center;}
+.spell-diff-lbl{font-size:0.75rem;color:var(--muted);margin-bottom:8px;}
+.spelling-letters{display:inline-flex;flex-wrap:wrap;justify-content:center;gap:3px;}
+.spelling-letters i{display:inline-grid;min-width:1.4em;min-height:1.9em;place-items:center;padding:0 3px;border-radius:6px;font-size:1.1rem;font-style:normal;font-weight:800;font-family:'DM Sans',sans-serif;}
+.spelling-letters i[data-state="match"]{background:#DCFCE7;color:#15803D;}
+.spelling-letters i[data-state="mismatch"]{background:#FEE2E2;color:#DC2626;text-decoration:underline 2px;text-underline-offset:3px;}
+.spelling-letters i[data-state="missing"]{min-width:1.1em;border:1.5px dashed #EF4444;background:transparent;}
+/* 首頁今日目標環 */
+@property --goal-progress{syntax:'<angle>';inherits:false;initial-value:0deg;}
+.home-goal-ring{width:30px;height:30px;margin:-5px auto -3px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--accent) var(--goal-progress),var(--border) 0);}
+.home-goal-ring.done{background:conic-gradient(#22C55E var(--goal-progress),var(--border) 0);}
+.home-goal-ring span{width:23px;height:23px;border-radius:50%;background:var(--surface);display:grid;place-items:center;font-size:0.82rem;line-height:1;}
+
+@media (prefers-reduced-motion: no-preference){
+  @keyframes dsn-rise{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+  @keyframes dsn-hero-in{from{opacity:0;transform:translateY(18px) scale(.98);}to{opacity:1;transform:none;}}
+  @keyframes dsn-grow-x{from{transform:scaleX(0);}to{transform:scaleX(1);}}
+  @keyframes dsn-pop{0%{transform:scale(.9);}55%{transform:scale(1.07);}100%{transform:scale(1);}}
+  @keyframes dsn-icon-bounce{0%{transform:translateY(0) scale(1);}40%{transform:translateY(-4px) scale(1.15);}100%{transform:translateY(0) scale(1);}}
+  @keyframes dsn-check-in{from{opacity:0;transform:translateY(6px) scale(.96);}to{opacity:1;transform:none;}}
+  @keyframes dsn-shake{0%,100%{transform:none;}20%{transform:translateX(-6px);}40%{transform:translateX(6px);}60%{transform:translateX(-4px);}80%{transform:translateX(4px);}}
+  @keyframes ix-pop{0%{transform:scale(.85);}60%{transform:scale(1.08);}100%{transform:scale(1);}}
+  @keyframes ix-rise{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  @keyframes ix-flip-in{from{opacity:0;transform:perspective(900px) rotateX(-75deg);}to{opacity:1;transform:none;}}
+  @keyframes ix-goal-fill{from{--goal-progress:0deg;}}
+  @keyframes badge-pop{0%{transform:scale(.4);}55%{transform:scale(1.35);}100%{transform:scale(1);}}
+  @keyframes badge-ring{0%{box-shadow:0 0 0 0 rgba(67,97,238,.55);}70%,100%{box-shadow:0 0 0 7px transparent;}}
+
+  /* ── A. 答題手感 ── */
+  .quiz-card-wrap.q-enter{animation:dsn-rise .35s var(--ease-out) backwards;}
+  .quiz-opt-btn.wrong{animation:dsn-shake .4s ease-in-out;}
+  .quiz-opt-btn.correct{animation:dsn-pop .32s var(--ease-spring);}
+  .quiz-explain,.quiz-opt-note,.spell-diff-lbl{animation:dsn-check-in .28s var(--ease-out) backwards;}
+  .quiz-next{animation:dsn-check-in .28s var(--ease-out) .08s backwards;}
+  .spell-input.wrong,.spell-diff{animation:dsn-shake .4s ease-in-out;}
+  .spell-input.correct{animation:dsn-pop .32s var(--ease-spring);}
+  .spelling-letters i{animation:ix-rise .22s ease-out backwards;animation-delay:calc(var(--letter-index,0) * 45ms + .25s);}
+  .progress-dots i[data-state="current"]{animation:ix-pop .3s var(--ease-spring);}
+  .fc-card.is-back .fc-zh{transform-origin:top center;animation:ix-flip-in .45s var(--ease-out) backwards;}
+  .fc-rating{animation:dsn-check-in .28s var(--ease-out) .1s backwards;}
+
+  /* ── B. 全站點擊回饋 ──
+     :where() 讓特異性為 0：元件自己寫的 transform / :active 一律優先，不會被這裡蓋掉 */
+  :where(button,.card,.phrase-card,.mz-mag-card,.home-quick-card,.home-wotd-card,.home-more-card){transition:transform .16s var(--ease-out),box-shadow .2s ease,background-color .2s ease,color .2s ease,border-color .2s ease;}
+  :where(button:not(:disabled),.phrase-card,.mz-mag-card:not(.disabled),.home-wotd-card,.home-more-card):active{transform:scale(.96);transition-duration:.08s;}
+  @media (hover:hover){
+    .phrase-card:hover,.mz-mag-card:not(.disabled):hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(28,28,30,.12);}
+  }
+  .alpha-bar > button.ix-pop{animation:dsn-pop .3s var(--ease-spring);}
+  .fm-btn.active,.lb-tab.active{animation:dsn-pop .3s var(--ease-spring);}
+  .bnav-btn.active .bnav-icon{display:inline-block;animation:dsn-icon-bounce .38s var(--ease-out);}
+
+  /* ── C. 首頁 / 進度頁進場 ── */
+  #homeContent > *{animation:dsn-rise .5s var(--ease-out) backwards;}
+  #homeContent > .home-hero{animation:dsn-hero-in .6s var(--ease-out) .06s backwards;}
+  #homeContent > :nth-child(3){animation-delay:.14s;}
+  #homeContent > :nth-child(4){animation-delay:.2s;}
+  #homeContent > :nth-child(5){animation-delay:.24s;}
+  #homeContent > :nth-child(n+6){animation-delay:.28s;}
+  .home-stat-row > *{animation:dsn-rise .45s var(--ease-out) backwards;}
+  .home-stat-row > :nth-child(1){animation-delay:.16s;}
+  .home-stat-row > :nth-child(2){animation-delay:.21s;}
+  .home-stat-row > :nth-child(3){animation-delay:.26s;}
+  .home-hero-prep,.prog-hero-bar{transform-origin:left center;animation:dsn-grow-x .8s var(--ease-out) .35s backwards;}
+  .home-goal-ring{animation:ix-goal-fill 1s var(--ease-out) .3s backwards;}
+  #progressSection > div > *{animation:dsn-rise .45s var(--ease-out) backwards;}
+  #progressSection > div > .prog-hero{animation:dsn-hero-in .6s var(--ease-out) backwards;}
+  #progressSection > div > :nth-child(2){animation-delay:.08s;}
+  #progressSection > div > :nth-child(3){animation-delay:.14s;}
+  #progressSection > div > :nth-child(n+4){animation-delay:.2s;}
+  #streakBadge.ix-badge-pop{display:inline-block;animation:badge-pop .45s var(--ease-spring),badge-ring 1s ease-out .2s;}
+}
+
 @media print{
   #globalTopBar,#bottomNav,#sideDrawer,#drawerOverlay,
   #homeSection,#dictSection,#quizSection,#myWordsSection,
@@ -3183,7 +3267,7 @@ function touchStreak(){
   localStorage.setItem(STREAK_KEY, JSON.stringify(s));
   saveStreak(s);
   const badge = document.getElementById('streakBadge');
-  if(badge) badge.textContent = '🔥 ' + s.streak;
+  if(badge){ badge.textContent = '🔥 ' + s.streak; _ixReplay(badge,'ix-badge-pop'); }
 }
 function incrementDailyCount(){
   const d = getDailyData();
@@ -3253,7 +3337,7 @@ function renderHome(){
         <div class="home-stat-lbl">連續打卡</div>
       </div>
       <div class="home-stat-tile" onclick="switchTab('quiz')">
-        <div class="home-stat-ico">🎯</div>
+        <div class="home-goal-ring${pct>=100?' done':''}" style="--goal-progress:${pct*3.6}deg"><span>🎯</span></div>
         <div class="home-stat-num">${dGoal.count}<small>/${dGoal.goal}</small></div>
         <div class="home-stat-lbl">今日目標</div>
       </div>
@@ -4036,7 +4120,7 @@ function renderFlashcard(){
       <span>${_masteryBadge(mLevel)}</span>
       <button onclick="renderQuizSetup()" style="background:none;border:none;color:var(--muted);font-size:0.8rem;cursor:pointer;">✕ 結束</button>
     </div>
-    <div class="fc-card" onclick="flipCard()">
+    <div class="fc-card${fcFlipped?' is-back':''}" onclick="flipCard()">
       <div class="fc-card-label">${fcFlipped?'中文意思':'ENGLISH'}</div>
       ${fcFlipped
         ?`<div class="fc-zh">${_escH(w.zh)}</div>`
@@ -4119,11 +4203,11 @@ function renderSpellingQuestion(){
   document.getElementById('quizSection').innerHTML=`
     <div class="quiz-panel">
       <div class="quiz-hdr">
-        <span style="color:var(--muted);font-size:0.83rem">題目 ${qIndex+1} / ${qQuestions.length}</span>
+        <span style="color:var(--muted);font-size:0.83rem">題目 ${qIndex+1} / ${qQuestions.length}${_progressDots(qIndex,qQuestions.length)}</span>
         <span style="color:var(--accent);font-size:0.83rem;font-weight:700">得分: ${qScore}</span>
       </div>
       <div class="quiz-pbar-wrap"><div class="quiz-pbar" style="width:${pct}%"></div></div>
-      <div class="quiz-card-wrap">
+      <div class="quiz-card-wrap${answered?'':' q-enter'}">
         <div class="spell-prompt">
           <div style="color:var(--muted);font-size:0.82rem;margin-bottom:16px">🎧 聆聽發音，拼出這個單字</div>
           <button class="spell-play-btn" id="spellSpeakBtn" onclick="speak(qQuestions[qIndex].word,this)">${speakIcon}</button>
@@ -4136,9 +4220,9 @@ function renderSpellingQuestion(){
             onkeydown="if(event.key==='Enter')submitSpelling()">
           <button class="spell-submit" onclick="submitSpelling()">確認</button>
         </div>`:`
-        <div class="spell-input-row">
-          <input class="spell-input ${correct?'correct':'wrong'}" value="${_escH(userAns)}" readonly>
-        </div>
+        ${correct?`<div class="spell-input-row">
+          <input class="spell-input correct" value="${_escH(userAns)}" readonly>
+        </div>`:_spellDiffHTML(userAns,q.word)}
         <div class="quiz-explain">
           <div class="quiz-explain-lbl">${correct?'✅ 拼對了！':`❌ 正確拼法：<strong style="font-size:1rem;letter-spacing:.04em">${_escH(q.word)}</strong>`}</div>
           <div class="quiz-explain-zh" style="margin-top:6px">「${_escH(q.zh)}」${q.pos?`<span style="color:var(--muted);font-size:0.8rem;margin-left:6px">${_escH(q.pos)}</span>`:''}</div>
@@ -4156,6 +4240,51 @@ function renderSpellingQuestion(){
   }
 }
 
+/* 測驗進度點（移植自 Fluent progress-dots）：超過 20 題只留文字 */
+function _progressDots(index,total){
+  if(total<2||total>20) return '';
+  let h='<span class="progress-dots" aria-hidden="true">';
+  for(let i=0;i<total;i++) h+=`<i data-state="${i<index?'done':i===index?'current':'todo'}"></i>`;
+  return h+'</span>';
+}
+/* 拼字逐字母比對（移植自 Fluent spelling-letters）：用編輯距離對齊，
+   對的字母綠底、拼錯/多打的紅底、漏掉的字母顯示虛線空格 */
+function _spellDiffHTML(answer,target){
+  const a=String(answer).trim(), b=String(target);
+  const al=a.toLowerCase(), bl=b.toLowerCase();
+  const n=a.length, m=b.length;
+  const d=Array.from({length:n+1},(_,i)=>{const r=new Array(m+1).fill(0);r[0]=i;return r;});
+  for(let j=0;j<=m;j++) d[0][j]=j;
+  for(let i=1;i<=n;i++) for(let j=1;j<=m;j++)
+    d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(al[i-1]===bl[j-1]?0:1));
+  const marks=[]; let i=n, j=m;
+  while(i>0||j>0){
+    if(i>0&&j>0&&d[i][j]===d[i-1][j-1]+(al[i-1]===bl[j-1]?0:1)){
+      marks.push({c:a[i-1],s:al[i-1]===bl[j-1]?'match':'mismatch'}); i--; j--;
+    } else if(i>0&&d[i][j]===d[i-1][j]+1){ marks.push({c:a[i-1],s:'mismatch'}); i--; }
+    else { marks.push({c:'',s:'missing'}); j--; }
+  }
+  marks.reverse();
+  const wrong=marks.filter(x=>x.s==='mismatch').length, miss=marks.filter(x=>x.s==='missing').length;
+  const sum=[wrong?`${wrong} 個字母拼錯或多打`:'',miss?`少了 ${miss} 個字母`:''].filter(Boolean).join('，');
+  return `<div class="spell-diff"><div class="spell-diff-lbl">你的拼法 · ${sum}</div>
+    <div class="spelling-letters" lang="en">${marks.map((x,k)=>`<i data-state="${x.s}" style="--letter-index:${k}">${x.c===' '?'&nbsp;':_escH(x.c)}</i>`).join('')}</div></div>`;
+}
+/* 重新播放一次性動畫 class（同一元素連續觸發時也會重播） */
+function _ixReplay(el,cls){
+  if(!el) return;
+  el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls);
+  el.addEventListener('animationend',()=>el.classList.remove(cls),{once:true});
+}
+/* 字母/級別篩選列：點選後整列會重繪，所以先記下點的是第幾顆，重繪完再讓新選中的那顆彈一下 */
+document.addEventListener('click',e=>{
+  const btn=e.target.closest&&e.target.closest('.alpha-bar > button');
+  if(!btn) return;
+  const bar=btn.parentElement, idx=[...bar.children].indexOf(btn);
+  setTimeout(()=>{ const b=bar.children[idx]; if(b&&b.classList.contains('active')) _ixReplay(b,'ix-pop'); },0);
+},true);
+/* iOS Safari 需要有 touchstart 監聽，:active 按壓效果才會出現 */
+document.addEventListener('touchstart',()=>{},{passive:true});
 function submitSpelling(){
   if(qSelected!==null)return;
   const inp=document.getElementById('spellInput');
@@ -4235,11 +4364,11 @@ function renderSentenceQuestion(){
   document.getElementById('quizSection').innerHTML=`
     <div class="quiz-panel">
       <div class="quiz-hdr">
-        <span style="color:var(--muted);font-size:0.83rem">題目 ${qIndex+1} / ${qQuestions.length}</span>
+        <span style="color:var(--muted);font-size:0.83rem">題目 ${qIndex+1} / ${qQuestions.length}${_progressDots(qIndex,qQuestions.length)}</span>
         <span style="color:var(--accent);font-size:0.83rem;font-weight:700">得分: ${qScore}</span>
       </div>
       <div class="quiz-pbar-wrap"><div class="quiz-pbar" style="width:${pct}%"></div></div>
-      <div class="quiz-card-wrap">
+      <div class="quiz-card-wrap${answered?'':' q-enter'}">
         <div class="quiz-sentence">${sentHTML}</div>
         <div class="quiz-opts">
           ${q.options.map((opt,idx)=>{
@@ -4271,11 +4400,11 @@ function renderMeaningQuestion(){
   document.getElementById('quizSection').innerHTML=`
     <div class="quiz-panel">
       <div class="quiz-hdr">
-        <span style="color:var(--muted);font-size:0.83rem">題目 ${qIndex+1} / ${qQuestions.length}</span>
+        <span style="color:var(--muted);font-size:0.83rem">題目 ${qIndex+1} / ${qQuestions.length}${_progressDots(qIndex,qQuestions.length)}</span>
         <span style="color:var(--accent);font-size:0.83rem;font-weight:700">得分: ${qScore}</span>
       </div>
       <div class="quiz-pbar-wrap"><div class="quiz-pbar" style="width:${pct}%"></div></div>
-      <div class="quiz-card-wrap" style="text-align:center;padding:30px 24px">
+      <div class="quiz-card-wrap${answered?'':' q-enter'}" style="text-align:center;padding:30px 24px">
         <div style="font-size:2rem;font-weight:700;letter-spacing:.02em;margin-bottom:10px">${q.word}</div>
         ${q.pos?`<div style="color:var(--muted);font-size:0.85rem;margin-bottom:8px">${q.pos}</div>`:''}
         <div style="color:var(--muted);font-size:0.82rem;margin-bottom:18px">選出正確的中文意思</div>
@@ -4304,11 +4433,11 @@ function renderPhraseQuestion(){
   document.getElementById('quizSection').innerHTML=`
     <div class="quiz-panel">
       <div class="quiz-hdr">
-        <span style="color:var(--muted);font-size:0.83rem">題目 ${qIndex+1} / ${qQuestions.length}</span>
+        <span style="color:var(--muted);font-size:0.83rem">題目 ${qIndex+1} / ${qQuestions.length}${_progressDots(qIndex,qQuestions.length)}</span>
         <span style="color:var(--accent);font-size:0.83rem;font-weight:700">得分: ${qScore}</span>
       </div>
       <div class="quiz-pbar-wrap"><div class="quiz-pbar" style="width:${pct}%"></div></div>
-      <div class="quiz-card-wrap" style="text-align:center;padding:30px 24px">
+      <div class="quiz-card-wrap${answered?'':' q-enter'}" style="text-align:center;padding:30px 24px">
         <div style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;letter-spacing:.02em;margin-bottom:10px;line-height:1.4">${q.phrase}</div>
         <div style="color:var(--muted);font-size:0.82rem;margin-bottom:18px">選出正確的中文意思</div>
         <div class="quiz-opts">

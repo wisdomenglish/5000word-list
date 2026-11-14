@@ -94,6 +94,7 @@
 - **色彩主題**：明亮（`--bg:#F2F2F7`），強調色 `--accent:#4361EE`（藍紫）、`--accent2:#F72585`（粉紅）；`--surface:#FFFFFF;--text:#1C1C1E;--muted:#8E8E93`
   - **2026-06-13 全站配色統一**：移除舊主題殘留的紫色 tint `rgba(124,106,247,*)`，全部改成藍色 accent `rgba(67,97,238,*)`；藍→紫漸層按鈕端點 `#9b8bf0` 改 `#7B9EFF`；修掉 `.dict-mode-bar` 深色殘留底（`#12121c` → `var(--surface)`）
 - **共用深藍 hero（`.page-hero`，2026-06-13）**：首頁/進度頁/測驗頁/我的字本頁統一的主視覺卡 — `linear-gradient(135deg,#1E1B4B,#3730A3,#4361EE)` + 右上粉紅光暈 `::after`。子元素 `.page-hero-eyebrow`（小標）/`.page-hero-title`（Playfair 大標）/`.page-hero-sub`/`.page-hero-chips`+`.page-hero-chip`（半透明白膠囊統計）。測驗頁 `renderQuizSetup` 頂部「🎯 測驗中心」、我的字本 `renderMyWords` 頂部「⭐ 我的單字」+ 資料夾/自訂/複習 chips 用此元件；首頁 `.home-hero`、進度頁 `.prog-hero` 是同語言的獨立版本
+- **動畫層（2026-11-14，移植自 Fluent `motion.css`/`interactions.css`）**：主 `<style>` 結尾、`@media print` 前的「Motion layer」區塊。會動的全部包在 `prefers-reduced-motion: no-preference` 內；進場動畫用 fill-mode `backwards`（不在元素上留 transform）。內容：答錯選項搖晃／正解彈跳／解析浮入、測驗進度點 `_progressDots()`、拼字答錯的逐字母比對 `_spellDiffHTML()`（編輯距離對齊，match/mismatch/missing）、單字卡翻面 `.fc-card.is-back`、全站按壓微縮（用 `:where()` 特異性 0，元件自己的 transform 優先）、A–Z/級別列點選彈跳（capture 監聽記住按鈕位置，重繪後 `_ixReplay(el,'ix-pop')`）、首頁/進度頁區塊依序浮入、進度條長出、首頁「今日目標」環 `.home-goal-ring`（`@property --goal-progress`）、連續打卡 +1 時頂部徽章彈出。要重播一次性動畫用 `_ixReplay(el, cls)`
 - **字體**：標題 Playfair Display（serif），內文 DM Sans（sans-serif）
 - **導覽結構**：
   - 頂部固定列（`#globalTopBar`，52px）：Logo + 連續打卡 badge + ☰ 選單按鈕
