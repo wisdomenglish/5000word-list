@@ -1088,6 +1088,7 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
 <script src="magazine-all-nov-data.js"></script>
 <script src="magazine-digest-oct-data.js"></script>
 <script src="magazine-digest-nov-data.js"></script>
+<script src="magazine-live-nov-data.js"></script>
 </head>
 <body>
 <div id="authOverlay">
@@ -1340,6 +1341,22 @@ a.drawer-nav-btn{display:flex;color:var(--text);}
     <!-- ══ 更新紀錄索引 ══ -->
     <div class="news-index-section">
       <div class="news-index-section-title">📋 更新紀錄</div>
+
+      <!-- 2026-11-15 雜誌題庫 11月號 -->
+      <div class="news-index-entry">
+        <div class="news-index-item" onclick="toggleNewsDetail(this.parentElement)">
+          <span class="news-date">2026-11-15</span>
+          <span class="news-type feature">新內容</span>
+          <span class="ni-title">📚 雜誌題庫 11月號上架・共 5 本</span>
+          <span class="news-arrow">›</span>
+        </div>
+        <div class="news-detail">
+          <ul class="news-list">
+            <li><strong>11 月號 5 本全數上架</strong>：<strong>Live 互動英語</strong>（最新加入，12 篇）、<strong>ALL+ 互動英語</strong>、<strong>Studio Classroom</strong>、<strong>空中美語 4U</strong>、<strong>空中美語 Digest</strong>。</li>
+            <li>每篇都有課文精讀（單字／文法／句型標註＋中譯）與單字、克漏字、文意選填、篇章結構、閱讀測驗五種題型。</li>
+          </ul>
+        </div>
+      </div>
 
       <!-- 2026-11-14 歷屆翻譯 -->
       <div class="news-index-entry">
@@ -4580,7 +4597,8 @@ const MAGAZINES = [
   { id:'4u202511', brand:'4u', label:'11月號', desc:'空中美語 4U', passcodeHash:null, color:'#10B981', cover:null, data: (typeof MAGAZINE_UNITS_4U202511!=='undefined') ? MAGAZINE_UNITS_4U202511 : null },
   { id:'sc202511', brand:'sc', label:'11月號', desc:'Studio Classroom', passcodeHash:null, color:'#F97316', cover:null, data: (typeof MAGAZINE_UNITS_SC202511!=='undefined') ? MAGAZINE_UNITS_SC202511 : null },
   { id:'all202511', brand:'all', label:'11月號', desc:'ALL+互動英語', passcodeHash:null, color:'#8B5CF6', cover:null, data: (typeof MAGAZINE_UNITS_ALL202511!=='undefined') ? MAGAZINE_UNITS_ALL202511 : null },
-  { id:'digest202511', brand:'digest', label:'11月號', desc:'空中美語 Digest', passcodeHash:null, color:'#0D9488', cover:null, data: (typeof MAGAZINE_UNITS_DIGEST202511!=='undefined') ? MAGAZINE_UNITS_DIGEST202511 : null }
+  { id:'digest202511', brand:'digest', label:'11月號', desc:'空中美語 Digest', passcodeHash:null, color:'#0D9488', cover:null, data: (typeof MAGAZINE_UNITS_DIGEST202511!=='undefined') ? MAGAZINE_UNITS_DIGEST202511 : null },
+  { id:'202511', brand:'live', label:'11月號', desc:'Live 互動英語', passcodeHash:null, color:'#6366F1', cover:null, data: (typeof MAGAZINE_UNITS_202511!=='undefined') ? MAGAZINE_UNITS_202511 : null }
 ];
 // 雜誌品牌（第一層分類）：MAGAZINES 每期用 brand 欄位對應這裡的 id；新增一期只要在 MAGAZINES 尾端加一筆並填 brand。
 // 新品牌才需要在這裡加一筆。品牌內的月份依 MAGAZINES 陣列順序倒序顯示（越晚加入的越上面）。
