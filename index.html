@@ -1091,7 +1091,12 @@ body.mz-sheet-lock{overflow:hidden;}
 /* ══ Material 3 動態（2026-11-16）══
    容器展開／共享軸滑動／底部選單彈簧與拖曳關閉 由 JS 的 Web Animations 處理（見 script 的「Material 3 motion」區塊），
    這裡只放外觀與 CSS 轉場。會動的同樣包在 prefers-reduced-motion: no-preference 裡。 */
-:root{--m3-emph:cubic-bezier(.2,0,0,1);--m3-emph-decel:cubic-bezier(.05,.7,.1,1);--m3-emph-accel:cubic-bezier(.3,0,.8,.15);}
+:root{--m3-emph:cubic-bezier(.2,0,0,1);--m3-emph-decel:cubic-bezier(.05,.7,.1,1);--m3-emph-accel:cubic-bezier(.3,0,.8,.15);
+  /* 兩種動態速度（參考 IBM Carbon）：productive 日常操作、快且平穩；expressive 重要時刻、慢一點且明顯。與 JS 的 M3_MOTION 同值 */
+  --motion-productive-dur:240ms;--motion-productive-exit-dur:150ms;
+  --motion-productive-enter:cubic-bezier(0,0,.38,.9);--motion-productive-exit:cubic-bezier(.2,0,1,.9);--motion-productive-move:cubic-bezier(.2,0,.38,.9);
+  --motion-expressive-dur:400ms;
+  --motion-expressive-enter:cubic-bezier(0,0,.3,1);--motion-expressive-exit:cubic-bezier(.4,.14,1,1);--motion-expressive-move:cubic-bezier(.4,.14,.3,1);}
 /* 底部導覽：選中的 icon 底下長出膠囊（取代原本的 icon 彈跳） */
 .bnav-btn{padding:7px 4px 10px;gap:4px;}
 .bnav-icon{position:relative;display:inline-grid;place-items:center;width:56px;height:30px;border-radius:15px;isolation:isolate;}
@@ -1128,11 +1133,11 @@ body.mz-sheet-lock{overflow:hidden;}
 }
 @media (prefers-reduced-motion: no-preference){
   .bnav-icon::before{transition:transform .4s var(--ease-spring),opacity .18s linear;}
-  #fabAddWord{transition:transform .15s,box-shadow .15s,opacity .2s,padding .3s var(--m3-emph);}
-  #fabAddWord .fab-label{transition:max-width .3s var(--m3-emph),margin .3s var(--m3-emph),opacity .2s linear;}
-  #m3Snack{transform:translate(-50%,18px);transition:transform .3s var(--m3-emph-decel),opacity .18s linear,visibility 0s .3s;}
+  #fabAddWord{transition:transform .15s,box-shadow .15s,opacity .2s,padding var(--motion-productive-dur) var(--motion-productive-move);}
+  #fabAddWord .fab-label{transition:max-width var(--motion-productive-dur) var(--motion-productive-move),margin var(--motion-productive-dur) var(--motion-productive-move),opacity .2s linear;}
+  #m3Snack{transform:translate(-50%,18px);transition:transform var(--motion-productive-exit-dur) var(--motion-productive-exit),opacity var(--motion-productive-exit-dur) linear,visibility 0s var(--motion-productive-exit-dur);}
   #m3Snack.at-top{transform:translate(-50%,-18px);}
-  #m3Snack.show,#m3Snack.at-top.show{transform:translate(-50%,0);transition:transform .3s var(--m3-emph-decel),opacity .18s linear,visibility 0s;}
+  #m3Snack.show,#m3Snack.at-top.show{transform:translate(-50%,0);transition:transform var(--motion-productive-dur) var(--motion-productive-enter),opacity .18s linear,visibility 0s;}
 }
 
 @media print{
@@ -1418,6 +1423,23 @@ body.mz-sheet-lock{overflow:hidden;}
     <!-- ══ 更新紀錄索引 ══ -->
     <div class="news-index-section">
       <div class="news-index-section-title">📋 更新紀錄</div>
+
+      <!-- 2026-11-17 清單補位與縮回 -->
+      <div class="news-index-entry">
+        <div class="news-index-item" onclick="toggleNewsDetail(this.parentElement)">
+          <span class="news-date">2026-11-17</span>
+          <span class="news-type improve">優化</span>
+          <span class="ni-title">🧩 我的字本刪除單字時會自動補位</span>
+          <span class="news-arrow">›</span>
+        </div>
+        <div class="news-detail">
+          <ul class="news-list">
+            <li><strong>我的字本、資料夾</strong>：按「已熟」、移除或新增單字時，被拿掉的那張會淡出，其他單字滑過去補位，不會整頁突然跳動。</li>
+            <li>從單字卡打開的詳細視窗，關閉時會縮回原本那張卡片，比較知道剛剛看的是哪個字。</li>
+            <li>日常操作（切換分頁、關閉選單）的動畫變得更快更俐落，打開卡片這類重要動作則保留比較明顯的動畫。</li>
+          </ul>
+        </div>
+      </div>
 
       <!-- 2026-11-16 Material 3 動態 -->
       <div class="news-index-entry">
@@ -6273,7 +6295,7 @@ function renderMyWords(){
   if(wordFolders.length > 0){
     html += `<div class="folder-list">
       ${wordFolders.map(f=>`
-        <div class="folder-row">
+        <div class="folder-row" data-flip-key="f:${f.id}">
           <div class="folder-row-info" onclick="openFolderDetail('${f.id}')">
             <div class="folder-row-name">📁 ${f.name}</div>
             <div class="folder-row-count">${f.words.length} 個單字${(f.phrases&&f.phrases.length)?` ・${f.phrases.length} 片語`:''}</div>
@@ -6295,7 +6317,7 @@ function renderMyWords(){
     </div>
     <div class="mw-grid">
       ${customWords.map(w=>{const e=w.word.replace(/\\/g,'\\\\').replace(/'/g,"\\'");return `
-        <div class="mw-item${mwSelectMode&&mwSelected.has(w.word)?' selected':''}" data-word="${w.word.replace(/"/g,'&quot;')}">
+        <div class="mw-item${mwSelectMode&&mwSelected.has(w.word)?' selected':''}" data-word="${w.word.replace(/"/g,'&quot;')}" data-flip-key="c:${encodeURIComponent(w.word)}">
           ${mwSelectMode?`<span class="mw-check" onclick="onMwItemClick('${e}')">${mwSelected.has(w.word)?'✓':''}</span>`:''}
           <div style="flex:1;min-width:0;cursor:pointer" onclick="onMwItemClick('${e}')">
             <div class="mw-word">${w.word}<span class="custom-badge">自訂</span></div>
@@ -6327,7 +6349,7 @@ function renderMyWords(){
         const e=w.word.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
         const borderStyle=ml==='unfamiliar'?'border-left:3px solid #FECACA;':
           ml==='moderate'?'border-left:3px solid #FED7AA;':'';
-        return `<div class="mw-item${mwSelectMode&&mwSelected.has(w.word)?' selected':''}" data-word="${w.word.replace(/"/g,'&quot;')}" style="${borderStyle}">
+        return `<div class="mw-item${mwSelectMode&&mwSelected.has(w.word)?' selected':''}" data-word="${w.word.replace(/"/g,'&quot;')}" data-flip-key="m:${encodeURIComponent(w.word)}" style="${borderStyle}">
           ${mwSelectMode?`<span class="mw-check" onclick="onMwItemClick('${e}')">${mwSelected.has(w.word)?'✓':''}</span>`:''}
           <div style="flex:1;min-width:0;cursor:pointer" onclick="onMwItemClick('${e}')">
             <div class="mw-word">${w.word}${w.custom?`<span class="custom-badge">自訂</span>`:''}${mBadge}</div>
@@ -6410,7 +6432,7 @@ function openFolderDetail(id){
     ${words.length ? `${phrases.length?`<div class="mw-section-hdr first"><span class="mw-section-title">📚 單字 (${words.length})</span></div>`:''}
     <div class="mw-grid">
       ${words.map(w=>`
-        <div class="mw-item">
+        <div class="mw-item" data-flip-key="fw:${encodeURIComponent(w.word)}">
           <div style="flex:1;min-width:0;cursor:pointer" onclick="openWordModal('${w.word}')">
             <div class="mw-word">${w.word}${w.custom?'<span class="custom-badge">自訂</span>':''}</div>
             ${w.pos?`<div class="mw-pos">${w.pos}</div>`:''}
@@ -6426,7 +6448,7 @@ function openFolderDetail(id){
     <div class="mw-grid">
       ${phrases.map((ph,i)=>{
         const obj = PHRASES.find(x => x.p === ph);
-        return `<div class="mw-item">
+        return `<div class="mw-item" data-flip-key="fp:${encodeURIComponent(ph)}">
           <div style="flex:1;min-width:0;cursor:pointer" onclick="openPhraseFromFolder('${id}',${i})">
             <div class="mw-word">${ph}</div>
             ${obj?`<div class="mw-zh">${obj.z}</div>`:''}
@@ -7755,7 +7777,15 @@ document.addEventListener('visibilitychange', ()=>{
    4. 觸控漣漪、Snackbar、FAB 隨捲動收合
    作法都是「畫面已經換好之後再播動畫」，不改動原本各頁的 render 流程與呼叫順序。 */
 const _m3Reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
-const M3_EASE = { emph:'cubic-bezier(.2,0,0,1)', decel:'cubic-bezier(.05,.7,.1,1)', accel:'cubic-bezier(.3,0,.8,.15)' };
+// 動態分兩種速度（參考 IBM Carbon 的 productive / expressive）：
+//  productive 效率型：日常操作（切換分頁、關閉選單、清單重排、提示條），快、曲線平穩，不搶注意力
+//  expressive 表現型：重要時刻（容器展開與縮回、選單彈出），慢一點、比較明顯
+// 對應的 CSS 變數在 style 的「Material 3 動態」區塊（--motion-productive-* / --motion-expressive-*）
+const M3_MOTION = {
+  productive:{ enter:{dur:240, ease:'cubic-bezier(0,0,.38,.9)'},  exit:{dur:150, ease:'cubic-bezier(.2,0,1,.9)'},  move:{dur:240, ease:'cubic-bezier(.2,0,.38,.9)'} },
+  expressive:{ enter:{dur:400, ease:'cubic-bezier(0,0,.3,1)'},    exit:{dur:240, ease:'cubic-bezier(.4,.14,1,1)'}, move:{dur:420, ease:'cubic-bezier(.4,.14,.3,1)'} },
+};
+const M3_EASE = { emph:M3_MOTION.expressive.move.ease, decel:M3_MOTION.productive.enter.ease, accel:M3_MOTION.productive.exit.ease };
 // 欠阻尼彈簧（阻尼比 0.72，約 4% 回彈），用 CSS linear() 取樣；不支援的瀏覽器退回 cubic-bezier
 const M3_SPRING = (()=>{
   const T = 0.55, fallback = {easing:'cubic-bezier(.3,1.3,.5,1)', dur:420};
@@ -7769,9 +7799,10 @@ function _m3Visible(el){ return !!el && getComputedStyle(el).display!=='none'; }
 function _m3AtBottom(box){ const r = box.getBoundingClientRect(); return r.bottom >= innerHeight-2; }
 
 /* ── 3. 底部選單：開／關動畫 + 往下拖曳關閉 ── */
+let _m3HeroSrc = null;   // 單字/片語視窗是從哪張卡片展開的（關閉時縮回去）
 const M3_SHEETS = [
-  {wrap:'wordModal',    box:'.modal-box',  open:['openWordModal'],   close:'closeWordModal'},
-  {wrap:'phraseModal',  box:'.modal-box',  open:['openPhraseModal'], close:'closePhraseModal'},
+  {wrap:'wordModal',    box:'.modal-box',  open:['openWordModal'],   close:'closeWordModal',   hero:true},
+  {wrap:'phraseModal',  box:'.modal-box',  open:['openPhraseModal'], close:'closePhraseModal', hero:true},
   {wrap:'addWordModal', box:'.modal-box',  open:['openAddWordModal'],close:'closeAddWordModal'},
   {wrap:'reportModal',  box:'.modal-box',  open:['openReportModal'], close:'closeReportModal'},
   {wrap:'folderSheet',  box:'.fs-box',     open:['openFolderSheet','openPhraseFolderSheet','_openBulkFolderSheet'], close:'closeFolderSheet'},
@@ -7801,6 +7832,7 @@ M3_SHEETS.forEach(s=>{
         const b = w.querySelector(s.box); if(b) b.style.transform = '';
         wasOpen = false;
       }
+        if(s.hero) _m3HeroSrc = null;          // 由卡片點開時，_m3AfterNav 會再記下來源卡片
       const r = orig.apply(this, args);
       w = document.getElementById(s.wrap);
       const box = w && w.querySelector(s.box);
@@ -7814,10 +7846,15 @@ M3_SHEETS.forEach(s=>{
     const w = document.getElementById(s.wrap), box = w && w.querySelector(s.box);
     if(w && w.dataset.m3Closing) return;
     if(!box || !_m3Visible(w) || _m3Reduce()) return origClose.apply(this, args);
+    // 從卡片點開的：縮回那張卡片（卡片已不在畫面上就照一般方式滑出）
+    if(s.hero && _m3HeroSrc && _m3HeroSrc.modal===s.wrap){
+      const src = _m3FindHeroSrc(_m3HeroSrc); _m3HeroSrc = null;
+      if(src){ _m3HeroBack(w, box, src, ()=>origClose.apply(this, args)); return; }
+    }
     w.dataset.m3Closing = '1';
     const bottom = _m3AtBottom(box);
     const from = box.style.transform || 'none';  // 拖曳中放開時，從目前位置接著滑出
-    const D = bottom ? 240 : 170;
+    const D = bottom ? M3_MOTION.productive.move.dur : M3_MOTION.productive.exit.dur;
     w._m3Anims = [
       box.animate([{transform:from,opacity:1},{transform:bottom?'translateY(100%)':'scale(.94)',opacity:bottom?1:0}],{duration:D,easing:M3_EASE.accel,fill:'forwards'}),
       w.animate([{opacity:1},{opacity:0}],{duration:D,easing:'linear',fill:'forwards'}),
@@ -7889,9 +7926,12 @@ document.addEventListener('click', e=>{
   _m3Pending = null;
   if(_m3Reduce() || !e.target.closest) return;
   const el = e.target.closest(M3_NAV_SEL); if(!el) return;
+  // 點的是卡片裡的按鈕（星號、發音、刪除、已熟…）就不算「打開這張卡片」
+  const inner = e.target.closest('button,a,input,select,textarea,label');
+  if(inner && inner!==el && el.contains(inner)) return;
   const sec = _m3Section(), cs = getComputedStyle(el);
   _m3Pending = {
-    rect: el.getBoundingClientRect(), radius: cs.borderRadius, bg: _m3Bg(el),
+    el, rect: el.getBoundingClientRect(), radius: cs.borderRadius, bg: _m3Bg(el),
     hero: el.matches(M3_HERO_SEL), back: el.matches('.mz-back') && /^\s*‹/.test(el.textContent),
     sec, first: sec && sec.firstElementChild,
     modals: ['wordModal','phraseModal'].map(id=>_m3Visible(document.getElementById(id))),
@@ -7909,7 +7949,14 @@ function _m3AfterNav(p){
   if(opened){
     _m3ClearRipples();
     const box = opened.querySelector('.modal-box');
-    if(p.hero && box){ box.style.animation = 'none'; _m3Hero(p, box, box.getBoundingClientRect(), +getComputedStyle(opened).zIndex+1); opened.animate([{opacity:0},{opacity:1}],{duration:220,easing:'linear'}); }
+    if(p.hero && box){
+      box.style.animation = 'none';
+      _m3Hero(p, box, box.getBoundingClientRect(), +getComputedStyle(opened).zIndex+1);
+      opened.animate([{opacity:0},{opacity:1}],{duration:220,easing:'linear'});
+      const k = p.el.dataset.word!==undefined ? `[data-word="${CSS.escape(p.el.dataset.word)}"]`
+              : p.el.dataset.pidx!==undefined ? `[data-pidx="${CSS.escape(p.el.dataset.pidx)}"]` : '';
+      _m3HeroSrc = {modal:opened.id, el:p.el, sel: k ? '.'+p.el.classList[0]+k : ''};
+    }
     return;
   }
   const sec = _m3Section(); if(!sec) return;
@@ -7928,8 +7975,93 @@ function _m3AfterNav(p){
     if(a!==undefined && b!==undefined) dir = b>=a ? 1 : -1;
     else if(b!==undefined) dir = -1;        // 從子頁回到底部 tab
   }
-  sec.animate([{opacity:0, transform:`translateX(${28*dir}px)`},{opacity:1, transform:'none'}],{duration:320, easing:M3_EASE.decel});
+  const P = M3_MOTION.productive.enter;
+  sec.animate([{opacity:0, transform:`translateX(${28*dir}px)`},{opacity:1, transform:'none'}],{duration:P.dur, easing:P.ease});
 }
+// 找回當初點開視窗的那張卡片（加星號後清單會重畫，元素可能已被換掉，就用 data-word / data-pidx 再找一次）
+function _m3FindHeroSrc(h){
+  let el = h.el && h.el.isConnected ? h.el : (h.sel ? document.querySelector(h.sel) : null);
+  if(!el) return null;
+  const r = el.getBoundingClientRect();
+  const top = document.getElementById('globalTopBar')?.getBoundingClientRect().bottom || 0;
+  const navTop = document.getElementById('bottomNav')?.getBoundingClientRect().top || innerHeight;
+  if(!r.width || !r.height || r.bottom < top+8 || r.top > navTop-8) return null;   // 已捲出畫面
+  return el;
+}
+// 容器縮回：視窗內容先淡掉，底板從視窗縮成那張卡片，卡片再浮現
+function _m3HeroBack(w, box, src, done){
+  const M = M3_MOTION.expressive.move, D = 360;
+  w.dataset.m3Closing = '1';
+  _m3ClearRipples();   // ✕ 按鈕上的漣漪不要留在縮回的底板上
+  const from = box.getBoundingClientRect(), to = src.getBoundingClientRect();
+  const g = document.createElement('div'); g.className = 'm3-ghost'; g.style.zIndex = (+getComputedStyle(w).zIndex||500)+1;
+  document.body.appendChild(g);
+  g.animate([
+    {left:from.left+'px', top:from.top+'px', width:from.width+'px', height:from.height+'px', borderRadius:getComputedStyle(box).borderRadius, backgroundColor:_m3Bg(box)},
+    {left:to.left+'px',   top:to.top+'px',   width:to.width+'px',   height:to.height+'px',   borderRadius:getComputedStyle(src).borderRadius, backgroundColor:_m3Bg(src)},
+  ], {duration:D, easing:M.ease, fill:'forwards'});
+  g.animate([{opacity:1},{opacity:1, offset:.75},{opacity:0}], {duration:D+100, fill:'forwards'}).onfinish = ()=>g.remove();
+  setTimeout(()=>g.remove(), D+600);
+  src.animate([{opacity:0},{opacity:0, offset:.7},{opacity:1}], {duration:D+100, easing:'linear'});
+  const hideAt = Math.round(D*.55);
+  w._m3Anims = [
+    box.animate([{opacity:1},{opacity:0}], {duration:110, easing:'linear', fill:'forwards'}),
+    w.animate([{opacity:1},{opacity:0}], {duration:hideAt, easing:'linear', fill:'forwards'}),
+  ];
+  w._m3T = setTimeout(()=>{
+    delete w.dataset.m3Closing;
+    box.style.transform = ''; box.style.transition = '';
+    done();
+    (w._m3Anims||[]).forEach(x=>x.cancel()); w._m3Anims = null;
+  }, hideAt);
+}
+
+/* ── 清單重排（FLIP）：我的字本、資料夾內容新增／移除／換順序時，其他項目滑到新位置補位 ──
+   這兩頁每次都整段重畫 HTML，元素會整批換掉，所以用 data-flip-key（單字/資料夾 id）對應前後位置，
+   而不是靠元素本身（AutoAnimate 的作法在這裡會變成整頁淡出淡入）。 */
+function _m3FlipWrap(fnName, secId){
+  const orig = window[fnName]; if(typeof orig!=='function') return;
+  window[fnName] = function(...args){
+    const sec = document.getElementById(secId);
+    if(_m3Reduce() || !sec || sec.style.display==='none') return orig.apply(this, args);
+    const oldKeys = new Set(), before = new Map();
+    sec.querySelectorAll('[data-flip-key]').forEach(el=>{
+      const k = el.dataset.flipKey; oldKeys.add(k);
+      const r = el.getBoundingClientRect();
+      if(r.height && r.bottom>0 && r.top<innerHeight) before.set(k, {el, r});
+    });
+    const ret = orig.apply(this, args);
+    const after = [...sec.querySelectorAll('[data-flip-key]')];
+    // 前後沒有共同項目＝換到別頁（例如點進資料夾），不是同一份清單在變，交給換頁動畫
+    if(!oldKeys.size || !after.some(el=>oldKeys.has(el.dataset.flipKey))) return ret;
+    const P = M3_MOTION.productive, seen = new Set();
+    after.forEach(el=>{
+      const k = el.dataset.flipKey; seen.add(k);
+      const nr = el.getBoundingClientRect();
+      if(!nr.height || nr.bottom<0 || nr.top>innerHeight) return;
+      const o = before.get(k);
+      if(o){
+        const dx = o.r.left-nr.left, dy = o.r.top-nr.top;
+        if(Math.abs(dx)>1 || Math.abs(dy)>1) el.animate([{transform:`translate(${dx}px,${dy}px)`},{transform:'none'}], {duration:P.move.dur, easing:P.move.ease});
+      } else if(!oldKeys.has(k)){
+        el.animate([{opacity:0, transform:'scale(.92)'},{opacity:1, transform:'none'}], {duration:P.enter.dur, easing:P.enter.ease});
+      }
+    });
+    // 被移除的項目：放回原本的位置淡出
+    before.forEach((o,k)=>{
+      if(seen.has(k)) return;
+      const g = o.el; g.removeAttribute('data-flip-key');
+      Object.assign(g.style, {position:'fixed', left:o.r.left+'px', top:o.r.top+'px', width:o.r.width+'px', height:o.r.height+'px',
+        margin:'0', boxSizing:'border-box', pointerEvents:'none', zIndex:'5'});
+      (sec.firstElementChild || sec).appendChild(g);
+      g.animate([{opacity:1, transform:'none'},{opacity:0, transform:'scale(.9)'}], {duration:P.exit.dur+60, easing:P.exit.ease, fill:'forwards'}).onfinish = ()=>g.remove();
+      setTimeout(()=>g.remove(), 800);
+    });
+    return ret;
+  };
+}
+_m3FlipWrap('renderMyWords', 'myWordsSection');
+_m3FlipWrap('openFolderDetail', 'myWordsSection');
 function _m3Hero(p, target, to, z){
   const from = p.rect; if(!from.width || !to.width) return;
   const isBox = target.classList.contains('modal-box');
@@ -7938,7 +8070,7 @@ function _m3Hero(p, target, to, z){
   const radTo = isBox ? getComputedStyle(target).borderRadius : '0px';
   const g = document.createElement('div'); g.className = 'm3-ghost'; g.style.zIndex = z;
   document.body.appendChild(g);
-  const D = 420;
+  const D = M3_MOTION.expressive.move.dur;
   g.animate([
     {left:from.left+'px', top:from.top+'px', width:from.width+'px', height:from.height+'px', borderRadius:p.radius, backgroundColor:p.bg},
     {left:to.left+'px',   top:to.top+'px',   width:to.width+'px',   height:to.height+'px',   borderRadius:radTo,   backgroundColor:bgTo},
