@@ -191,6 +191,7 @@
     - 沒有走任何 Cloud Function 或後端，純前端（html2canvas + jsPDF，兩個都是透過 CDN script 動態載入，不需要額外部署或密鑰）
     - `@media print` 那組 CSS 規則還留著沒刪（`#mzPrintArea` 顯示、App 其餘區塊隱藏），算是給桌機使用者手動按 Ctrl+P 的額外加分功能，但**已經不是「產生 PDF」按鈕實際走的路徑**，不要被這組 CSS 還在檔案裡誤導成「就是靠這個列印」
   - 2026-10-01 用 Playwright 實測過完整流程（CDN 載入成功、產生的 PDF 檔案 `%PDF-` 開頭/`%%EOF` 結尾、內部確實有多個 page object 與圖片物件、下載行為正常觸發），確認是結構完整的真實 PDF 檔案
+- **文章內點空格作答（2026-11-16）**：克漏字／文意選填／篇章結構的文章裡，`[n]`（以及雜誌原題的 `__(n)__`，如 Live 10月號 Unit 8）由 `mzBlankChips(text, tab, u)` 換成可點的 `.mz-blank-chip`（`data-mz-blank="tab|n"`，事件委派），點開 `mzOpenBlank(tab, idx)` 底部選項視窗 `#mzBlankSheet`（手機底部滑出、≥700px 置中），內含空格所在句子、‹ › 切換上下格、選項按鈕沿用 `.mz-opt-btn` + `data-qkey`，所以跟下方原有的選項列同步；選完 `_mzRefreshChip()` 把答案寫進空格並自動關閉。批改後空格變綠／紅，點開可看正解與解析。原本文章下方的選項列保留不動。閱讀測驗沒有空格，改成右下浮動「📖 看原文」（`.mz-passage-fab` → `mzOpenPassageSheet()`）；`renderMagazineUnit()` 開頭會關掉開著的視窗
 - **閱讀測驗錯題卡片內嵌原文（2026-10-01 新增）**：`mzRenderMistakesTab()` 對 `m.tab==='reading'` 的錯題卡，額外抓該 Unit 的 `passage`（優先讀當下 `MAGAZINES` 資料，抓不到才退回錯題物件自己存的 `m.passage` 快照）渲染在題幹上方，`mzTogglePassage(id)` 控制收合/展開（`mzExpandedPassages` 狀態，預設展開）
 - 每次修改 `magazine-{id}-data.js` 或新增雜誌後，記得升版 `sw.js` 的 `CACHE` 常數（比照 vocabulary-data.js/phrases-data.js 慣例），並視需要把新資料檔加進 `sw.js` 的 `addAll` 預快取清單
 
