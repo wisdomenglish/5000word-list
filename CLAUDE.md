@@ -28,7 +28,7 @@
 - [vocabulary-data.js](vocabulary-data.js) — 外部單字庫（4,549 字，格式：`{w, z, p}`；2026-06-11 由 4,391 擴充至 5,565 後，2026-06-12 精簡純變化形回 4,549，並 AI 校正中文釋義標點，保留原形＋真形容詞/獨立詞）
 - [phrases-data.js](phrases-data.js) — 外部片語庫（1,125 條，格式：`{p, z}`）
 - [manifest.json](manifest.json) — PWA 設定（name: 5000英文單字學習）
-- [sw.js](sw.js) — Service Worker，支援離線使用（目前版本：`vocab-app-v109`）
+- [sw.js](sw.js) — Service Worker，支援離線使用（目前版本：`vocab-app-v144`）
 - [icon-192.png](icon-192.png) / [icon-512.png](icon-512.png) — Wisdom logo 圖示
 
 ### 功能
@@ -95,6 +95,7 @@
   - **2026-06-13 全站配色統一**：移除舊主題殘留的紫色 tint `rgba(124,106,247,*)`，全部改成藍色 accent `rgba(67,97,238,*)`；藍→紫漸層按鈕端點 `#9b8bf0` 改 `#7B9EFF`；修掉 `.dict-mode-bar` 深色殘留底（`#12121c` → `var(--surface)`）
 - **共用深藍 hero（`.page-hero`，2026-06-13）**：首頁/進度頁/測驗頁/我的字本頁統一的主視覺卡 — `linear-gradient(135deg,#1E1B4B,#3730A3,#4361EE)` + 右上粉紅光暈 `::after`。子元素 `.page-hero-eyebrow`（小標）/`.page-hero-title`（Playfair 大標）/`.page-hero-sub`/`.page-hero-chips`+`.page-hero-chip`（半透明白膠囊統計）。測驗頁 `renderQuizSetup` 頂部「🎯 測驗中心」、我的字本 `renderMyWords` 頂部「⭐ 我的單字」+ 資料夾/自訂/複習 chips 用此元件；首頁 `.home-hero`、進度頁 `.prog-hero` 是同語言的獨立版本
 - **動畫層（2026-11-14，移植自 Fluent `motion.css`/`interactions.css`）**：主 `<style>` 結尾、`@media print` 前的「Motion layer」區塊。會動的全部包在 `prefers-reduced-motion: no-preference` 內；進場動畫用 fill-mode `backwards`（不在元素上留 transform）。內容：答錯選項搖晃／正解彈跳／解析浮入、測驗進度點 `_progressDots()`、拼字答錯的逐字母比對 `_spellDiffHTML()`（編輯距離對齊，match/mismatch/missing）、單字卡翻面 `.fc-card.is-back`、全站按壓微縮（用 `:where()` 特異性 0，元件自己的 transform 優先）、A–Z/級別列點選彈跳（capture 監聽記住按鈕位置，重繪後 `_ixReplay(el,'ix-pop')`）、首頁/進度頁區塊依序浮入、進度條長出、首頁「今日目標」環 `.home-goal-ring`（`@property --goal-progress`）、連續打卡 +1 時頂部徽章彈出。要重播一次性動畫用 `_ixReplay(el, cls)`
+- **Material 3 動態（2026-11-16）**：主 `<style>` 的「Material 3 動態」區塊（外觀）＋ script 結尾 service worker 註冊前的「Material 3 motion」區塊（行為）。原則是「畫面換好之後再播動畫」，不改各頁 render 流程：capture 階段記下點了哪個元素（`M3_NAV_SEL`）與當下頁面，`window` bubble 階段比對 section 或其 `firstElementChild` 有沒有換 → 點卡片（`M3_HERO_SEL`）走**容器展開** `_m3Hero()`（`.m3-ghost` 底板從卡片位置長成目標再淡出），其他走**共享軸滑動**（底部 tab 依 `M3_TAB_ORDER` 判方向、`.mz-back` 且文字以 ‹ 開頭算返回）。**底部選單** `M3_SHEETS` 包裝各 open/close 函式（單字/片語/新增單字/回報/資料夾/雜誌空格）：彈簧滑入（`M3_SPRING`，CSS `linear()` 取樣、約 4% 回彈，`.m3-skirt` 補底避免露縫）、滑出後才呼叫原本的 close；手機上內容捲到頂時可往下拖曳關閉（>120px 或快速下滑）。新增會開關的底部選單時，把它加進 `M3_SHEETS` 即可。其他：觸控漣漪（畫在 body 上的 `.m3-ripple-host`，不動元件的 position/overflow）、`m3Snack(msg,{action,onAction})` Snackbar（取代非錯誤類 alert；有選單開著時改在上方）、延伸式 FAB（`#fabAddWord` 在底部導覽上方，往下捲加 `.fab-collapsed`）、底部導覽選中 tab 的膠囊（`.bnav-icon::before`，取代原本 icon 彈跳）、載入圖示 `m3-morph` 變形動畫（`.modal-ex-spin`/`.quiz-spinner`/`.mz-print-spinner`）。減少動態效果時只保留載入圖示與拖曳
 - **字體**：標題 Playfair Display（serif），內文 DM Sans（sans-serif）
 - **導覽結構**：
   - 頂部固定列（`#globalTopBar`，52px）：Logo + 連續打卡 badge + ☰ 選單按鈕
@@ -111,7 +112,7 @@
   - `getPosClass(pos)` helper 依前綴判斷（`n`→n, `v`→v, `adj`→adj, `adv`→adv）
 - **A–Z 篩選列**（`.alpha-bar`）：`flex-wrap:nowrap;overflow-x:auto` 橫向滾動，按鈕 40×40px，`flex-shrink:0` 防止壓縮
 - **篩選模式切換（字母 / 級別，2026-06-17）**：字典頁搜尋列下有 `.filter-mode-toggle`（`🔤 字母` / `📊 級別`兩顆 `.fm-btn`），`setFilterMode('alpha'|'level')` 切換。**A–Z 列（`#alphaBar`）與級別列（`#levelBar`）互斥，只顯示其一**（切換時 `display` 互換並清掉另一種選取，避免隱藏條件）。級別列 `buildLevelBar()` 產生 `全部 / Lv1–6 / 未分級` 按鈕（`.lvl-btn`，各級用 `LEVEL_COLORS` 上緣色條 + 字數），`setLevel(n)` 切換 `selectedLevels`（0=未分級）。`update()` 依 `filterMode` 套用字母或級別過濾
-- **「＋ 新增」按鈕**：以固定 FAB（`#fabAddWord`，`position:fixed;bottom:24px;right:20px`）取代 controls 內的按鈕；`updateFabVisibility()` 控制只在字典 + 單字模式時顯示
+- **「＋ 新增」按鈕**：以固定延伸式 FAB（`#fabAddWord`，2026-11-16 起在底部導覽上方 `bottom:calc(76px + safe-area + 16px)`，「＋ 新增單字」往下捲收成 56px 圓角方塊）取代 controls 內的按鈕；`updateFabVisibility()` 控制只在字典 + 單字模式時顯示
 - **`dictMode`**：必須宣告在 `buildAlphaBar()` 呼叫之前（否則 TDZ 錯誤），預設值 `'word'`
 - **觸控熱區**：星號 `.mark-btn` 加 `padding:10px` 擴大熱區；FAB 52×52px 圓形
 - **語音測試列**（`#audioTest`）：低調樣式（`background:var(--surface);border-bottom:1px solid var(--border)`），不搶奪視覺焦點
@@ -1082,7 +1083,7 @@ python3 -m notebooklm login
 - **generateVocabQuiz max_tokens**：必須設為 `4096`（非 1024），10 道題目的 JSON 約需 2500–3000 tokens，1024 會截斷 → `Unexpected end of JSON input` → 500 錯誤
 - **generateVocabQuiz 共享題庫快取（2026-06-12，省 token）**：出題前先用 `quizCacheKey(word)`（小寫、非英數轉 `_`）查 Firebase Realtime DB `/quiz-cache/{key}`，只對「未快取」的單字呼叫 Claude，生成後寫回；跨所有學生每個單字題目只生成一次，命中快取 0 token、約 9 倍快。`initializeFirebase()` 取得 `dbRef`；Firebase 連不上時 fallback 為原本即時生成（不會壞）。回傳依原請求順序合併「快取 + 新生成」。無 TTL（句子不會過期）。若日後啟用 `cefrLevel`，key 會加 `__{cefr}` 後綴避免混用。客戶端 `QUIZ_FN_URL` 打的是 base `generateVocabQuiz`（非 V2/V3）
 - **generateVocabQuiz 唯一解檢查（2026-10-22，使用者回報 sufficient 題目 adequate 也對）**：生成模型（haiku-4-5）常把正解的近義詞當干擾項。現在流程是 生成 → `verifyAndRepairQuizQuestions()`（`claude-haiku-5-5`，`output_config.effort:"medium"`，逐題列出所有「放進空格也正確」的選項）→ 有多個就用檢查模型提供的替換字換掉干擾項再檢查一次 → 仍不唯一就整個單字重新生成一次再檢查 → 還不行就不出這題。通過的題目標 `v: 2`（`QUIZ_VERIFIED_VERSION`）；**`/quiz-cache` 與客戶端 `vocab_quiz_{word}` 都只信任 `v>=2`**，舊快取不批次重產，而是被請求到時先送檢查（通過就補標 v 沿用、不通過就修或重產）。生成 prompt 也加了「干擾項禁止用近義詞」規則。檢查服務出錯時題目照樣回傳但不標 v、客戶端不存本機（下次會再檢查）。函式 `timeoutSeconds` 拉到 180（新單字首次出題約 30 秒：生成 ~17s + 檢查 ~13s；命中快取 ~1s）
-- **Service Worker 快取版本**：更動 `index.html` 或 `vocabulary-data.js` 需同步升版 `sw.js` 的 `CACHE` 常數（目前 `vocab-app-v109`），否則舊使用者看不到更新
+- **Service Worker 快取版本**：更動 `index.html` 或 `vocabulary-data.js` 需同步升版 `sw.js` 的 `CACHE` 常數（目前 `vocab-app-v144`），否則舊使用者看不到更新
 - **檔案編碼**：`functions/index.js` 和 `package.json` 必須存為 UTF-8（無 BOM），Windows PowerShell redirect 可能產生 UTF-16 BOM 導致部署失敗
 - **⚠️ `line-bot-firebase/functions` 沒有 `package-lock.json`（2026-07-31 發現）**：deploy 時 Cloud Build 用當下 npm 解析到的版本安裝依賴，沒有鎖版本。曾經因此在完全沒改 `package.json` 的情況下，某次 deploy 突然開始失敗（Cloud Run "Container Healthcheck failed"，log 顯示 `Cannot find module '@firebase/app'`，`firebase-admin` 的 database 模組透過 `@firebase/database-compat` 間接需要 `@firebase/app` 和 `@firebase/app-compat`，但這兩個套件沒有被宣告成 `dependencies`、也不會被 npm 自動安裝）。已明確把 `@firebase/app`、`@firebase/app-compat` 加進 `package.json` 的 `dependencies` 並 `npm install` 產生 `package-lock.json`（現在存在了，之後 deploy 會鎖版本，不會再無預警漂移）。日後若又遇到「程式沒改、deploy 卻突然 500/健康檢查失敗」，先查 Cloud Run log 找 `Cannot find module`，不要假設是自己的程式碼壞掉。
 - **行事曆 iCal 日期格式化**：`formatCalendarEvents` 使用 `evt.start`（YYYY-MM-DD 字串）手動格式化日期，不使用 `toLocaleDateString`（Cloud Run 環境下對 Invalid Date 輸出字串 "Invalid Date"）；`startObj` 存為毫秒 timestamp（`getTime()`），用 `getUTC*` 方法讀取時間

@@ -1066,7 +1066,6 @@ body.mz-sheet-lock{overflow:hidden;}
   }
   .alpha-bar > button.ix-pop{animation:dsn-pop .3s var(--ease-spring);}
   .fm-btn.active,.lb-tab.active{animation:dsn-pop .3s var(--ease-spring);}
-  .bnav-btn.active .bnav-icon{display:inline-block;animation:dsn-icon-bounce .38s var(--ease-out);}
 
   /* ── C. 首頁 / 進度頁進場 ── */
   #homeContent > *{animation:dsn-rise .5s var(--ease-out) backwards;}
@@ -1087,6 +1086,53 @@ body.mz-sheet-lock{overflow:hidden;}
   #progressSection > div > :nth-child(3){animation-delay:.14s;}
   #progressSection > div > :nth-child(n+4){animation-delay:.2s;}
   #streakBadge.ix-badge-pop{display:inline-block;animation:badge-pop .45s var(--ease-spring),badge-ring 1s ease-out .2s;}
+}
+
+/* ══ Material 3 動態（2026-11-16）══
+   容器展開／共享軸滑動／底部選單彈簧與拖曳關閉 由 JS 的 Web Animations 處理（見 script 的「Material 3 motion」區塊），
+   這裡只放外觀與 CSS 轉場。會動的同樣包在 prefers-reduced-motion: no-preference 裡。 */
+:root{--m3-emph:cubic-bezier(.2,0,0,1);--m3-emph-decel:cubic-bezier(.05,.7,.1,1);--m3-emph-accel:cubic-bezier(.3,0,.8,.15);}
+/* 底部導覽：選中的 icon 底下長出膠囊（取代原本的 icon 彈跳） */
+.bnav-btn{padding:7px 4px 10px;gap:4px;}
+.bnav-icon{position:relative;display:inline-grid;place-items:center;width:56px;height:30px;border-radius:15px;isolation:isolate;}
+.bnav-icon::before{content:'';position:absolute;inset:0;border-radius:inherit;background:rgba(67,97,238,.15);transform:scaleX(.35);opacity:0;z-index:-1;}
+.bnav-btn.active .bnav-icon::before{transform:none;opacity:1;}
+.bnav-btn.active{font-weight:700;}
+/* 延伸式 FAB：往下捲收成圓角方塊，往上捲再展開；位置移到底部導覽上方 */
+#fabAddWord{bottom:calc(76px + env(safe-area-inset-bottom,0px) + 16px);right:16px;width:auto;height:56px;min-width:56px;border-radius:16px;padding:0 16px;font-size:1rem;font-weight:700;}
+#fabAddWord .fab-ico{font-size:1.5rem;line-height:1;}
+#fabAddWord .fab-label{display:inline-block;max-width:6em;margin-left:8px;overflow:hidden;white-space:nowrap;}
+#fabAddWord.fab-collapsed .fab-label{max-width:0;margin-left:0;opacity:0;}
+/* Snackbar：取代部分 alert，可帶「復原」 */
+#m3Snack{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom,0px) + 12px);transform:translate(-50%,0);opacity:0;visibility:hidden;pointer-events:none;z-index:3500;width:min(560px,calc(100% - 24px));min-height:48px;display:flex;align-items:center;gap:8px;padding:4px 6px 4px 16px;border-radius:12px;background:#2F3036;color:#F2F0F4;font-size:.86rem;line-height:1.4;box-shadow:0 6px 20px rgba(0,0,0,.25);}
+#m3Snack.show{opacity:1;visibility:visible;pointer-events:auto;}
+#m3Snack.at-top{bottom:auto;top:calc(52px + env(safe-area-inset-top,0px) + 10px);}
+.m3-snack-msg{flex:1;padding:8px 0;}
+.m3-snack-act{min-height:44px;min-width:44px;padding:0 12px;border:none;background:none;color:#B4C5FF;font-weight:800;font-size:.86rem;border-radius:10px;cursor:pointer;flex-shrink:0;}
+/* 觸控漣漪（畫在 body 上的覆蓋層，不改動元件本身的 position/overflow） */
+.m3-ripple-host{position:fixed;overflow:hidden;pointer-events:none;z-index:9000;}
+.m3-ripple-host i{position:absolute;border-radius:50%;background:currentColor;opacity:.16;}
+/* 容器展開用的過場底板 */
+.m3-ghost{position:fixed;pointer-events:none;box-shadow:0 8px 28px rgba(28,28,30,.16);}
+/* 底部選單彈簧回彈時，下方補一塊同色底，避免露出縫隙 */
+.m3-skirt{box-shadow:0 -4px 30px rgba(0,0,0,.12),0 60px 0 0 var(--surface) !important;}
+/* M3 Expressive 載入指示：會變形的幾何圖形（功能性動畫，減少動態時照樣顯示） */
+.modal-ex-spin,.quiz-spinner,.mz-print-spinner{border:none !important;background:var(--accent);border-radius:50%;animation:m3-morph 1.8s linear infinite !important;}
+.modal-ex-spin{width:18px;height:18px;}
+@keyframes m3-morph{
+  0%{border-radius:50%;transform:rotate(0deg) scale(1);background-color:var(--accent);}
+  25%{border-radius:30% 70% 62% 38%/40% 34% 66% 60%;transform:rotate(100deg) scale(.84);}
+  50%{border-radius:24%;transform:rotate(190deg) scale(.92);background-color:#7B9EFF;}
+  75%{border-radius:64% 36% 30% 70%/58% 70% 30% 42%;transform:rotate(280deg) scale(.84);}
+  100%{border-radius:50%;transform:rotate(360deg) scale(1);background-color:var(--accent);}
+}
+@media (prefers-reduced-motion: no-preference){
+  .bnav-icon::before{transition:transform .4s var(--ease-spring),opacity .18s linear;}
+  #fabAddWord{transition:transform .15s,box-shadow .15s,opacity .2s,padding .3s var(--m3-emph);}
+  #fabAddWord .fab-label{transition:max-width .3s var(--m3-emph),margin .3s var(--m3-emph),opacity .2s linear;}
+  #m3Snack{transform:translate(-50%,18px);transition:transform .3s var(--m3-emph-decel),opacity .18s linear,visibility 0s .3s;}
+  #m3Snack.at-top{transform:translate(-50%,-18px);}
+  #m3Snack.show,#m3Snack.at-top.show{transform:translate(-50%,0);transition:transform .3s var(--m3-emph-decel),opacity .18s linear,visibility 0s;}
 }
 
 @media print{
@@ -1283,7 +1329,7 @@ body.mz-sheet-lock{overflow:hidden;}
 <div class="grid" id="grid"></div>
 <div class="pagination" id="pagination"></div>
 </div><!-- /wordView -->
-<button id="fabAddWord" onclick="openAddWordModal()" title="新增自訂單字">＋</button>
+<button id="fabAddWord" onclick="openAddWordModal()" title="新增自訂單字" aria-label="新增自訂單字"><span class="fab-ico">＋</span><span class="fab-label">新增單字</span></button>
 
 <div id="phraseView" style="display:none">
   <header>
@@ -1372,6 +1418,25 @@ body.mz-sheet-lock{overflow:hidden;}
     <!-- ══ 更新紀錄索引 ══ -->
     <div class="news-index-section">
       <div class="news-index-section-title">📋 更新紀錄</div>
+
+      <!-- 2026-11-16 Material 3 動態 -->
+      <div class="news-index-entry">
+        <div class="news-index-item" onclick="toggleNewsDetail(this.parentElement)">
+          <span class="news-date">2026-11-16</span>
+          <span class="news-type improve">優化</span>
+          <span class="ni-title">✨ 換頁與彈窗動畫更順手</span>
+          <span class="news-arrow">›</span>
+        </div>
+        <div class="news-detail">
+          <ul class="news-list">
+            <li><strong>點卡片會「長大」成下一頁</strong>：點單字、片語、雜誌、單元卡片時，畫面會從那張卡片展開。</li>
+            <li><strong>換頁有方向感</strong>：切換底部分頁、進入下一層或按「‹ 返回」時，畫面會往對應方向滑入。</li>
+            <li><strong>底部選單可以往下拖曳關閉</strong>（手機），打開時有一點彈性；底部導覽選中的分頁改成膠囊標示。</li>
+            <li>按鈕按下時有水波回饋；加星號、加入資料夾、標記已練習會在下方跳出提示，加星號可以「復原」。</li>
+            <li>單字頁的「＋ 新增單字」按鈕移到底部導覽上方，往下捲會縮小；AI 生成中的載入圖示換成會變形的圖案。</li>
+          </ul>
+        </div>
+      </div>
 
       <!-- 2026-11-16 雜誌題庫點空格作答 -->
       <div class="news-index-entry">
@@ -2983,7 +3048,7 @@ function _bulkIsPhrase(){ return _bulkSource === 'phrase'; }
 function _bulkUnit(){ return _bulkIsPhrase() ? '片語' : '單字'; }
 function _bulkFolderArr(f){ if(_bulkIsPhrase()){ if(!f.phrases) f.phrases=[]; return f.phrases; } return f.words; }
 function addSelectedToFolder(){
-  if(!selectedCards.size){ alert('請先選取單字'); return; }
+  if(!selectedCards.size){ m3Snack('請先選取單字'); return; }
   _bulkFolderTargets = [...selectedCards]; _bulkSource = 'dict';
   _openBulkFolderSheet();
 }
@@ -3039,7 +3104,7 @@ function bulkAddToFolder(folderId){
   saveFolders();
   const name = f.name, total = _bulkFolderTargets.length, unit = _bulkUnit();
   _bulkFinish();
-  alert(`已將 ${total} 個${unit}加入「${name}」${added<total?`（其中 ${total-added} 個已在資料夾內）`:''}`);
+  m3Snack(`已將 ${total} 個${unit}加入「${name}」${added<total?`（其中 ${total-added} 個已在資料夾內）`:''}`);
 }
 function createFolderAndBulkAdd(){
   const input = document.getElementById('fsNewInput');
@@ -3051,7 +3116,7 @@ function createFolderAndBulkAdd(){
   saveFolders();
   const total = _bulkFolderTargets.length, unit = _bulkUnit();
   _bulkFinish();
-  alert(`已建立「${name}」並加入 ${total} 個${unit}`);
+  m3Snack(`已建立「${name}」並加入 ${total} 個${unit}`);
 }
 
 /* ── 「我的單字」頁的多選 ── */
@@ -3089,7 +3154,7 @@ function mwClearSelection(){
   updateMwSelectCount();
 }
 function addMwSelectedToFolder(){
-  if(!mwSelected.size){ alert('請先選取單字'); return; }
+  if(!mwSelected.size){ m3Snack('請先選取單字'); return; }
   _bulkFolderTargets = [...mwSelected]; _bulkSource = 'mw';
   _openBulkFolderSheet();
 }
@@ -3129,7 +3194,7 @@ function clearPhraseSelection(){
   updatePhraseSelectCount();
 }
 function addPhraseSelectedToFolder(){
-  if(!phraseSelected.size){ alert('請先選取片語'); return; }
+  if(!phraseSelected.size){ m3Snack('請先選取片語'); return; }
   _bulkFolderTargets = [...phraseSelected]; _bulkSource = 'phrase';
   _openBulkFolderSheet();
 }
@@ -3308,6 +3373,8 @@ function toggleMark(word, btn){
   if(markedWords.has(word)){ markedWords.delete(word); btn.classList.remove('marked'); }
   else { markedWords.add(word); btn.classList.add('marked'); }
   saveMark(); syncMarkCount();
+  const on = markedWords.has(word);
+  m3Snack(on ? `已加入複習清單 ⭐ ${word}` : `已從複習清單移除 ${word}`, {action:'復原', onAction:()=>{ on ? removeMark(word) : addMark(word); }});
 }
 function addMark(word){ if(!markedWords.has(word)){ markedWords.add(word); saveMark(); syncMarkCount(); update(); } }
 function removeMark(word){ if(markedWords.has(word)){ markedWords.delete(word); saveMark(); syncMarkCount(); update(); } }
@@ -3812,7 +3879,7 @@ function onCheckinFilePick(e){
   const files = Array.from(e.target.files || []);
   if(!files.length) return;
   const remain = 10 - _checkinImages.length;
-  if(files.length > remain) alert(`最多只能上傳10張照片，已自動取前 ${remain} 張`);
+  if(files.length > remain) m3Snack(`最多只能上傳10張照片，已自動取前 ${remain} 張`);
   files.slice(0, remain).forEach(f => _compressCheckinImage(f));
   e.target.value = '';
 }
@@ -4080,7 +4147,7 @@ async function startQuiz(){
   else if(qSource==='custom') pool=[...customWords];
   else if(qSource==='folder') pool=getFolderWords(qFolderId);
   else pool=getAllWords();
-  if(!pool.length){ alert('此範圍沒有單字，請選擇其他範圍'); return; }
+  if(!pool.length){ m3Snack('此範圍沒有單字，請選擇其他範圍'); return; }
 
   if(qMode==='flashcard'){ startFlashcard(pool); return; }
 
@@ -4796,7 +4863,7 @@ function trRandom(){
   const done=_trDone(), pool=[];
   _trSets().filter(s=>trFilter==='全部'||s.type===trFilter)
     .forEach(s=>s.items.forEach((_,i)=>{ if(!done[_trItemId(s,i)]) pool.push([s.id,i]); }));
-  if(!pool.length){ alert('這個分類的題目都練過了 🎉'); return; }
+  if(!pool.length){ m3Snack('這個分類的題目都練過了 🎉'); return; }
   const [sid,i]=pool[Math.floor(Math.random()*pool.length)];
   openTranslationSet(sid,i);
 }
@@ -4808,7 +4875,7 @@ document.addEventListener('click',e=>{
   if(t.dataset.trReveal){ const id=t.dataset.trReveal; trRevealed.has(id)?trRevealed.delete(id):trRevealed.add(id); renderTranslationSet(); return; }
   if(t.dataset.trDone){
     const id=t.dataset.trDone, d=_trDone();
-    if(d[id]) delete d[id]; else { d[id]=1; haptic(12); incrementDailyCount(); }
+    if(d[id]) delete d[id]; else { d[id]=1; haptic(12); incrementDailyCount(); m3Snack('已標記練習 ✓ 今日目標 +1'); }
     localStorage.setItem(TR_DONE_KEY, JSON.stringify(d));
     renderTranslationSet();
   }
@@ -6423,6 +6490,7 @@ function toggleWordInFolder(folderId, word){
   else f.words.push(word);
   saveFolders();
   updateModalFolderBtn(word);
+  m3Snack(f.words.includes(word) ? `已加入「${f.name}」📁` : `已從「${f.name}」移除`);
   document.getElementById('fsItemList').innerHTML = (function listHtml(){
     if(!wordFolders.length) return `<div class="fs-empty">尚未建立任何資料夾</div>`;
     return wordFolders.map(f=>{
@@ -7035,9 +7103,12 @@ function updateModalMarkBtn() {
 
 function toggleModalMark() {
   if (!currentModalWord) return;
-  if (markedWords.has(currentModalWord)) removeMark(currentModalWord);
-  else addMark(currentModalWord);
+  const w = currentModalWord;
+  if (markedWords.has(w)) removeMark(w);
+  else addMark(w);
   updateModalMarkBtn();
+  const on = markedWords.has(w);
+  m3Snack(on ? `已加入複習清單 ⭐ ${w}` : `已從複習清單移除 ${w}`, {action:'復原', onAction:()=>{ on ? removeMark(w) : addMark(w); if(currentModalWord===w) updateModalMarkBtn(); }});
 }
 
 document.addEventListener('keydown', e => {
@@ -7293,7 +7364,7 @@ async function shareWotdImage(){
       const url=URL.createObjectURL(blob);
       const a=document.createElement('a'); a.href=url; a.download=file.name; document.body.appendChild(a); a.click(); a.remove();
       setTimeout(()=>URL.revokeObjectURL(url),1000);
-      alert('已下載圖片 📥\n可到 Instagram / Facebook 發佈限時動態或貼文！');
+      m3Snack('已下載圖片 📥 可到 Instagram / Facebook 發佈限時動態或貼文');
     }
   }catch(e){
     if(e && e.name==='AbortError') return; // 使用者取消
@@ -7323,7 +7394,7 @@ function _exGetSentence(){
 }
 function openExShare(){
   const ex=_exGetSentence();
-  if(!ex || !ex.sentence){ alert('例句還在生成中，請稍候再試 🙏'); return; }
+  if(!ex || !ex.sentence){ m3Snack('例句還在生成中，請稍候再試 🙏'); return; }
   document.getElementById('exStyleRow').innerHTML=EX_STYLES.map((s,i)=>
     `<button class="exs-style-btn${i===_exStyle?' active':''}" onclick="setExStyle(${i})"><div class="exs-style-name">${s.name}</div></button>`).join('');
   document.getElementById('exShareModal').style.display='flex';
@@ -7430,7 +7501,7 @@ async function shareExImage(){
       const url=URL.createObjectURL(blob);
       const a=document.createElement('a'); a.href=url; a.download=file.name; document.body.appendChild(a); a.click(); a.remove();
       setTimeout(()=>URL.revokeObjectURL(url),1000);
-      alert('已下載圖片 📥\n可到 Instagram 限時動態發佈！');
+      m3Snack('已下載圖片 📥 可到 Instagram 限時動態發佈');
     }
   }catch(e){
     if(e && e.name==='AbortError') return;
@@ -7559,7 +7630,7 @@ async function shareStatsImage(){
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href=url; a.download=file.name; document.body.appendChild(a); a.click(); a.remove();
       setTimeout(()=>URL.revokeObjectURL(url), 1000);
-      alert('已下載圖片 📥\n可到 Instagram / Facebook 發佈限時動態或貼文！');
+      m3Snack('已下載圖片 📥 可到 Instagram / Facebook 發佈限時動態或貼文');
     }
   }catch(e){
     if(e && e.name==='AbortError') return;
@@ -7676,6 +7747,269 @@ document.addEventListener('visibilitychange', ()=>{
     if(_focusRemaining<=0){ _focusRemaining=0; renderFocus(); finishFocus(); } else renderFocus();
   }
 });
+
+/* ══ Material 3 motion（2026-11-16）══
+   1. 容器展開：點卡片 → 一塊底板從卡片的位置長成目標（單字/片語詳細、下一層頁面），再淡入內容
+   2. 共享軸滑動：切換底部 tab、雜誌/更多題庫/歷屆翻譯的上下層，新畫面從右（前進）或左（返回）滑入
+   3. 底部選單彈簧：打開時彈簧滑入、關閉時滑出；手機上可往下拖曳關閉
+   4. 觸控漣漪、Snackbar、FAB 隨捲動收合
+   作法都是「畫面已經換好之後再播動畫」，不改動原本各頁的 render 流程與呼叫順序。 */
+const _m3Reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const M3_EASE = { emph:'cubic-bezier(.2,0,0,1)', decel:'cubic-bezier(.05,.7,.1,1)', accel:'cubic-bezier(.3,0,.8,.15)' };
+// 欠阻尼彈簧（阻尼比 0.72，約 4% 回彈），用 CSS linear() 取樣；不支援的瀏覽器退回 cubic-bezier
+const M3_SPRING = (()=>{
+  const T = 0.55, fallback = {easing:'cubic-bezier(.3,1.3,.5,1)', dur:420};
+  try{ if(!CSS.supports('animation-timing-function','linear(0, 1)')) return fallback; }catch(e){ return fallback; }
+  const z = 0.72, w = 2*Math.PI*1.9, wd = w*Math.sqrt(1-z*z), pts = [];
+  for(let i=0;i<=44;i++){ const t = T*i/44; pts.push((1-Math.exp(-z*w*t)*(Math.cos(wd*t)+(z*w/wd)*Math.sin(wd*t))).toFixed(4)); }
+  pts[44] = '1';
+  return {easing:`linear(${pts.join(',')})`, dur:T*1000};
+})();
+function _m3Visible(el){ return !!el && getComputedStyle(el).display!=='none'; }
+function _m3AtBottom(box){ const r = box.getBoundingClientRect(); return r.bottom >= innerHeight-2; }
+
+/* ── 3. 底部選單：開／關動畫 + 往下拖曳關閉 ── */
+const M3_SHEETS = [
+  {wrap:'wordModal',    box:'.modal-box',  open:['openWordModal'],   close:'closeWordModal'},
+  {wrap:'phraseModal',  box:'.modal-box',  open:['openPhraseModal'], close:'closePhraseModal'},
+  {wrap:'addWordModal', box:'.modal-box',  open:['openAddWordModal'],close:'closeAddWordModal'},
+  {wrap:'reportModal',  box:'.modal-box',  open:['openReportModal'], close:'closeReportModal'},
+  {wrap:'folderSheet',  box:'.fs-box',     open:['openFolderSheet','openPhraseFolderSheet','_openBulkFolderSheet'], close:'closeFolderSheet'},
+  {wrap:'mzBlankSheet', box:'.mz-sheet',   open:['mzOpenBlank','mzOpenPassageSheet'], close:'mzCloseBlank'},
+];
+function _m3SheetEnter(w, box){
+  if(_m3Reduce()) return;
+  const bottom = _m3AtBottom(box);
+  box.style.animation = 'none';            // 停掉原本的 slideUp，改用彈簧
+  if(bottom) box.classList.add('m3-skirt');
+  const a = box.animate(bottom
+      ? [{transform:'translateY(100%)'},{transform:'none'}]
+      : [{transform:'scale(.92)',opacity:0},{transform:'none',opacity:1}],
+    {duration:M3_SPRING.dur, easing:M3_SPRING.easing});
+  a.onfinish = a.oncancel = ()=>box.classList.remove('m3-skirt');
+  w.animate([{opacity:0},{opacity:1}],{duration:200,easing:'linear'});
+}
+M3_SHEETS.forEach(s=>{
+  s.open.forEach(fn=>{
+    const orig = window[fn]; if(typeof orig!=='function') return;
+    window[fn] = function(...args){
+      let w = document.getElementById(s.wrap);
+      let wasOpen = _m3Visible(w) && !w.dataset.m3Closing;
+      if(w && w.dataset.m3Closing){            // 關到一半又被打開：取消關閉
+        clearTimeout(w._m3T); delete w.dataset.m3Closing;
+        (w._m3Anims||[]).forEach(x=>x.cancel()); w._m3Anims = null;
+        const b = w.querySelector(s.box); if(b) b.style.transform = '';
+        wasOpen = false;
+      }
+      const r = orig.apply(this, args);
+      w = document.getElementById(s.wrap);
+      const box = w && w.querySelector(s.box);
+      // 由卡片點開的交給容器展開（_m3AfterNav）處理，這裡不重複播
+      if(!wasOpen && box && _m3Visible(w) && !(_m3Pending && _m3Pending.hero)) _m3SheetEnter(w, box);
+      return r;
+    };
+  });
+  const origClose = window[s.close]; if(typeof origClose!=='function') return;
+  window[s.close] = function(...args){
+    const w = document.getElementById(s.wrap), box = w && w.querySelector(s.box);
+    if(w && w.dataset.m3Closing) return;
+    if(!box || !_m3Visible(w) || _m3Reduce()) return origClose.apply(this, args);
+    w.dataset.m3Closing = '1';
+    const bottom = _m3AtBottom(box);
+    const from = box.style.transform || 'none';  // 拖曳中放開時，從目前位置接著滑出
+    const D = bottom ? 240 : 170;
+    w._m3Anims = [
+      box.animate([{transform:from,opacity:1},{transform:bottom?'translateY(100%)':'scale(.94)',opacity:bottom?1:0}],{duration:D,easing:M3_EASE.accel,fill:'forwards'}),
+      w.animate([{opacity:1},{opacity:0}],{duration:D,easing:'linear',fill:'forwards'}),
+    ];
+    w._m3T = setTimeout(()=>{
+      delete w.dataset.m3Closing;
+      box.style.transform = ''; box.style.transition = '';
+      origClose.apply(this, args);
+      (w._m3Anims||[]).forEach(x=>x.cancel()); w._m3Anims = null;
+    }, D);
+  };
+});
+let _m3Drag = null;
+document.addEventListener('touchstart', e=>{
+  _m3Drag = null;
+  if(e.touches.length!==1 || !e.target.closest) return;
+  if(e.target.closest('input,textarea,select,[contenteditable]')) return;
+  for(const s of M3_SHEETS){
+    const w = document.getElementById(s.wrap);
+    if(!_m3Visible(w) || w.dataset.m3Closing) continue;
+    const box = w.querySelector(s.box);
+    if(!box || !box.contains(e.target) || !_m3AtBottom(box)) continue;
+    for(let n=e.target; n && n!==w; n=n.parentElement){ if(n.scrollTop>0) return; }  // 內容沒捲到頂時讓它正常捲動
+    const t = e.touches[0], now = performance.now();
+    _m3Drag = {s, w, box, x0:t.clientX, y0:t.clientY, dy:0, on:false, lastY:t.clientY, lastT:now, v:0};
+    return;
+  }
+}, {passive:true});
+document.addEventListener('touchmove', e=>{
+  const d = _m3Drag; if(!d) return;
+  const t = e.touches[0], dy = t.clientY-d.y0, dx = t.clientX-d.x0;
+  if(!d.on){
+    if(Math.abs(dy)<8 && Math.abs(dx)<8) return;
+    if(dy<0 || Math.abs(dx)>Math.abs(dy)){ _m3Drag = null; return; }   // 往上或橫向：不是要關
+    d.on = true; d.y0 = t.clientY;
+  }
+  e.preventDefault();
+  const now = performance.now();
+  d.v = (t.clientY-d.lastY)/Math.max(1, now-d.lastT); d.lastY = t.clientY; d.lastT = now;
+  d.dy = Math.max(0, t.clientY-d.y0);
+  d.box.style.transition = 'none';
+  d.box.style.transform = `translateY(${d.dy}px)`;
+  d.w.style.opacity = String(Math.max(.35, 1 - d.dy/(d.box.offsetHeight*1.4)));
+}, {passive:false});
+function _m3DragEnd(cancelled){
+  const d = _m3Drag; _m3Drag = null;
+  if(!d || !d.on) return;
+  d.w.style.opacity = '';
+  if(!cancelled && (d.dy > Math.min(120, d.box.offsetHeight*.3) || d.v > .6)){ window[d.s.close](); return; }
+  d.box.animate([{transform:`translateY(${d.dy}px)`},{transform:'none'}],{duration:M3_SPRING.dur, easing:M3_SPRING.easing});
+  d.box.style.transform = ''; d.box.style.transition = '';
+}
+document.addEventListener('touchend', ()=>_m3DragEnd(false));
+document.addEventListener('touchcancel', ()=>_m3DragEnd(true));
+
+/* ── 1 + 2. 容器展開 / 共享軸滑動 ── */
+const M3_SECTIONS = ['homeSection','dictSection','quizSection','myWordsSection','paragraphSection','magazineSection','moreSection','translationSection','progressSection','newsSection'];
+const M3_TAB_ORDER = {homeSection:0, dictSection:1, quizSection:2, myWordsSection:3, progressSection:4, newsSection:5};
+const M3_HERO_SEL = '.card,.phrase-card,.mw-item,.mz-mag-card:not(.disabled),.mz-unit-card,.tr-set-card,.home-quick-card,.home-stat-tile,.home-more-card,.home-tr-card';
+const M3_NAV_SEL  = M3_HERO_SEL + ',.bnav-btn,.mz-back';
+let _m3Pending = null;
+function _m3Section(){ return M3_SECTIONS.map(id=>document.getElementById(id)).find(el=>el && el.style.display!=='none'); }
+function _m3Bg(el){
+  for(let n=el; n && n.nodeType===1; n=n.parentElement){ const c = getComputedStyle(n).backgroundColor; if(c && c!=='transparent' && !/rgba\(.*,\s*0\)$/.test(c)) return c; }
+  return '#fff';
+}
+// 點擊先在 capture 階段記下「點了什麼、當時畫面是哪一頁」，等所有 onclick 跑完（window 的 bubble 階段）再比對畫面有沒有換
+document.addEventListener('click', e=>{
+  _m3Pending = null;
+  if(_m3Reduce() || !e.target.closest) return;
+  const el = e.target.closest(M3_NAV_SEL); if(!el) return;
+  const sec = _m3Section(), cs = getComputedStyle(el);
+  _m3Pending = {
+    rect: el.getBoundingClientRect(), radius: cs.borderRadius, bg: _m3Bg(el),
+    hero: el.matches(M3_HERO_SEL), back: el.matches('.mz-back') && /^\s*‹/.test(el.textContent),
+    sec, first: sec && sec.firstElementChild,
+    modals: ['wordModal','phraseModal'].map(id=>_m3Visible(document.getElementById(id))),
+  };
+}, true);
+window.addEventListener('click', ()=>{
+  const p = _m3Pending; _m3Pending = null;
+  if(p) try{ _m3AfterNav(p); }catch(err){ console.warn('m3 motion', err); }
+});
+// 換頁或打開視窗後，原本按鈕上的漣漪不該蓋在新畫面上
+function _m3ClearRipples(){ document.querySelectorAll('.m3-ripple-host').forEach(h=>h.remove()); }
+function _m3AfterNav(p){
+  const mods = ['wordModal','phraseModal'].map(id=>document.getElementById(id));
+  const opened = mods.find((m,i)=>_m3Visible(m) && !p.modals[i]);
+  if(opened){
+    _m3ClearRipples();
+    const box = opened.querySelector('.modal-box');
+    if(p.hero && box){ box.style.animation = 'none'; _m3Hero(p, box, box.getBoundingClientRect(), +getComputedStyle(opened).zIndex+1); opened.animate([{opacity:0},{opacity:1}],{duration:220,easing:'linear'}); }
+    return;
+  }
+  const sec = _m3Section(); if(!sec) return;
+  if(sec===p.sec && sec.firstElementChild===p.first) return;   // 畫面沒換
+  _m3ClearRipples();
+  if(p.hero && !p.back){
+    // 目標＝頂部列與底部導覽之間的可視範圍
+    const top = document.getElementById('globalTopBar')?.getBoundingClientRect().bottom || 0;
+    const navTop = document.getElementById('bottomNav')?.getBoundingClientRect().top || innerHeight;
+    _m3Hero(p, sec, {left:0, top, width:innerWidth, height:navTop-top}, 190);
+    return;
+  }
+  let dir = p.back ? -1 : 1;
+  if(!p.back && sec!==p.sec){
+    const a = M3_TAB_ORDER[p.sec && p.sec.id], b = M3_TAB_ORDER[sec.id];
+    if(a!==undefined && b!==undefined) dir = b>=a ? 1 : -1;
+    else if(b!==undefined) dir = -1;        // 從子頁回到底部 tab
+  }
+  sec.animate([{opacity:0, transform:`translateX(${28*dir}px)`},{opacity:1, transform:'none'}],{duration:320, easing:M3_EASE.decel});
+}
+function _m3Hero(p, target, to, z){
+  const from = p.rect; if(!from.width || !to.width) return;
+  const isBox = target.classList.contains('modal-box');
+  // 展開成整頁時底板維持白色卡面（頁面底色是灰的，用灰色會看不出在展開）
+  const bgTo = isBox ? _m3Bg(target) : (getComputedStyle(document.documentElement).getPropertyValue('--surface').trim() || '#fff');
+  const radTo = isBox ? getComputedStyle(target).borderRadius : '0px';
+  const g = document.createElement('div'); g.className = 'm3-ghost'; g.style.zIndex = z;
+  document.body.appendChild(g);
+  const D = 420;
+  g.animate([
+    {left:from.left+'px', top:from.top+'px', width:from.width+'px', height:from.height+'px', borderRadius:p.radius, backgroundColor:p.bg},
+    {left:to.left+'px',   top:to.top+'px',   width:to.width+'px',   height:to.height+'px',   borderRadius:radTo,   backgroundColor:bgTo},
+  ], {duration:D, easing:M3_EASE.emph, fill:'forwards'});
+  g.animate([{opacity:1},{opacity:1, offset:.55},{opacity:0}], {duration:D+120, fill:'forwards'}).onfinish = ()=>g.remove();
+  setTimeout(()=>g.remove(), D+600);
+  target.animate([{opacity:0},{opacity:0, offset:.35},{opacity:1}], {duration:D+60, easing:'linear'});
+}
+
+/* ── 觸控漣漪 ── */
+const M3_RIPPLE_SEL = 'button,.card,.phrase-card,.mz-mag-card:not(.disabled),.mz-unit-card,.home-quick-card,.home-stat-tile,.home-wotd-card,.home-more-card,.home-tr-card,.mw-item,.fs-item,.drawer-item';
+document.addEventListener('pointerdown', e=>{
+  if(e.button!==0 || _m3Reduce() || !e.target.closest) return;
+  const el = e.target.closest(M3_RIPPLE_SEL);
+  if(!el || el.disabled || el.classList.contains('disabled')) return;
+  const r = el.getBoundingClientRect();
+  if(r.width<10 || r.height<10 || r.width*r.height>500000) return;
+  // 被外層捲動容器或畫面邊緣裁掉的部分不畫
+  let L = Math.max(0, r.left), T = Math.max(0, r.top), R = Math.min(innerWidth, r.right), B = Math.min(innerHeight, r.bottom);
+  for(let n=el.parentElement; n && n!==document.body; n=n.parentElement){
+    const cs = getComputedStyle(n);
+    if(cs.overflowX!=='visible' || cs.overflowY!=='visible'){ const q = n.getBoundingClientRect(); L = Math.max(L,q.left); T = Math.max(T,q.top); R = Math.min(R,q.right); B = Math.min(B,q.bottom); }
+  }
+  if(R<=L || B<=T) return;
+  const cs = getComputedStyle(el);
+  const host = document.createElement('span'); host.className = 'm3-ripple-host';
+  Object.assign(host.style, {left:r.left+'px', top:r.top+'px', width:r.width+'px', height:r.height+'px', borderRadius:cs.borderRadius, color:cs.color,
+    clipPath:`inset(${T-r.top}px ${r.right-R}px ${r.bottom-B}px ${L-r.left}px)`});
+  const x = e.clientX-r.left, y = e.clientY-r.top, rad = Math.hypot(Math.max(x, r.width-x), Math.max(y, r.height-y));
+  const dot = document.createElement('i');
+  Object.assign(dot.style, {left:(x-rad)+'px', top:(y-rad)+'px', width:rad*2+'px', height:rad*2+'px'});
+  host.appendChild(dot); document.body.appendChild(host);
+  dot.animate([{transform:'scale(0)'},{transform:'scale(1)'}], {duration:Math.min(520, 240+rad*1.2), easing:M3_EASE.emph, fill:'forwards'});
+  let done = false;
+  const end = ()=>{
+    if(done) return; done = true;
+    removeEventListener('pointerup', end); removeEventListener('pointercancel', end);
+    host.animate([{opacity:1},{opacity:0}], {duration:300, delay:90, fill:'forwards'}).onfinish = ()=>host.remove();
+  };
+  addEventListener('pointerup', end); addEventListener('pointercancel', end);
+  setTimeout(()=>{ end(); setTimeout(()=>host.remove(), 600); }, 1500);
+}, {passive:true});
+
+/* ── Snackbar ── */
+function m3Snack(msg, opts={}){
+  let el = document.getElementById('m3Snack');
+  if(!el){ el = document.createElement('div'); el.id = 'm3Snack'; el.setAttribute('role','status'); el.setAttribute('aria-live','polite'); document.body.appendChild(el); }
+  clearTimeout(el._t);
+  el.innerHTML = `<span class="m3-snack-msg"></span>${opts.action?'<button type="button" class="m3-snack-act"></button>':''}`;
+  el.querySelector('.m3-snack-msg').textContent = msg;
+  if(opts.action){
+    const b = el.querySelector('.m3-snack-act'); b.textContent = opts.action;
+    b.onclick = ()=>{ _m3SnackHide(); opts.onAction && opts.onAction(); };
+  }
+  // 有底部選單/彈窗開著時改在上方出現，避免蓋住選單內容
+  const overlay = M3_SHEETS.some(s=>_m3Visible(document.getElementById(s.wrap))) || _m3Visible(document.getElementById('wotdModal'));
+  el.classList.toggle('at-top', overlay);
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  el._t = setTimeout(_m3SnackHide, opts.duration || (opts.action ? 5000 : 3200));
+}
+function _m3SnackHide(){ const el = document.getElementById('m3Snack'); if(el){ clearTimeout(el._t); el.classList.remove('show'); } }
+
+/* ── FAB：往下捲收合，往上捲展開 ── */
+let _m3LastY = scrollY;
+addEventListener('scroll', ()=>{
+  const fab = document.getElementById('fabAddWord'), y = scrollY;
+  if(!fab || !fab.classList.contains('fab-visible')){ _m3LastY = y; return; }
+  if(Math.abs(y-_m3LastY) < 6) return;
+  fab.classList.toggle('fab-collapsed', y>_m3LastY && y>80);
+  _m3LastY = y;
+}, {passive:true});
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
