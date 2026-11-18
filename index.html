@@ -1171,6 +1171,7 @@ body.mz-sheet-lock{overflow:hidden;}
 <script src="magazine-digest-oct-data.js"></script>
 <script src="magazine-digest-nov-data.js"></script>
 <script src="magazine-live-nov-data.js"></script>
+<script src="magazine-ivy-oct-data.js"></script>
 </head>
 <body>
 <div id="authOverlay">
@@ -1423,6 +1424,22 @@ body.mz-sheet-lock{overflow:hidden;}
     <!-- ══ 更新紀錄索引 ══ -->
     <div class="news-index-section">
       <div class="news-index-section-title">📋 更新紀錄</div>
+
+      <!-- 2026-11-18 常春藤 10月號 -->
+      <div class="news-index-entry">
+        <div class="news-index-item" onclick="toggleNewsDetail(this.parentElement)">
+          <span class="news-date">2026-11-18</span>
+          <span class="news-type feature">新功能</span>
+          <span class="ni-title">📗 雜誌題庫新增「常春藤生活英語」10月號</span>
+          <span class="news-arrow">›</span>
+        </div>
+        <div class="news-detail">
+          <ul class="news-list">
+            <li>雜誌題庫多了一本「常春藤生活英語」，10月號共 12 篇：白牙、好眠祕訣、健行與長途跋涉、蛋糕野餐、BookTok、焙茶、黑冠麻鷺、芬蘭對抗深偽、蛋白石、萬聖節變裝派對等。</li>
+            <li>每篇都有課文精讀、單字、克漏字、文意選填、篇章結構、閱讀測驗六種題型；Unit 4 的克漏字是雜誌原題。</li>
+          </ul>
+        </div>
+      </div>
 
       <!-- 2026-11-17 清單補位與縮回 -->
       <div class="news-index-entry">
@@ -4735,7 +4752,8 @@ const MAGAZINES = [
   { id:'sc202511', brand:'sc', label:'11月號', desc:'Studio Classroom', passcodeHash:null, color:'#F97316', cover:null, data: (typeof MAGAZINE_UNITS_SC202511!=='undefined') ? MAGAZINE_UNITS_SC202511 : null },
   { id:'all202511', brand:'all', label:'11月號', desc:'ALL+互動英語', passcodeHash:null, color:'#8B5CF6', cover:null, data: (typeof MAGAZINE_UNITS_ALL202511!=='undefined') ? MAGAZINE_UNITS_ALL202511 : null },
   { id:'digest202511', brand:'digest', label:'11月號', desc:'空中美語 Digest', passcodeHash:null, color:'#0D9488', cover:null, data: (typeof MAGAZINE_UNITS_DIGEST202511!=='undefined') ? MAGAZINE_UNITS_DIGEST202511 : null },
-  { id:'202511', brand:'live', label:'11月號', desc:'Live 互動英語', passcodeHash:null, color:'#6366F1', cover:null, data: (typeof MAGAZINE_UNITS_202511!=='undefined') ? MAGAZINE_UNITS_202511 : null }
+  { id:'202511', brand:'live', label:'11月號', desc:'Live 互動英語', passcodeHash:null, color:'#6366F1', cover:null, data: (typeof MAGAZINE_UNITS_202511!=='undefined') ? MAGAZINE_UNITS_202511 : null },
+  { id:'ivy202510', brand:'ivy', label:'10月號', desc:'常春藤生活英語', passcodeHash:null, color:'#65A30D', cover:null, data: (typeof MAGAZINE_UNITS_IVY202510!=='undefined') ? MAGAZINE_UNITS_IVY202510 : null }
 ];
 // 雜誌品牌（第一層分類）：MAGAZINES 每期用 brand 欄位對應這裡的 id；新增一期只要在 MAGAZINES 尾端加一筆並填 brand。
 // 新品牌才需要在這裡加一筆。品牌內的月份依 MAGAZINES 陣列順序倒序顯示（越晚加入的越上面）。
@@ -4744,7 +4762,8 @@ const MZ_BRANDS = [
   { id:'all',    name:'ALL+ 互動英語',     color:'#8B5CF6' },
   { id:'sc',     name:'Studio Classroom', color:'#F97316' },
   { id:'4u',     name:'空中美語 4U',       color:'#10B981' },
-  { id:'digest', name:'空中美語 Digest',   color:'#0D9488' }
+  { id:'digest', name:'空中美語 Digest',   color:'#0D9488' },
+  { id:'ivy',    name:'常春藤生活英語',     color:'#65A30D' }
 ];
 let mzBrandId = null;
 function mzBrandIssues(brandId){ return MAGAZINES.filter(m=>m.brand===brandId).reverse(); }
