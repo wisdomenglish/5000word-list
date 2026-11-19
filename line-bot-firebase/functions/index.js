@@ -339,16 +339,17 @@ async function callClaude(systemPrompt, userMessage, maxTokens = 1024) {
   }
 }
 
-async function callClaudeWisdom(systemPrompt, userMessage, maxTokens = 1024) {
+async function callClaudeWisdom(systemPrompt, userMessage, maxTokens = 1024, model = "claude-haiku-4-5-20251001") {
   try {
     initializeAnthropicWisdom();
     const message = await anthropicWisdom.messages.create({
-      model: "claude-haiku-4-5-20251001",
+      model,
       max_tokens: maxTokens,
       system: systemPrompt,
       messages: [{ role: "user", content: userMessage }],
     });
-    return message.content[0].type === "text" ? message.content[0].text : "";
+    // 會思考的模型（如 WISDOM_SOLVE_MODEL）content[0] 是 thinking 區塊，不能直接取 content[0]
+    return extractTextFromClaudeMessage(message);
   } catch (error) {
     console.error("[ERROR] Claude Wisdom API error:", error.message);
     throw error;
@@ -3149,6 +3150,11 @@ async function refreshFrankSolveMode(userId) {
 }
 
 // ========== 文字／圖片解題（Wisdom AI Teacher，解題模式中使用 Claude）==========
+// Wisdom 解題（文字／照片）用的模型。2026-11-20：haiku-4-5 解文意選填常給錯字母、甚至給不存在的選項
+// （同一張照片 5 次有 3 次錯 3 題），haiku-5-5 在同一張照片原圖與低畫質版共 16 次全對，價格也較低。
+// haiku-5-5 預設會思考（effort 預設 medium），回覆要用 extractTextFromClaudeMessage 取文字
+const WISDOM_SOLVE_MODEL = "claude-haiku-5-5";
+
 const WISDOM_SOLVE_PROMPT = `你是 Wisdom AI Teacher，一位英文解題助手。學生會傳來英文題目（可能是選擇題、填空題、閱讀測驗、文法改錯、翻譯題、作文題、單字練習等），請幫忙解題。
 
 請依下列格式回應：
@@ -3175,7 +3181,7 @@ const WISDOM_SOLVE_PROMPT = `你是 Wisdom AI Teacher，一位英文解題助手
 
 async function handleWisdomTextSolve(userMessage, replyToken, token) {
   try {
-    const outputText = await callClaudeWisdom(WISDOM_SOLVE_PROMPT, userMessage, 3000);
+    const outputText = await callClaudeWisdom(WISDOM_SOLVE_PROMPT, userMessage, 16000, WISDOM_SOLVE_MODEL);
     await replyLineMessage(replyToken, { type: "text", text: sanitizeTextForLine(outputText) }, token);
   } catch (error) {
     console.error("[ERROR] handleWisdomTextSolve:", error.message);
@@ -3188,8 +3194,8 @@ async function handleWisdomImageSolve(messageId, replyToken, token) {
     const { base64, mediaType } = await fetchLineImageAsBase64(messageId, token);
     initializeAnthropicWisdom();
     const message = await anthropicWisdom.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 4096,
+      model: WISDOM_SOLVE_MODEL,
+      max_tokens: 16000,
       system: `${WISDOM_SOLVE_PROMPT}\n\n另外，請在最前面加上一段「📸 題目辨識」（分隔線 + 用繁體中文簡述照片中的題型與主要內容）。`,
       messages: [{
         role: "user",
