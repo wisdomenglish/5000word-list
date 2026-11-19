@@ -5,7 +5,7 @@
  * 功能：
  *  1. 用 Chrome 截圖 rich-menu-design.html → rich-menu.png
  *  2. 上傳圖片到 LINE
- *  3. 建立 Rich Menu（6 格：上排 行事曆+印刷單+素材庫，下排 請假單+資料提取+公告區）
+ *  3. 建立 Rich Menu（6 格：上排 行事曆+素材庫+公告區，下排 各式表單+課程進度表+其他）
  *  4. 設為所有用戶的預設選單
  */
 
@@ -25,8 +25,6 @@ if (fs.existsSync(envPath)) {
 }
 const LINE_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN_BOT2;
 
-const PRINT_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSc5Bayi-T6-yCUo_kozyVfzl7bQ9u79oWCd2z7pbLeiO8ykOA/viewform?usp=send_form";
-const LEAVE_FORM_URL = "https://docs.google.com/forms/d/17Uee6PF6Ij80gP6r42_20irDb5A11bSHJB325h0syxs/viewform";
 const HTML_FILE = path.join(__dirname, "rich-menu-design.html");
 const OUTPUT_IMAGE = path.join(__dirname, "rich-menu.png");
 const CHROME_PATH = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
@@ -109,36 +107,15 @@ function createRichMenu() {
     name: "主選單",
     chatBarText: "功能選單",
     areas: [
-      // 左上：行事曆（height=422 蓋住 2px gap，避免死區）
-      {
-        bounds: { x: 0, y: 0, width: 833, height: 422 },
-        action: { type: "message", text: "行事曆" }
-      },
-      // 中上：印刷單（發送訊息，Bot 回傳 Quick Reply 讓老師選表單）
-      {
-        bounds: { x: 833, y: 0, width: 834, height: 422 },
-        action: { type: "message", text: "印刷單" }
-      },
-      // 右上：素材庫（發送訊息，Bot 回傳使用說明；實際建立素材靠老師直接貼網址觸發）
-      {
-        bounds: { x: 1667, y: 0, width: 833, height: 422 },
-        action: { type: "message", text: "素材庫" }
-      },
-      // 左下：請假單
-      {
-        bounds: { x: 0, y: 422, width: 833, height: 421 },
-        action: { type: "uri", uri: LEAVE_FORM_URL }
-      },
-      // 中下：資料提取（連結到 OneDrive）
-      {
-        bounds: { x: 833, y: 422, width: 834, height: 421 },
-        action: { type: "uri", uri: "https://1drv.ms/f/c/ed0685dff9d8666e/IgBuZtj534UGIIDtRKwAAAAAAUoMQOQ4c1iafODy-Wz-ISc?e=VLgQDG" }
-      },
-      // 右下：公告區（發送訊息，Bot 回傳最新公告）
-      {
-        bounds: { x: 1667, y: 422, width: 833, height: 421 },
-        action: { type: "message", text: "公告" }
-      }
+      // 上排（height=422 蓋住 2px gap，避免死區）：行事曆、素材庫、公告區
+      { bounds: { x: 0, y: 0, width: 833, height: 422 }, action: { type: "message", text: "行事曆" } },
+      // 素材庫：Bot 回傳使用說明；實際建立素材靠老師直接貼網址觸發
+      { bounds: { x: 833, y: 0, width: 834, height: 422 }, action: { type: "message", text: "素材庫" } },
+      { bounds: { x: 1667, y: 0, width: 833, height: 422 }, action: { type: "message", text: "公告" } },
+      // 下排：各式表單（Flex 連結清單）、課程進度表、其他（代課格式 Quick Reply）
+      { bounds: { x: 0, y: 422, width: 833, height: 421 }, action: { type: "message", text: "各式表單" } },
+      { bounds: { x: 833, y: 422, width: 834, height: 421 }, action: { type: "message", text: "課程進度表" } },
+      { bounds: { x: 1667, y: 422, width: 833, height: 421 }, action: { type: "message", text: "其他" } }
     ]
   };
 

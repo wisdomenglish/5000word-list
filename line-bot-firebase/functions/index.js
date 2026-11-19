@@ -963,7 +963,11 @@ function detectCalendarIntent(text) {
   if (/關閉提醒|取消提醒|退出提醒|停止提醒/.test(text)) return "unsubscribe";
   if (/^行事曆$/.test(text.trim())) return "help";
   if (/^印刷單$/.test(text.trim())) return "print_form";
-  if (/^公告$/.test(text.trim())) return "announcement";
+  if (/^(各式)?表單$/.test(text.trim())) return "forms_menu";
+  if (/^(各式)?課程進度表$/.test(text.trim())) return "progress_menu";
+  if (/^其他$/.test(text.trim())) return "other_menu";
+  if (Object.hasOwn(BOT2_SUB_TEMPLATES, text.trim())) return "sub_template";
+  if (/^公告(區)?$/.test(text.trim())) return "announcement";
   if (/^素材庫$/.test(text.trim())) return "content_intake_help";
   if (/重新整理|重整|refresh|清除快取|更新行事曆/.test(text)) return "refresh";
   if (/今日|今天/.test(text)) return "today";
@@ -1012,7 +1016,98 @@ async function getSubscribers() {
 }
 
 function buildCalendarHelpMessage() {
-  return `🎯 唯思英文行事曆助手\n\n訂閱功能：\n🔔 傳「開啟提醒」→ 訂閱每日行程提醒\n🔕 傳「關閉提醒」→ 取消訂閱\n❓ 傳「提醒狀態」→ 查詢目前訂閱狀態\n\n查詢功能：\n📅 傳「今日行程」或「今天」→ 查詢今日行程\n📅 傳「明日行程」或「明天」→ 查詢明日行程\n📅 傳「本週行程」或「這週」→ 查詢本週行程（週一～週日）\n📅 傳「下週行程」→ 查詢下週行程\n📅 傳「本月行程」→ 查詢本月所有行程\n📅 傳「下一個活動」→ 查詢最近即將開始的活動\n\n老師名單管理：\n📋 傳「教師名單」→ 查看目前所有老師\n➕ 傳「新增老師 名字 userID」→ 新增老師（可傳「我的ID」查自己的 userID）\n➖ 傳「移除老師 名字」→ 移除老師\n\n其他功能：\n🖨️ 傳「印刷單」→ 選擇印刷單表單\n📢 傳「公告」→ 查看最新公告\n📰 直接貼文章網址 → 自動加入新聞素材庫\n📊 傳「標準化」→ 把素材庫文章改寫成指定難度\n📝 傳「出題」→ 幫已標準化的文章出題（傳「素材庫」看完整出題流程說明）\n🔄 傳「重新整理」→ 強制重新抓取最新行事曆資料\n\n每天早上 8:00 自動推送隔日提醒給已訂閱的老師 😊`;
+  return `🎯 唯思英文行事曆助手\n\n訂閱功能：\n🔔 傳「開啟提醒」→ 訂閱每日行程提醒\n🔕 傳「關閉提醒」→ 取消訂閱\n❓ 傳「提醒狀態」→ 查詢目前訂閱狀態\n\n查詢功能：\n📅 傳「今日行程」或「今天」→ 查詢今日行程\n📅 傳「明日行程」或「明天」→ 查詢明日行程\n📅 傳「本週行程」或「這週」→ 查詢本週行程（週一～週日）\n📅 傳「下週行程」→ 查詢下週行程\n📅 傳「本月行程」→ 查詢本月所有行程\n📅 傳「下一個活動」→ 查詢最近即將開始的活動\n\n老師名單管理：\n📋 傳「教師名單」→ 查看目前所有老師\n➕ 傳「新增老師 名字 userID」→ 新增老師（可傳「我的ID」查自己的 userID）\n➖ 傳「移除老師 名字」→ 移除老師\n\n其他功能：\n🗂️ 傳「各式表單」→ 假單、報帳單、印刷單等表單連結\n📈 傳「課程進度表」→ 各式課程進度表\n📎 傳「其他」→ 代課單／代課回報格式\n📢 傳「公告」→ 查看最新公告\n📰 直接貼文章網址 → 自動加入新聞素材庫\n📊 傳「標準化」→ 把素材庫文章改寫成指定難度\n📝 傳「出題」→ 幫已標準化的文章出題（傳「素材庫」看完整出題流程說明）\n🔄 傳「重新整理」→ 強制重新抓取最新行事曆資料\n\n每天早上 8:00 自動推送隔日提醒給已訂閱的老師 😊`;
+}
+
+// ========== Bot 2 Rich Menu：各式表單／課程進度表／其他 ==========
+// url 留空字串的項目會顯示為灰色「連結待設定」，不可點擊；拿到連結後填進來重新部署即可
+const BOT2_FORM_SECTIONS = [
+  { title: "請假單", items: [
+    { label: "假單", url: "https://docs.google.com/forms/d/17Uee6PF6Ij80gP6r42_20irDb5A11bSHJB325h0syxs/viewform" },
+    { label: "師訓假單", url: "" }
+  ]},
+  { title: "報帳單", items: [
+    { label: "報帳單", url: "" }
+  ]},
+  { title: "印刷單", items: [
+    { label: "教用板印刷單", url: "https://docs.google.com/forms/d/e/1FAIpQLSc5Bayi-T6-yCUo_kozyVfzl7bQ9u79oWCd2z7pbLeiO8ykOA/viewform" },
+    { label: "國中部印刷單", url: "https://docs.google.com/forms/d/e/1FAIpQLSdwYxRUdXWL0eTr_6qmYdYE3yXZ3lMxcJhehPrdsklXKlRIoQ/viewform" },
+    { label: "高中部印刷單", url: "https://docs.google.com/forms/d/e/1FAIpQLSex-trJIyfHgcoR4ttAh4yGMoldJ1KSR2Basz5UDYIxx55pvg/viewform" },
+    { label: "檢定部印刷單", url: "https://docs.google.com/forms/d/e/1FAIpQLScKgVzyiC51UQ0rD_aYekrqMuEyaCe7tWWM-QtiTgvCqE93ww/viewform" }
+  ]},
+  { title: "編輯提報單", items: [
+    { label: "編輯提報單", url: "" }
+  ]},
+  { title: "其他", items: [
+    { label: "排課意願表", url: "" },
+    { label: "課程滿意度調查表", url: "" }
+  ]}
+];
+
+// 課程進度表清單（{ label, url }），目前尚未提供
+const BOT2_PROGRESS_SHEETS = [];
+
+// 「其他」裡的代課格式：點按鈕後 bot 回傳範本文字，老師長按複製後填寫
+const BOT2_SUB_TEMPLATES = {
+  "代課單填寫格式": "",
+  "代課回報格式": ""
+};
+
+function buildLinkListFlex(altText, heading, sections) {
+  const contents = [{ type: "text", text: heading, weight: "bold", size: "lg", color: "#1A1914" }];
+  for (const sec of sections) {
+    if (sec.title) {
+      contents.push({ type: "text", text: sec.title, weight: "bold", size: "sm", color: "#A8884E", margin: "lg" });
+    }
+    for (const it of sec.items) {
+      contents.push(it.url
+        ? { type: "button", style: "secondary", height: "sm", margin: "sm", action: { type: "uri", label: it.label, uri: it.url } }
+        : { type: "text", text: `${it.label}（連結待設定）`, size: "sm", color: "#AAAAAA", margin: "sm", align: "center" });
+    }
+  }
+  return {
+    type: "flex",
+    altText,
+    contents: { type: "bubble", size: "mega", body: { type: "box", layout: "vertical", contents } }
+  };
+}
+
+async function handleFormsMenu(replyToken, token) {
+  await replyLineMessage(replyToken, buildLinkListFlex("各式表單", "🗂️ 各式表單", BOT2_FORM_SECTIONS), token);
+}
+
+async function handleProgressMenu(replyToken, token) {
+  if (!BOT2_PROGRESS_SHEETS.length) {
+    await replyLineMessage(replyToken, { type: "text", text: "📈 各式課程進度表\n\n目前尚未設定進度表連結，請洽管理員 😊" }, token);
+    return;
+  }
+  await replyLineMessage(replyToken, buildLinkListFlex("各式課程進度表", "📈 各式課程進度表", [{ items: BOT2_PROGRESS_SHEETS }]), token);
+}
+
+async function handleOtherMenu(replyToken, token) {
+  await replyLineMessage(replyToken, {
+    type: "text",
+    text: "📎 其他\n\n請選擇要查看的格式，複製後填寫即可 😊",
+    quickReply: {
+      items: Object.keys(BOT2_SUB_TEMPLATES).map(label => ({
+        type: "action",
+        action: { type: "message", label, text: label }
+      }))
+    }
+  }, token);
+}
+
+async function handleSubTemplate(name, replyToken, token) {
+  const tpl = BOT2_SUB_TEMPLATES[name];
+  if (!tpl) {
+    await replyLineMessage(replyToken, { type: "text", text: `📎 ${name}\n\n格式尚未設定，請洽管理員 😊` }, token);
+    return;
+  }
+  // 範本單獨一則訊息，方便老師長按整則複製
+  await replyLineMessage(replyToken, [
+    { type: "text", text: `📎 ${name}（長按下一則訊息複製）` },
+    { type: "text", text: tpl }
+  ], token);
 }
 
 async function handlePrintFormSelection(replyToken, token) {
@@ -2498,6 +2593,22 @@ async function handleCalendarMessage(userMessage, replyToken, token, userId) {
     }
     if (intent === "print_form") {
       await handlePrintFormSelection(replyToken, token);
+      return;
+    }
+    if (intent === "forms_menu") {
+      await handleFormsMenu(replyToken, token);
+      return;
+    }
+    if (intent === "progress_menu") {
+      await handleProgressMenu(replyToken, token);
+      return;
+    }
+    if (intent === "other_menu") {
+      await handleOtherMenu(replyToken, token);
+      return;
+    }
+    if (intent === "sub_template") {
+      await handleSubTemplate(userMessage.trim(), replyToken, token);
       return;
     }
     if (intent === "announcement") {
