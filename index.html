@@ -2494,7 +2494,33 @@ async function showLeaderboard(mode, btn){
   });
 })();
 
+function _cookiesBlocked(){
+  if (!navigator.cookieEnabled) return true;
+  try {
+    document.cookie = 'vocab_cookie_check=1; path=/; SameSite=Lax';
+    const ok = document.cookie.includes('vocab_cookie_check=1');
+    document.cookie = 'vocab_cookie_check=; path=/; max-age=0; SameSite=Lax';
+    return !ok;
+  } catch (e) { return true; }
+}
 function fbGoogleSignIn(){
+  // Google 不允許在 LINE 內建瀏覽器登入（會顯示「Cookie 已停用」）：
+  // 網址加 openExternalBrowser=1，LINE 會改用手機預設瀏覽器（Safari／Chrome）開啟同一頁
+  if (/\bLine\/\d/i.test(navigator.userAgent)) {
+    const url = new URL(location.href);
+    if (url.searchParams.get('openExternalBrowser') !== '1') {
+      url.searchParams.set('openExternalBrowser', '1');
+      location.assign(url.toString());
+    } else {
+      alert('LINE 內建瀏覽器無法用 Google 登入。請點右下角「⋯」，選「用預設瀏覽器開啟」，再登入一次。');
+    }
+    return;
+  }
+  // Safari 開了「阻擋所有 Cookie」（或被螢幕使用時間限制）時 Google 登入一定失敗，先說明怎麼設定
+  if (_cookiesBlocked()) {
+    alert('這個瀏覽器擋掉了 Cookie，無法用 Google 登入。\n\niPhone 請到「設定」→「App」→「Safari」關閉「阻擋所有 Cookie」，再重新打開這一頁。\n\n如果不能關（可能被螢幕使用時間限制），請改用 Chrome 開啟。');
+    return;
+  }
   const provider = new firebase.auth.GoogleAuthProvider();
   firebase.auth().signInWithPopup(provider).catch(e=>alert('登入失敗：'+e.message));
 }
