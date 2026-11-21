@@ -1459,12 +1459,12 @@ body.mz-sheet-lock{overflow:hidden;}
         <div class="news-index-item" onclick="toggleNewsDetail(this.parentElement)">
           <span class="news-date">2026-11-21</span>
           <span class="news-type feature">新功能</span>
-          <span class="ni-title">🎬 更多題庫新增「英語影片」</span>
+          <span class="ni-title">🎬 首頁新增「英語影片」</span>
           <span class="news-arrow">›</span>
         </div>
         <div class="news-detail">
           <ul class="news-list">
-            <li>首頁「更多題庫」→「🎬 英語影片」：精選 YouTube 英語頻道（新聞、科學、生活、旅遊、英語教學等），每天中午更新最新影片。</li>
+            <li>首頁「🎬 英語影片」：精選 YouTube 英語頻道（新聞、科學、生活、旅遊、英語教學等），每天中午更新最新影片。</li>
             <li>可以依<strong>類型</strong>和<strong>程度（A1–C1）</strong>篩選，點影片會直接開 YouTube 觀看。</li>
           </ul>
         </div>
@@ -4896,7 +4896,6 @@ function mzIsUnlocked(mag){ return !mag.passcodeHash || localStorage.getItem(MZ_
 
 /* ── 更多題庫（首頁「更多題庫」入口，2026-10-08 新增，內容待日後實作，目前僅建好導覽骨架）── */
 const RES_CATEGORIES = [
-  { id:'videos',      icon:'🎬', label:'英語影片', desc:'精選 YouTube 英語頻道 · 每天更新', color:'#EF4444' },
   { id:'textbook',    icon:'📘', label:'高中課本', desc:'高一／高二 · 龍騰／三民乙／三民', color:'#4361EE' },
   { id:'news',        icon:'📰', label:'時事新聞', desc:'時事英文閱讀',                    color:'#F97316' },
   { id:'translation', icon:'🔤', label:'時事翻譯', desc:'學測中譯英 · 時事取材',            color:'#F72585',
@@ -5045,7 +5044,6 @@ function renderMoreList(){
 }
 
 function openResCategory(id){
-  if(id==='videos'){ renderVideoChannels(); return; }
   if(id==='textbook'){ renderTextbookGrades(); return; }
   if(id==='gept'){ renderGeptLevels(); return; }
   const cat = RES_CATEGORIES.find(c=>c.id===id);
@@ -5061,7 +5059,7 @@ const YV_TOPICS = { news:'新聞時事', science:'科學科技', culture:'生活
 const YV_PACES = { slow:'慢速清晰', normal:'一般語速', fast:'快速口語' };
 const YV_LEVELS = ['A1','A2','B1','B2','C1'];
 const YV_PAGE = 8;
-let yvData = null, yvState = 'idle', yvTopic = null, yvLevel = null, yvShown = YV_PAGE, yvFromHome = false;
+let yvData = null, yvState = 'idle', yvTopic = null, yvLevel = null, yvShown = YV_PAGE;
 
 function _yvReadCache(){ try{ return JSON.parse(localStorage.getItem(YV_CACHE_KEY)||'null'); }catch(e){ return null; } }
 async function _yvLoad(force){
@@ -5080,13 +5078,12 @@ async function _yvLoad(force){
     yvState = yvData ? 'stale' : 'error';
   }
 }
+/* 入口只有首頁的紅色「英語影片」卡；頁面借用 #moreSection 顯示 */
 function openVideosFromHome(){
   switchTab('more');
-  renderVideoChannels(true);
+  renderVideoChannels();
 }
-function yvBack(){ if(yvFromHome) switchTab('home'); else renderMoreList(); }
-function renderVideoChannels(fromHome){
-  yvFromHome = !!fromHome;
+function renderVideoChannels(){
   yvTopic = null; yvLevel = null; yvShown = YV_PAGE;
   const cached = _yvReadCache();
   if(cached && cached.data){ yvData = cached.data; yvState = 'ready'; } else if(!yvData) yvState = 'loading';
@@ -5122,7 +5119,7 @@ function _yvRender(){
   section.innerHTML = `
     <div class="mz-wrap" id="yvWrap">
       <div class="mz-topbar">
-        <button class="mz-back" onclick="yvBack()">‹ 返回</button>
+        <button class="mz-back" onclick="switchTab('home')">‹ 返回</button>
         <div class="mz-topbar-title">🎬 英語影片</div>
         <div style="width:56px"></div>
       </div>
