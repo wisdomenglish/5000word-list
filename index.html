@@ -2085,10 +2085,11 @@ body.mz-sheet-lock{overflow:hidden;}
   <div class="announce-card">
     <div class="announce-emoji">📚</div>
     <div class="announce-badge">11月新內容</div>
-    <div class="announce-title">11月號雜誌題庫上架了！</div>
+    <div class="announce-title">11月新內容上架了！</div>
     <div class="announce-body">
       <ul class="announce-list">
         <li><span>📚</span><span><strong>雜誌題庫</strong>：Live、ALL+、Studio Classroom、4U、Digest 的 <strong>11 月號</strong>全部上架，還新增 <strong>常春藤生活英語</strong>（10 月號）</span></li>
+        <li><span>🎬</span><span><strong>英語影片</strong>：首頁新入口，精選 YouTube 英語頻道，每天更新</span></li>
         <li><span>📝</span><span><strong>歷屆翻譯</strong>：首頁新入口，練學測與模擬考的中譯英</span></li>
         <li><span>👆</span><span>克漏字、文意選填、篇章結構可以<strong>直接點文章裡的空格</strong>作答</span></li>
       </ul>
@@ -7399,7 +7400,7 @@ function getWotdWord(){
 }
 
 /* 新功能公告（一次性）：優先於每日一字顯示，避免兩個彈窗疊在一起 */
-const ANNOUNCE_KEY = 'vocab_announce_2026_11';   // 換新公告時改這個 key，看過舊公告的人才會再跳出來
+const ANNOUNCE_KEY = 'vocab_announce_2026_11b';   // 換新公告時改這個 key，看過舊公告的人才會再跳出來
 function maybeShowAnnounce(){
   if(localStorage.getItem(ANNOUNCE_KEY)) return false;
   document.getElementById('announceModal').style.display = 'flex';
