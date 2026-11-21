@@ -28,7 +28,7 @@
 - [vocabulary-data.js](vocabulary-data.js) — 外部單字庫（4,548 字，格式：`{w, z, p}`；2026-06-11 由 4,391 擴充至 5,565 後，2026-06-12 精簡純變化形回 4,549，並 AI 校正中文釋義標點，保留原形＋真形容詞/獨立詞；2026-11-20 刪除殘缺重複的 `ssel`，併入 `vessel`）
 - [phrases-data.js](phrases-data.js) — 外部片語庫（1,125 條，格式：`{p, z}`）
 - [manifest.json](manifest.json) — PWA 設定（name: 5000英文單字學習）
-- [sw.js](sw.js) — Service Worker，支援離線使用（目前版本：`vocab-app-v148`）
+- [sw.js](sw.js) — Service Worker，支援離線使用（目前版本：`vocab-app-v149`）
 - [icon-192.png](icon-192.png) / [icon-512.png](icon-512.png) — Wisdom logo 圖示
 
 ### 功能
@@ -333,7 +333,7 @@
 
 - **入口**：側邊欄 ☰ →「意見回饋 → 🛟 回報問題」（`openReportModal()`）；`#reportModal` 文字框 + 截圖（支援剪貼簿貼上 `_reportPasteHandler` 或選檔），`_compressReportImage()` 壓成 ≤1080px JPEG
 - **班級／老師（2026-10-05 新增）**：文字框上方兩個選填輸入框 `#reportClass`／`#reportTeacher`，方便老師知道是哪個班級/哪位老師的學生回報。`openReportModal()` 從 `localStorage['vocab_report_info']` 預填上次填過的值，`submitReport()` 送出時連同寫回 localStorage（同一台裝置下次開啟直接帶出，不用每次重打）
-- **一次性公告彈窗**：`maybeShowAnnounce()`（key `vocab_announce_report_v1`）在 `showWotdIfNeeded()` 開頭呼叫，**優先於每日一字**，看過一次不再出現
+- **一次性公告彈窗**：`maybeShowAnnounce()`（key `ANNOUNCE_KEY`，目前 `vocab_announce_2026_11`；**換新公告內容時一定要換 key**，否則看過舊公告的人不會再跳出）在 `showWotdIfNeeded()` 開頭呼叫，**優先於每日一字**，看過一次不再出現
 - **送出**：`submitReport` CF → 寫 RTDB `/app-reports/{id}`（message/className/teacher/user/nickname/meta/image(base64)/createdAt），並 push 給所有 `/report-recipients`（LINE 通知文字會在裝置型號那行上方多印一行「🏫 班級　👩‍🏫 老師」，兩者都沒填就不印這行）
 - **收件人綁定**：對任一 LINE Bot 傳「**綁定回報**」→ `handleReportBind()` 存 `/report-recipients/{userId} = {boundAt, tokenEnvVar, botName}`；「**解除回報**」移除。**`tokenEnvVar` 記住在哪支 bot 綁的**（LINE userId 分頻道，push 必須用同一支 token）；`submitReport` 依此挑 token 推播
 - **目前收件 bot**：**English Calendar（Bot 2，destination `U45ed153…`，LINE 顯示名稱為「Wisdom Assistant」）** — 詳見 LINE Bot 章節的命名說明
@@ -1085,7 +1085,7 @@ python3 -m notebooklm login
 - **generateVocabQuiz max_tokens**：必須設為 `4096`（非 1024），10 道題目的 JSON 約需 2500–3000 tokens，1024 會截斷 → `Unexpected end of JSON input` → 500 錯誤
 - **generateVocabQuiz 共享題庫快取（2026-06-12，省 token）**：出題前先用 `quizCacheKey(word)`（小寫、非英數轉 `_`）查 Firebase Realtime DB `/quiz-cache/{key}`，只對「未快取」的單字呼叫 Claude，生成後寫回；跨所有學生每個單字題目只生成一次，命中快取 0 token、約 9 倍快。`initializeFirebase()` 取得 `dbRef`；Firebase 連不上時 fallback 為原本即時生成（不會壞）。回傳依原請求順序合併「快取 + 新生成」。無 TTL（句子不會過期）。若日後啟用 `cefrLevel`，key 會加 `__{cefr}` 後綴避免混用。客戶端 `QUIZ_FN_URL` 打的是 base `generateVocabQuiz`（非 V2/V3）
 - **generateVocabQuiz 唯一解檢查（2026-10-22，使用者回報 sufficient 題目 adequate 也對）**：生成模型（haiku-4-5）常把正解的近義詞當干擾項。現在流程是 生成 → `verifyAndRepairQuizQuestions()`（`claude-haiku-5-5`，`output_config.effort:"medium"`，逐題列出所有「放進空格也正確」的選項）→ 有多個就用檢查模型提供的替換字換掉干擾項再檢查一次 → 仍不唯一就整個單字重新生成一次再檢查 → 還不行就不出這題。通過的題目標 `v: 2`（`QUIZ_VERIFIED_VERSION`）；**`/quiz-cache` 與客戶端 `vocab_quiz_{word}` 都只信任 `v>=2`**，舊快取不批次重產，而是被請求到時先送檢查（通過就補標 v 沿用、不通過就修或重產）。生成 prompt 也加了「干擾項禁止用近義詞」規則。檢查服務出錯時題目照樣回傳但不標 v、客戶端不存本機（下次會再檢查）。函式 `timeoutSeconds` 拉到 180（新單字首次出題約 30 秒：生成 ~17s + 檢查 ~13s；命中快取 ~1s）
-- **Service Worker 快取版本**：更動 `index.html` 或 `vocabulary-data.js` 需同步升版 `sw.js` 的 `CACHE` 常數（目前 `vocab-app-v148`），否則舊使用者看不到更新
+- **Service Worker 快取版本**：更動 `index.html` 或 `vocabulary-data.js` 需同步升版 `sw.js` 的 `CACHE` 常數（目前 `vocab-app-v149`），否則舊使用者看不到更新
 - **檔案編碼**：`functions/index.js` 和 `package.json` 必須存為 UTF-8（無 BOM），Windows PowerShell redirect 可能產生 UTF-16 BOM 導致部署失敗
 - **⚠️ `line-bot-firebase/functions` 沒有 `package-lock.json`（2026-07-31 發現）**：deploy 時 Cloud Build 用當下 npm 解析到的版本安裝依賴，沒有鎖版本。曾經因此在完全沒改 `package.json` 的情況下，某次 deploy 突然開始失敗（Cloud Run "Container Healthcheck failed"，log 顯示 `Cannot find module '@firebase/app'`，`firebase-admin` 的 database 模組透過 `@firebase/database-compat` 間接需要 `@firebase/app` 和 `@firebase/app-compat`，但這兩個套件沒有被宣告成 `dependencies`、也不會被 npm 自動安裝）。已明確把 `@firebase/app`、`@firebase/app-compat` 加進 `package.json` 的 `dependencies` 並 `npm install` 產生 `package-lock.json`（現在存在了，之後 deploy 會鎖版本，不會再無預警漂移）。日後若又遇到「程式沒改、deploy 卻突然 500/健康檢查失敗」，先查 Cloud Run log 找 `Cannot find module`，不要假設是自己的程式碼壞掉。
 - **行事曆 iCal 日期格式化**：`formatCalendarEvents` 使用 `evt.start`（YYYY-MM-DD 字串）手動格式化日期，不使用 `toLocaleDateString`（Cloud Run 環境下對 Invalid Date 輸出字串 "Invalid Date"）；`startObj` 存為毫秒 timestamp（`getTime()`），用 `getUTC*` 方法讀取時間

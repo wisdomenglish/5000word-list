@@ -426,9 +426,12 @@ header{top:52px!important;}
 .announce-title{font-family:'Playfair Display',serif;font-size:1.35rem;color:var(--text);margin-bottom:10px;}
 .announce-body{color:var(--muted);font-size:0.9rem;line-height:1.7;margin-bottom:20px;}
 .announce-body strong{color:var(--text);}
+.announce-list{list-style:none;margin:0;padding:0;text-align:left;display:grid;gap:10px;}
+.announce-list li{display:flex;gap:10px;align-items:flex-start;line-height:1.6;}
+.announce-list li > span:first-child{flex-shrink:0;font-size:1.05rem;line-height:1.5;}
 .announce-actions{display:flex;flex-direction:column;gap:9px;}
 .announce-primary{background:linear-gradient(135deg,var(--accent),#7B9EFF);color:#fff;border:none;border-radius:12px;padding:13px;font-size:0.95rem;font-weight:700;cursor:pointer;}
-.announce-secondary{background:none;border:none;color:var(--muted);font-size:0.85rem;padding:6px;cursor:pointer;}
+.announce-secondary{background:none;border:none;color:var(--muted);font-size:0.85rem;padding:6px 16px;min-height:44px;cursor:pointer;}
 /* ── 分享例句 Modal ── */
 #exShareModal{position:fixed;inset:0;z-index:620;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.78);backdrop-filter:blur(6px);padding:18px;}
 /* ── 分享做題成果 Modal ── */
@@ -1425,6 +1428,22 @@ body.mz-sheet-lock{overflow:hidden;}
     <div class="news-index-section">
       <div class="news-index-section-title">📋 更新紀錄</div>
 
+      <!-- 2026-11-21 登入公告更新 -->
+      <div class="news-index-entry">
+        <div class="news-index-item" onclick="toggleNewsDetail(this.parentElement)">
+          <span class="news-date">2026-11-21</span>
+          <span class="news-type fix">修正</span>
+          <span class="ni-title">📣 開啟時的公告更新為 11 月新內容</span>
+          <span class="news-arrow">›</span>
+        </div>
+        <div class="news-detail">
+          <ul class="news-list">
+            <li>打開 App 時跳出的公告原本還停在 10 月號，現在改成介紹 11 月號雜誌、常春藤生活英語、歷屆翻譯與點空格作答。</li>
+            <li>單字庫修正：<strong>vessel</strong>（船、艦；血管；容器）原本有一筆字首缺漏、顯示成「ssel」的重複資料，已刪除。</li>
+          </ul>
+        </div>
+      </div>
+
       <!-- 2026-11-18 常春藤 10月號 -->
       <div class="news-index-entry">
         <div class="news-index-item" onclick="toggleNewsDetail(this.parentElement)">
@@ -2023,12 +2042,14 @@ body.mz-sheet-lock{overflow:hidden;}
 <div id="announceModal" style="display:none">
   <div class="announce-card">
     <div class="announce-emoji">📚</div>
-    <div class="announce-badge">新內容上架</div>
-    <div class="announce-title">10月號雜誌題庫來了！</div>
+    <div class="announce-badge">11月新內容</div>
+    <div class="announce-title">11月號雜誌題庫上架了！</div>
     <div class="announce-body">
-      首頁 <strong>📚 雜誌題庫</strong> 新增 5 本 10 月號：<br>
-      <strong>Live 互動英語</strong>、<strong>ALL+ 互動英語</strong>、<strong>Studio Classroom</strong>、<strong>空中美語 4U</strong>、<strong>空中美語 Digest</strong><br>
-      每篇都有課文精讀、單字、克漏字、文意選填、篇章結構、閱讀測驗 ✍️
+      <ul class="announce-list">
+        <li><span>📚</span><span><strong>雜誌題庫</strong>：Live、ALL+、Studio Classroom、4U、Digest 的 <strong>11 月號</strong>全部上架，還新增 <strong>常春藤生活英語</strong>（10 月號）</span></li>
+        <li><span>📝</span><span><strong>歷屆翻譯</strong>：首頁新入口，練學測與模擬考的中譯英</span></li>
+        <li><span>👆</span><span>克漏字、文意選填、篇章結構可以<strong>直接點文章裡的空格</strong>作答</span></li>
+      </ul>
     </div>
     <div class="announce-actions">
       <button class="announce-primary" onclick="openMagazineFromAnnounce()">馬上去練習 →</button>
@@ -7211,7 +7232,7 @@ function getWotdWord(){
 }
 
 /* 新功能公告（一次性）：優先於每日一字顯示，避免兩個彈窗疊在一起 */
-const ANNOUNCE_KEY = 'vocab_announce_magazine_202510';
+const ANNOUNCE_KEY = 'vocab_announce_2026_11';   // 換新公告時改這個 key，看過舊公告的人才會再跳出來
 function maybeShowAnnounce(){
   if(localStorage.getItem(ANNOUNCE_KEY)) return false;
   document.getElementById('announceModal').style.display = 'flex';
