@@ -977,6 +977,7 @@ body.mz-sheet-lock{overflow:hidden;}
 
 /* ── 歷屆翻譯 ── */
 .home-tr-card{display:flex;align-items:center;gap:12px;margin:0 16px 12px;padding:14px 16px;border-radius:16px;cursor:pointer;background:linear-gradient(135deg,#6D28D9 0%,#A78BFA 100%);box-shadow:0 4px 16px rgba(109,40,217,.28);}
+.home-yv-card{display:flex;align-items:center;gap:12px;margin:0 16px 12px;padding:14px 16px;border-radius:16px;cursor:pointer;background:linear-gradient(135deg,#DC2626 0%,#F87171 100%);box-shadow:0 4px 16px rgba(220,38,38,.26);}
 .tr-filter-row{display:flex;gap:8px;overflow-x:auto;padding:0 16px 14px;-webkit-overflow-scrolling:touch;}
 .tr-filter-row .fm-btn{min-height:44px;white-space:nowrap;}
 /* 英語影片（Fluent 更多頻道，2026-11-21） */
@@ -1087,8 +1088,8 @@ body.mz-sheet-lock{overflow:hidden;}
 
   /* ── B. 全站點擊回饋 ──
      :where() 讓特異性為 0：元件自己寫的 transform / :active 一律優先，不會被這裡蓋掉 */
-  :where(button,.card,.phrase-card,.mz-mag-card,.home-quick-card,.home-wotd-card,.home-more-card,.home-tr-card){transition:transform .16s var(--ease-out),box-shadow .2s ease,background-color .2s ease,color .2s ease,border-color .2s ease;}
-  :where(button:not(:disabled),.phrase-card,.mz-mag-card:not(.disabled),.home-wotd-card,.home-more-card,.home-tr-card):active{transform:scale(.96);transition-duration:.08s;}
+  :where(button,.card,.phrase-card,.mz-mag-card,.home-quick-card,.home-wotd-card,.home-more-card,.home-tr-card,.home-yv-card){transition:transform .16s var(--ease-out),box-shadow .2s ease,background-color .2s ease,color .2s ease,border-color .2s ease;}
+  :where(button:not(:disabled),.phrase-card,.mz-mag-card:not(.disabled),.home-wotd-card,.home-more-card,.home-tr-card,.home-yv-card):active{transform:scale(.96);transition-duration:.08s;}
   @media (hover:hover){
     .phrase-card:hover,.mz-mag-card:not(.disabled):hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(28,28,30,.12);}
   }
@@ -3685,6 +3686,14 @@ function renderHome(){
       </div>
       <div class="home-wotd-arrow">›</div>
     </div>
+    <div class="home-yv-card" onclick="openVideosFromHome()">
+      <div class="home-wotd-spark">🎬</div>
+      <div class="home-wotd-text">
+        <div class="home-wotd-title">英語影片</div>
+        <div class="home-wotd-sub">YouTube 英語頻道 · 每天更新 · 依程度挑影片</div>
+      </div>
+      <div class="home-wotd-arrow">›</div>
+    </div>
     <div class="home-quick-row">
       <div class="home-quick-card" onclick="switchTab('quiz')">
         <div class="home-quick-icon">✏️</div>
@@ -5052,7 +5061,7 @@ const YV_TOPICS = { news:'新聞時事', science:'科學科技', culture:'生活
 const YV_PACES = { slow:'慢速清晰', normal:'一般語速', fast:'快速口語' };
 const YV_LEVELS = ['A1','A2','B1','B2','C1'];
 const YV_PAGE = 8;
-let yvData = null, yvState = 'idle', yvTopic = null, yvLevel = null, yvShown = YV_PAGE;
+let yvData = null, yvState = 'idle', yvTopic = null, yvLevel = null, yvShown = YV_PAGE, yvFromHome = false;
 
 function _yvReadCache(){ try{ return JSON.parse(localStorage.getItem(YV_CACHE_KEY)||'null'); }catch(e){ return null; } }
 async function _yvLoad(force){
@@ -5071,7 +5080,13 @@ async function _yvLoad(force){
     yvState = yvData ? 'stale' : 'error';
   }
 }
-function renderVideoChannels(){
+function openVideosFromHome(){
+  switchTab('more');
+  renderVideoChannels(true);
+}
+function yvBack(){ if(yvFromHome) switchTab('home'); else renderMoreList(); }
+function renderVideoChannels(fromHome){
+  yvFromHome = !!fromHome;
   yvTopic = null; yvLevel = null; yvShown = YV_PAGE;
   const cached = _yvReadCache();
   if(cached && cached.data){ yvData = cached.data; yvState = 'ready'; } else if(!yvData) yvState = 'loading';
@@ -5107,7 +5122,7 @@ function _yvRender(){
   section.innerHTML = `
     <div class="mz-wrap" id="yvWrap">
       <div class="mz-topbar">
-        <button class="mz-back" onclick="renderMoreList()">‹ 返回</button>
+        <button class="mz-back" onclick="yvBack()">‹ 返回</button>
         <div class="mz-topbar-title">🎬 英語影片</div>
         <div style="width:56px"></div>
       </div>
@@ -8134,7 +8149,7 @@ document.addEventListener('touchcancel', ()=>_m3DragEnd(true));
 /* ── 1 + 2. 容器展開 / 共享軸滑動 ── */
 const M3_SECTIONS = ['homeSection','dictSection','quizSection','myWordsSection','paragraphSection','magazineSection','moreSection','translationSection','progressSection','newsSection'];
 const M3_TAB_ORDER = {homeSection:0, dictSection:1, quizSection:2, myWordsSection:3, progressSection:4, newsSection:5};
-const M3_HERO_SEL = '.card,.phrase-card,.mw-item,.mz-mag-card:not(.disabled),.mz-unit-card,.tr-set-card,.home-quick-card,.home-stat-tile,.home-more-card,.home-tr-card';
+const M3_HERO_SEL = '.card,.phrase-card,.mw-item,.mz-mag-card:not(.disabled),.mz-unit-card,.tr-set-card,.home-quick-card,.home-stat-tile,.home-more-card,.home-tr-card,.home-yv-card';
 const M3_NAV_SEL  = M3_HERO_SEL + ',.bnav-btn,.mz-back';
 let _m3Pending = null;
 function _m3Section(){ return M3_SECTIONS.map(id=>document.getElementById(id)).find(el=>el && el.style.display!=='none'); }
@@ -8302,7 +8317,7 @@ function _m3Hero(p, target, to, z){
 }
 
 /* ── 觸控漣漪 ── */
-const M3_RIPPLE_SEL = 'button,.card,.phrase-card,.mz-mag-card:not(.disabled),.mz-unit-card,.home-quick-card,.home-stat-tile,.home-wotd-card,.home-more-card,.home-tr-card,.mw-item,.fs-item,.drawer-item';
+const M3_RIPPLE_SEL = 'button,.card,.phrase-card,.mz-mag-card:not(.disabled),.mz-unit-card,.home-quick-card,.home-stat-tile,.home-wotd-card,.home-more-card,.home-tr-card,.home-yv-card,.mw-item,.fs-item,.drawer-item';
 document.addEventListener('pointerdown', e=>{
   if(e.button!==0 || _m3Reduce() || !e.target.closest) return;
   const el = e.target.closest(M3_RIPPLE_SEL);

@@ -28,7 +28,7 @@
 - [vocabulary-data.js](vocabulary-data.js) — 外部單字庫（4,548 字，格式：`{w, z, p}`；2026-06-11 由 4,391 擴充至 5,565 後，2026-06-12 精簡純變化形回 4,549，並 AI 校正中文釋義標點，保留原形＋真形容詞/獨立詞；2026-11-20 刪除殘缺重複的 `ssel`，併入 `vessel`）
 - [phrases-data.js](phrases-data.js) — 外部片語庫（1,125 條，格式：`{p, z}`）
 - [manifest.json](manifest.json) — PWA 設定（name: 5000英文單字學習）
-- [sw.js](sw.js) — Service Worker，支援離線使用（目前版本：`vocab-app-v150`）
+- [sw.js](sw.js) — Service Worker，支援離線使用（目前版本：`vocab-app-v151`）
 - [icon-192.png](icon-192.png) / [icon-512.png](icon-512.png) — Wisdom logo 圖示
 
 ### 功能
@@ -209,7 +209,7 @@
 
 ### 更多題庫架構（2026-10-08 新增，首頁入口，目前僅導覽骨架，內容待日後實作）
 
-- **🎬 英語影片（2026-11-21，更多題庫第一個類別，唯一已有內容的類別）**：Fluent「更多頻道」的 33 個 YouTube 頻道與最新影片，點影片 `target=_blank` 開 YouTube。資料來自 Fluent 的公開唯讀網址 `https://fluentstudio.app/api/public/channel-videos`（Fluent repo `src/app/api/public/channel-videos/route.ts` ＋ `src/lib/channels/public-channel-list.ts`）：只讀 Fluent 每天中午 12:00 存好的 `system/featuredChannels` 快照、不會因瀏覽而打 YouTube API；只回傳頻道名稱/網址/類型/程度/語速與影片 id/標題/日期/長度；跨網域只允許 `wisdomenglish.github.io` 與 localhost；伺服器記憶體快取 10 分鐘。PWA 端 `renderVideoChannels()`／`_yvRender()`：類型與程度（A1–C1）篩選、一次 8 個頻道「再顯示」、本機副本 `localStorage['vocab_channel_videos']`（1 小時內不重抓、離線時顯示副本）。**`sw.js` 的 fetch 必須排除 `fluentstudio.app`**，否則 cache-first 會把清單永遠凍在第一次的版本。Fluent 新增或移除頻道不用改 PWA；類型代碼對照在 `YV_TOPICS`，Fluent 新增類型時要補
+- **🎬 英語影片（2026-11-21，更多題庫第一個類別，唯一已有內容的類別；首頁另有紅色橫幅卡 `.home-yv-card` → `openVideosFromHome()`，在「歷屆翻譯」下方。返回鍵 `yvBack()` 依 `yvFromHome` 回首頁或回更多題庫）**：Fluent「更多頻道」的 33 個 YouTube 頻道與最新影片，點影片 `target=_blank` 開 YouTube。資料來自 Fluent 的公開唯讀網址 `https://fluentstudio.app/api/public/channel-videos`（Fluent repo `src/app/api/public/channel-videos/route.ts` ＋ `src/lib/channels/public-channel-list.ts`）：只讀 Fluent 每天中午 12:00 存好的 `system/featuredChannels` 快照、不會因瀏覽而打 YouTube API；只回傳頻道名稱/網址/類型/程度/語速與影片 id/標題/日期/長度；跨網域只允許 `wisdomenglish.github.io` 與 localhost；伺服器記憶體快取 10 分鐘。PWA 端 `renderVideoChannels()`／`_yvRender()`：類型與程度（A1–C1）篩選、一次 8 個頻道「再顯示」、本機副本 `localStorage['vocab_channel_videos']`（1 小時內不重抓、離線時顯示副本）。**`sw.js` 的 fetch 必須排除 `fluentstudio.app`**，否則 cache-first 會把清單永遠凍在第一次的版本。Fluent 新增或移除頻道不用改 PWA；類型代碼對照在 `YV_TOPICS`，Fluent 新增類型時要補
 
 - **入口**：首頁深藍 hero 卡下方的綠色橫幅卡 `.home-more-card`（`onclick="switchTab('more')"`），比照 `.home-wotd-card` 版面、teal 漸層配色區隔；`#moreSection`（比照 `#magazineSection` 慣例，新增 tab 不進 `bnavMap`，無底部導覽對應項）
 - **6 大類別**（`RES_CATEGORIES` 陣列，`renderMoreList()` 渲染成卡片）：📘 高中課本 / 📰 時事新聞 / 🔤 時事翻譯 / 🎓 英檢 / 💼 多益 / 🎧 學測聽力，點擊 `openResCategory(id)` 分派
@@ -1087,7 +1087,7 @@ python3 -m notebooklm login
 - **generateVocabQuiz max_tokens**：必須設為 `4096`（非 1024），10 道題目的 JSON 約需 2500–3000 tokens，1024 會截斷 → `Unexpected end of JSON input` → 500 錯誤
 - **generateVocabQuiz 共享題庫快取（2026-06-12，省 token）**：出題前先用 `quizCacheKey(word)`（小寫、非英數轉 `_`）查 Firebase Realtime DB `/quiz-cache/{key}`，只對「未快取」的單字呼叫 Claude，生成後寫回；跨所有學生每個單字題目只生成一次，命中快取 0 token、約 9 倍快。`initializeFirebase()` 取得 `dbRef`；Firebase 連不上時 fallback 為原本即時生成（不會壞）。回傳依原請求順序合併「快取 + 新生成」。無 TTL（句子不會過期）。若日後啟用 `cefrLevel`，key 會加 `__{cefr}` 後綴避免混用。客戶端 `QUIZ_FN_URL` 打的是 base `generateVocabQuiz`（非 V2/V3）
 - **generateVocabQuiz 唯一解檢查（2026-10-22，使用者回報 sufficient 題目 adequate 也對）**：生成模型（haiku-4-5）常把正解的近義詞當干擾項。現在流程是 生成 → `verifyAndRepairQuizQuestions()`（`claude-haiku-5-5`，`output_config.effort:"medium"`，逐題列出所有「放進空格也正確」的選項）→ 有多個就用檢查模型提供的替換字換掉干擾項再檢查一次 → 仍不唯一就整個單字重新生成一次再檢查 → 還不行就不出這題。通過的題目標 `v: 2`（`QUIZ_VERIFIED_VERSION`）；**`/quiz-cache` 與客戶端 `vocab_quiz_{word}` 都只信任 `v>=2`**，舊快取不批次重產，而是被請求到時先送檢查（通過就補標 v 沿用、不通過就修或重產）。生成 prompt 也加了「干擾項禁止用近義詞」規則。檢查服務出錯時題目照樣回傳但不標 v、客戶端不存本機（下次會再檢查）。函式 `timeoutSeconds` 拉到 180（新單字首次出題約 30 秒：生成 ~17s + 檢查 ~13s；命中快取 ~1s）
-- **Service Worker 快取版本**：更動 `index.html` 或 `vocabulary-data.js` 需同步升版 `sw.js` 的 `CACHE` 常數（目前 `vocab-app-v150`），否則舊使用者看不到更新
+- **Service Worker 快取版本**：更動 `index.html` 或 `vocabulary-data.js` 需同步升版 `sw.js` 的 `CACHE` 常數（目前 `vocab-app-v151`），否則舊使用者看不到更新
 - **檔案編碼**：`functions/index.js` 和 `package.json` 必須存為 UTF-8（無 BOM），Windows PowerShell redirect 可能產生 UTF-16 BOM 導致部署失敗
 - **⚠️ `line-bot-firebase/functions` 沒有 `package-lock.json`（2026-07-31 發現）**：deploy 時 Cloud Build 用當下 npm 解析到的版本安裝依賴，沒有鎖版本。曾經因此在完全沒改 `package.json` 的情況下，某次 deploy 突然開始失敗（Cloud Run "Container Healthcheck failed"，log 顯示 `Cannot find module '@firebase/app'`，`firebase-admin` 的 database 模組透過 `@firebase/database-compat` 間接需要 `@firebase/app` 和 `@firebase/app-compat`，但這兩個套件沒有被宣告成 `dependencies`、也不會被 npm 自動安裝）。已明確把 `@firebase/app`、`@firebase/app-compat` 加進 `package.json` 的 `dependencies` 並 `npm install` 產生 `package-lock.json`（現在存在了，之後 deploy 會鎖版本，不會再無預警漂移）。日後若又遇到「程式沒改、deploy 卻突然 500/健康檢查失敗」，先查 Cloud Run log 找 `Cannot find module`，不要假設是自己的程式碼壞掉。
 - **行事曆 iCal 日期格式化**：`formatCalendarEvents` 使用 `evt.start`（YYYY-MM-DD 字串）手動格式化日期，不使用 `toLocaleDateString`（Cloud Run 環境下對 Invalid Date 輸出字串 "Invalid Date"）；`startObj` 存為毫秒 timestamp（`getTime()`），用 `getUTC*` 方法讀取時間
