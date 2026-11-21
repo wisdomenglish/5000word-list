@@ -1,4 +1,4 @@
-const CACHE = 'vocab-app-v149';
+const CACHE = 'vocab-app-v150';
 const BASE  = '/5000word-list';
 
 self.addEventListener('install', e => {
@@ -20,7 +20,8 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const url = e.request.url;
   // 不快取 Firebase API 呼叫
-  if (url.includes('cloudfunctions.net') || url.includes('.run.app') || url.includes('googleapis.com/v1beta')) return;
+  // 不快取 Firebase API 呼叫；Fluent 的影片清單每天更新，也不能被快取住（App 自己會在 localStorage 留離線副本）
+  if (url.includes('cloudfunctions.net') || url.includes('.run.app') || url.includes('googleapis.com/v1beta') || url.includes('fluentstudio.app')) return;
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;

@@ -979,6 +979,31 @@ body.mz-sheet-lock{overflow:hidden;}
 .home-tr-card{display:flex;align-items:center;gap:12px;margin:0 16px 12px;padding:14px 16px;border-radius:16px;cursor:pointer;background:linear-gradient(135deg,#6D28D9 0%,#A78BFA 100%);box-shadow:0 4px 16px rgba(109,40,217,.28);}
 .tr-filter-row{display:flex;gap:8px;overflow-x:auto;padding:0 16px 14px;-webkit-overflow-scrolling:touch;}
 .tr-filter-row .fm-btn{min-height:44px;white-space:nowrap;}
+/* 英語影片（Fluent 更多頻道，2026-11-21） */
+.yv-filter-label{font-size:.72rem;font-weight:700;color:var(--muted);padding:0 16px 4px;}
+.yv-filter-row{display:flex;gap:8px;overflow-x:auto;padding:0 16px 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.yv-filter-row::-webkit-scrollbar{display:none;}
+.yv-filter-row .fm-btn{min-height:44px;white-space:nowrap;}
+.yv-note{margin:4px 16px 14px;padding:14px;border-radius:14px;background:var(--surface);border:1px solid var(--border);color:var(--muted);font-size:.85rem;text-align:center;line-height:1.6;}
+.yv-retry,.yv-more{min-height:44px;margin-top:8px;padding:0 18px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-weight:700;font-size:.85rem;cursor:pointer;}
+.yv-more-wrap{text-align:center;padding:0 16px 20px;}
+.yv-more{width:100%;max-width:420px;}
+.yv-channel{background:var(--surface);border:1px solid var(--border);border-radius:16px;margin:0 16px 14px;padding:12px 0 14px;}
+.yv-ch-head{display:flex;align-items:flex-start;gap:8px;padding:0 8px 10px 14px;}
+.yv-ch-info{flex:1;min-width:0;}
+.yv-ch-name{font-weight:800;font-size:.95rem;color:var(--text);}
+.yv-ch-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;}
+.yv-ch-tags span{font-size:.66rem;font-weight:700;color:var(--accent);background:rgba(67,97,238,.09);border-radius:6px;padding:2px 6px;}
+.yv-ch-tags span:first-child{color:#fff;background:#EF4444;}
+.yv-ch-link{flex-shrink:0;min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center;padding:0 10px;color:var(--accent);font-weight:700;font-size:.8rem;text-decoration:none;border-radius:10px;}
+.yv-strip{display:flex;gap:10px;overflow-x:auto;padding:0 14px 2px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;scroll-padding-left:14px;}
+.yv-card{flex:0 0 200px;scroll-snap-align:start;text-decoration:none;color:var(--text);-webkit-tap-highlight-color:transparent;}
+.yv-thumb{position:relative;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:var(--bg);}
+.yv-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.yv-dur{position:absolute;right:6px;bottom:6px;background:rgba(0,0,0,.78);color:#fff;font-size:.66rem;font-weight:700;padding:1px 6px;border-radius:5px;}
+.yv-title{font-size:.8rem;font-weight:600;line-height:1.4;margin-top:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.yv-date{font-size:.7rem;color:var(--muted);margin-top:2px;}
+@media (min-width:820px){ .yv-card{flex-basis:230px;} }
 .tr-random-row{padding:0 16px 14px;}
 .tr-random-btn{width:100%;min-height:44px;border-radius:12px;border:1.5px dashed #A78BFA;background:#F5F3FF;color:#6D28D9;font-size:.88rem;font-weight:700;cursor:pointer;}
 #translationSection .mz-wrap{max-width:820px;margin:0 auto;}
@@ -1427,6 +1452,22 @@ body.mz-sheet-lock{overflow:hidden;}
     <!-- ══ 更新紀錄索引 ══ -->
     <div class="news-index-section">
       <div class="news-index-section-title">📋 更新紀錄</div>
+
+      <!-- 2026-11-21 英語影片 -->
+      <div class="news-index-entry">
+        <div class="news-index-item" onclick="toggleNewsDetail(this.parentElement)">
+          <span class="news-date">2026-11-21</span>
+          <span class="news-type feature">新功能</span>
+          <span class="ni-title">🎬 更多題庫新增「英語影片」</span>
+          <span class="news-arrow">›</span>
+        </div>
+        <div class="news-detail">
+          <ul class="news-list">
+            <li>首頁「更多題庫」→「🎬 英語影片」：精選 YouTube 英語頻道（新聞、科學、生活、旅遊、英語教學等），每天中午更新最新影片。</li>
+            <li>可以依<strong>類型</strong>和<strong>程度（A1–C1）</strong>篩選，點影片會直接開 YouTube 觀看。</li>
+          </ul>
+        </div>
+      </div>
 
       <!-- 2026-11-21 登入公告更新 -->
       <div class="news-index-entry">
@@ -4846,6 +4887,7 @@ function mzIsUnlocked(mag){ return !mag.passcodeHash || localStorage.getItem(MZ_
 
 /* ── 更多題庫（首頁「更多題庫」入口，2026-10-08 新增，內容待日後實作，目前僅建好導覽骨架）── */
 const RES_CATEGORIES = [
+  { id:'videos',      icon:'🎬', label:'英語影片', desc:'精選 YouTube 英語頻道 · 每天更新', color:'#EF4444' },
   { id:'textbook',    icon:'📘', label:'高中課本', desc:'高一／高二 · 龍騰／三民乙／三民', color:'#4361EE' },
   { id:'news',        icon:'📰', label:'時事新聞', desc:'時事英文閱讀',                    color:'#F97316' },
   { id:'translation', icon:'🔤', label:'時事翻譯', desc:'學測中譯英 · 時事取材',            color:'#F72585',
@@ -4994,11 +5036,124 @@ function renderMoreList(){
 }
 
 function openResCategory(id){
+  if(id==='videos'){ renderVideoChannels(); return; }
   if(id==='textbook'){ renderTextbookGrades(); return; }
   if(id==='gept'){ renderGeptLevels(); return; }
   const cat = RES_CATEGORIES.find(c=>c.id===id);
   if(cat) renderResComingSoon(cat);
 }
+
+/* ── 英語影片（2026-11-21）：Fluent「更多頻道」的影片清單，點影片到 YouTube 觀看 ──
+   資料來自 Fluent 的公開唯讀網址 /api/public/channel-videos（每天中午 12:00 更新、只含 YouTube 公開資訊），
+   本機留一份副本（vocab_channel_videos），沒網路時也能打開；副本超過 1 小時才重新抓。 */
+const YV_URL = 'https://fluentstudio.app/api/public/channel-videos';
+const YV_CACHE_KEY = 'vocab_channel_videos';
+const YV_TOPICS = { news:'新聞時事', science:'科學科技', culture:'生活文化', teen:'校園青少年', travel_food:'旅遊美食', story:'故事影視', lesson:'英語教學／口說', vlog:'生活 Vlog' };
+const YV_PACES = { slow:'慢速清晰', normal:'一般語速', fast:'快速口語' };
+const YV_LEVELS = ['A1','A2','B1','B2','C1'];
+const YV_PAGE = 8;
+let yvData = null, yvState = 'idle', yvTopic = null, yvLevel = null, yvShown = YV_PAGE;
+
+function _yvReadCache(){ try{ return JSON.parse(localStorage.getItem(YV_CACHE_KEY)||'null'); }catch(e){ return null; } }
+async function _yvLoad(force){
+  const cached = _yvReadCache();
+  if(cached && cached.data) yvData = cached.data;
+  if(!force && cached && cached.data && Date.now()-cached.at < 60*60*1000){ yvState = 'ready'; return; }
+  yvState = yvData ? 'refreshing' : 'loading';
+  try{
+    const res = await fetch(YV_URL, {cache:'no-store'});
+    const j = await res.json();
+    if(!j || !j.ok || !Array.isArray(j.channels)) throw new Error((j && j.error) || 'bad response');
+    yvData = { updatedAt:j.updatedAt, channels:j.channels };
+    try{ localStorage.setItem(YV_CACHE_KEY, JSON.stringify({at:Date.now(), data:yvData})); }catch(e){}
+    yvState = 'ready';
+  }catch(e){
+    yvState = yvData ? 'stale' : 'error';
+  }
+}
+function renderVideoChannels(){
+  yvTopic = null; yvLevel = null; yvShown = YV_PAGE;
+  const cached = _yvReadCache();
+  if(cached && cached.data){ yvData = cached.data; yvState = 'ready'; } else if(!yvData) yvState = 'loading';
+  _yvRender();
+  _yvLoad(false).then(()=>{ if(document.getElementById('yvWrap')) _yvRender(); });
+}
+function _yvMatches(ch, topic, level){
+  if(topic && !(ch.topics||[]).includes(topic)) return false;
+  if(level){
+    const i = YV_LEVELS.indexOf(level);
+    if(i < YV_LEVELS.indexOf(ch.cefrMin) || i > YV_LEVELS.indexOf(ch.cefrMax)) return false;
+  }
+  return true;
+}
+function _yvDur(sec){
+  sec = Math.max(0, Math.round(sec||0));
+  const h = Math.floor(sec/3600), m = Math.floor(sec%3600/60), s = sec%60;
+  return (h ? h+':'+String(m).padStart(2,'0') : m) + ':' + String(s).padStart(2,'0');
+}
+function _yvDate(iso){ const d = new Date(iso); return isNaN(d) ? '' : (d.getMonth()+1)+'/'+d.getDate(); }
+function _yvRender(){
+  const section = document.getElementById('moreSection');
+  // 依最新一支影片的發布時間排序（跟 Fluent 預設一樣，最新的頻道在最上面）
+  const all = ((yvData && yvData.channels) || []).filter(c=>c.videos && c.videos.length)
+    .slice().sort((a,b)=> String(b.videos[0].publishedAt).localeCompare(String(a.videos[0].publishedAt)));
+  const usedTopics = Object.keys(YV_TOPICS).filter(t=>all.some(c=>(c.topics||[]).includes(t)));
+  const list = all.filter(c=>_yvMatches(c, yvTopic, yvLevel));
+  const shown = list.slice(0, yvShown);
+  const status = yvState==='loading' ? '<div class="yv-note" role="status">正在載入影片清單…</div>'
+    : yvState==='error' ? '<div class="yv-note" role="alert">目前無法載入影片清單，請確認網路後再試。<br><button class="yv-retry" data-yv-retry="1">重新載入</button></div>'
+    : yvState==='stale' ? '<div class="yv-note">目前連不上，先顯示上次存下來的清單。</div>' : '';
+  const upd = yvData && yvData.updatedAt ? new Date(yvData.updatedAt) : null;
+  section.innerHTML = `
+    <div class="mz-wrap" id="yvWrap">
+      <div class="mz-topbar">
+        <button class="mz-back" onclick="renderMoreList()">‹ 返回</button>
+        <div class="mz-topbar-title">🎬 英語影片</div>
+        <div style="width:56px"></div>
+      </div>
+      <div class="mz-list-sub">精選 YouTube 英語頻道，每天中午 12:00 更新${upd && !isNaN(upd) ? `（最近更新 ${upd.getMonth()+1}/${upd.getDate()}）` : ''}。點影片會開啟 YouTube 觀看。</div>
+      ${all.length ? `
+      <div class="yv-filter-label">類型</div>
+      <div class="yv-filter-row">
+        <button class="fm-btn${!yvTopic?' active':''}" data-yv-topic="">全部 ${all.filter(c=>_yvMatches(c,null,yvLevel)).length}</button>
+        ${usedTopics.map(t=>`<button class="fm-btn${yvTopic===t?' active':''}" data-yv-topic="${t}">${YV_TOPICS[t]} ${all.filter(c=>_yvMatches(c,t,yvLevel)).length}</button>`).join('')}
+      </div>
+      <div class="yv-filter-label">程度</div>
+      <div class="yv-filter-row">
+        <button class="fm-btn${!yvLevel?' active':''}" data-yv-level="">全部</button>
+        ${YV_LEVELS.map(l=>`<button class="fm-btn${yvLevel===l?' active':''}" data-yv-level="${l}">${l} ${all.filter(c=>_yvMatches(c,yvTopic,l)).length}</button>`).join('')}
+      </div>` : ''}
+      ${status}
+      ${all.length && !list.length ? '<div class="yv-note">沒有符合條件的頻道，換個類型或程度看看。</div>' : ''}
+      ${shown.map(c=>`
+        <section class="yv-channel">
+          <div class="yv-ch-head">
+            <div class="yv-ch-info">
+              <div class="yv-ch-name">${_escH(c.name)}</div>
+              <div class="yv-ch-tags"><span>${_escH(c.cefrMin)}–${_escH(c.cefrMax)}</span>${YV_PACES[c.pace]?`<span>${YV_PACES[c.pace]}</span>`:''}${(c.topics||[]).map(t=>YV_TOPICS[t]?`<span>${YV_TOPICS[t]}</span>`:'').join('')}</div>
+            </div>
+            ${/^https:\/\/www\.youtube\.com\//.test(c.url||'') ? `<a class="yv-ch-link" href="${_escH(c.url)}" target="_blank" rel="noopener">頻道 ↗</a>` : ''}
+          </div>
+          <div class="yv-strip">
+            ${c.videos.filter(v=>/^[\w-]{11}$/.test(v.videoId)).map(v=>`
+              <a class="yv-card" href="https://www.youtube.com/watch?v=${v.videoId}" target="_blank" rel="noopener">
+                <div class="yv-thumb"><img src="https://i.ytimg.com/vi/${v.videoId}/mqdefault.jpg" alt="" loading="lazy" decoding="async"><span class="yv-dur">${_yvDur(v.durationSeconds)}</span></div>
+                <div class="yv-title">${_escH(v.title)}</div>
+                <div class="yv-date">${_yvDate(v.publishedAt)}</div>
+              </a>`).join('')}
+          </div>
+        </section>`).join('')}
+      ${list.length > shown.length ? `<div class="yv-more-wrap"><button class="yv-more" data-yv-more="1">再顯示 ${Math.min(YV_PAGE, list.length-shown.length)} 個頻道（還有 ${list.length-shown.length} 個）</button></div>` : ''}
+    </div>`;
+}
+document.addEventListener('click', e=>{
+  const t = e.target.closest && e.target.closest('[data-yv-topic],[data-yv-level],[data-yv-more],[data-yv-retry]');
+  if(!t || !t.closest('#yvWrap')) return;
+  if(t.dataset.yvTopic !== undefined){ yvTopic = t.dataset.yvTopic || null; yvShown = YV_PAGE; _yvRender(); return; }
+  if(t.dataset.yvLevel !== undefined){ yvLevel = t.dataset.yvLevel || null; yvShown = YV_PAGE; _yvRender(); return; }
+  if(t.dataset.yvMore){ yvShown += YV_PAGE; _yvRender(); return; }
+  if(t.dataset.yvRetry){ yvState = 'loading'; _yvRender(); _yvLoad(true).then(()=>{ if(document.getElementById('yvWrap')) _yvRender(); }); }
+});
 
 function renderResComingSoon(cat){
   const section = document.getElementById('moreSection');
