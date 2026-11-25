@@ -872,7 +872,7 @@ firebase login:ci
 - **Firebase/GCP 專案**：`english-app-c1097`（Firebase 主控台顯示名稱 "YouTube-English-app"，Google AI Studio 帳單頁也是同一個）
 - **App Hosting backend**：`fluent-english`，region **asia-east1**（台灣）
 - **正式網址**：https://fluent-english--english-app-c1097.asia-east1.hosted.app
-- **CI**（PR/push main 觸發，`.github/workflows/ci.yml`）：`npm run lint` + `npm run typecheck` + `npm run test:phase11`
+- **CI**（PR/push main 觸發，`.github/workflows/ci.yml`）：lint、typecheck、build，加上 test:phase11／private-beta／srs-v1／moments／review-questions／library-views／item-detail／qa／progress-gamification／sentence-production／firestore-rules（firestore-rules 要 emulator，本機不一定跑得了）。`test:qa` 會檢查每支 API route 自己驗證登入，委派驗證的 route 要登記例外
 - **CD**：Firebase App Hosting 監看 `main` 分支自動部署，跟 GitHub Actions CI 是分開的兩條路（CI 只負責擋爛程式碼合併，不負責部署）
 
 ### 部署指令 / 常用操作
@@ -982,6 +982,22 @@ firebase deploy --only firestore:rules --project english-app-c1097
 - 色調：靛藍 `--forest:#101b36` + 琥珀 `--mint-strong:#c08a2e` + 米白 `--canvas:#f3f0e8`，2026-08-27 從原本的深墨綠+薄荷綠改版
 - **⚠️ `docs/brand-guidelines.md` 寫於全站色彩硬編碼掃描（84 處 `rgba(18,63,58,*)`/`rgba(185,232,212,*)` 舊色殘留一次性替換掉）之前**，裡面「已知缺口」那段記錄已經過時，之後有空可以更新
 - Logo：`src/components/layout/brand.tsx` 裡的 `FluentMark`（inline SVG，靛藍開口圓弧 + 琥珀箭頭），取代原本用 CSS `::before`/`::after` 畫的交叉線標記
+- **2026-11 新外觀（Home refresh）**：白卡、紫色小標（`#6a4ae0`）、粗體無襯線標題、近黑按鈕、主卡用黑框＋實心下陰影。各頁用獨立 CSS 檔、只作用在該頁根 class，刪檔＋移除 `layout.tsx` 的 import 即還原：`home-refresh.css`（`.dashboard-page`）、`upgrade.css`（訂閱頁 `.fp-page`）、`lessons.css`、`speaking-refresh.css`（AI 口說設定頁 `.speaking-page`，對話中的畫面不受影響）。舊 `globals.css` 規則特異性很高（例如 `.speaking-setup-grid .speaking-mode-panel …`），覆蓋時選擇器要同等或更高
+
+### 2026-11 進度（11/18–11/25）
+
+- **頻道與影片**：更多頻道新增 31 個；每天 9:00 後第一次開啟跳出「今日推薦影片」（加入今日影片／下一支），加入後顯示在首頁「今日影片」列
+- **測驗 tab**：底部導覽獨立「測驗」，每日先考昨天的字，不夠再補更早到期的字
+- **首頁**：改成新外觀；區塊可在設定裡勾選顯示、上下排序（`src/features/dashboard/home-sections.ts`，存 `users/{uid}/privateState/homePrefs`）
+- **課程（Lesson MVP）**：`/learn/lesson/issue04-jessica-bulacan`（Jessica Lee vlog，3 個情境同一堂；規劃見 `docs/lesson-mvp-plan.md`）。學生底部導覽「學習」→ `/study`，分「課程／從影片學習」。前 3 步免登入、跟讀前要登入；離開時存進度（`users/{uid}/lessonProgress/{slug}`），可「從上次進度開始」
+  - ⚠️ YouTube 播放器：iframe 還沒出現時 player key 要傳 `null`；呼叫播放/暫停前要檢查 `ready`。Firestore 不接受 `undefined` 欄位，進度合併時沒有值的欄位要省略
+- **訂閱頁**：Portaly 金流已上線，訂閱頁改版（目前方案＋用量條、免費／Fluent+ 兩張方案卡、比較表、3 步驟、FAQ）。依使用者決定，SRS 與跟讀**維持不限制**（比較表雖列為 Fluent+）
+- **有期限的代碼（`timed_access`，2026-11-24）**：`accessCodes/{code}` 新增 `grantType: "timed_access"`，兌換後 `speaking.durationDays` 天內開通 AI 口說（每月 30 次）＋影片分析不受每月 10 支限制，用 `promo` 來源所以到期真的會關。學生在訂閱頁／口說頁的「輸入邀請碼」欄位兌換（已有資格的帳號也看得到這個欄位）。已建一組給目前活躍學生：90 天、30 名額、2027/1/31 前兌換、campaign `active-students-ai-speaking-2026-11`（代碼本身在 Firestore，不寫在這裡）
+  - ⚠️ 三種開通來源行為不同：`invite`（舊邀請碼）兌換過的帳號 **AI 口說永久開著**（`hasOpenInviteAccess`，不看到期日）；`promoCodes` 集合的優惠碼兌換後**永久有效**且前端沒有輸入介面；`timed_access` 才會到期
+  - 查正式資料庫只做唯讀統計，使用者同意「只算人數，不看個人內容」
+- **AI 口說設定頁改版（2026-11-24，commit `3669fd1`）**：照使用者提供的截圖改成新外觀——米色分段軌道＋黑色選中、情境與「AI 如何幫你練習」兩個下拉並排、自動語速旁紫色程度徽章、開始鈕改成跟在練習時間後面（原本會黏在畫面底部）、最近練習米色列、資格卡黑框
+  - **待使用者決定**：頂部深色「口說練習室」橫幅要不要拿掉或改樣式；「對話教練」是否改名「面試官」；狀態格「完成對話」是否改成「今日使用」
+- **CI**：3c03eaf、3669fd1 都是 CI＋App Hosting rollout 綠燈
 
 ## yt-dlp 字幕擷取工具
 
