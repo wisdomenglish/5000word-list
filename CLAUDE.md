@@ -988,9 +988,11 @@ firebase deploy --only firestore:rules --project english-app-c1097
 - Logo：`src/components/layout/brand.tsx` 裡的 `FluentMark`（inline SVG，靛藍開口圓弧 + 琥珀箭頭），取代原本用 CSS `::before`/`::after` 畫的交叉線標記
 - **2026-11 新外觀（Home refresh）**：白卡、紫色小標（`#6a4ae0`）、粗體無襯線標題、近黑按鈕、主卡用黑框＋實心下陰影。各頁用獨立 CSS 檔、只作用在該頁根 class，刪檔＋移除 `layout.tsx` 的 import 即還原：`home-refresh.css`（`.dashboard-page`）、`upgrade.css`（訂閱頁 `.fp-page`）、`lessons.css`、`speaking-refresh.css`（AI 口說設定頁 `.speaking-page`，對話中的畫面不受影響）。舊 `globals.css` 規則特異性很高（例如 `.speaking-setup-grid .speaking-mode-panel …`），覆蓋時選擇器要同等或更高
 
-### 2026-11 進度（11/18–11/26）
+### 2026-11 進度（11/18–11/27）
 
 - **頻道與影片**：更多頻道新增 31 個，11/26 再加 15 個（共 79 個，`src/lib/channels/featured-channels.ts`；程度／類型／語速是看各頻道最近 50 支影片判斷的）；每天 9:00 後第一次開啟跳出「今日推薦影片」（加入今日影片／下一支），加入後顯示在首頁「今日影片」列
+- **字幕片語標示＋拖曳選取（2026-11-27，`e227f56`，參考 HiShadow／Subword）**：看影片時，`live-caption-workspace.tsx` 依 24 行一段（與翻譯同一批次）呼叫 `/api/video-learning/caption-phrases`，AI（`lib/openai/caption-phrase-finder.ts`，`gpt-5.6-luna`，可用 `OPENAI_CAPTION_PHRASE_MODEL` 覆寫）找出片語／慣用語，字幕上加淡虛線（`[data-phrase]`，樣式在 `caption-card.css`）。route 只接受準備影片時伺服器記錄過的字幕（`preparedCaptionBatchMatches`，沒有 hash 的舊準備一律拒絕），結果依字幕雜湊存 Firestore `captionPhraseBatches/{batchHash}`（60 天，所有學生共用）。AI 提的片語要能在該行原樣找到連續 2–8 字才收（`caption-phrases.ts` 的 `groundCaptionPhrases`，重疊取長、每行最多 3 個）。點片語裡的字＝選起整個片語並顯示中文意思，可按「只存「字」」改存單字；拖曳（只算橫向，`touch-action: pan-y` 讓直向仍可捲動）選 2–8 個連續字。**規則改變**：`captionSelectionKind` 原本只接受內建約 100 個片語，現在任何 2–8 個連續字都算 phrase。實測每段 4–9 秒。觸控裝置儲存框按鈕 ≥44px（`pointer: coarse`）；`youtube-player-controller.ts` 的 pause/play/seek 在播放器還沒 ready 時不再拋 `pauseVideo is not a function`
+  - **本機實測登入後的影片頁**：瀏覽器在測試環境不會自己送出 prepare 請求（原因未查），改成腳本用同一個模擬器學生打 `/api/video-learning/prepare`，再把結果寫進 sessionStorage `fluent:{uid}:video:current:v1`（`{prepared, manualTranscript:"", acceptedTranscript:null, playerPositionSeconds, preparedAtClientMillis}`），開 `/learn?video=...` 就會直接還原；字幕先放進模擬器的 `globalVideoTranscripts/{videoId}`，就不用打付費字幕服務
 - **測驗 tab**：底部導覽獨立「測驗」，每日先考昨天的字，不夠再補更早到期的字
 - **首頁**：改成新外觀；區塊可在設定裡勾選顯示、上下排序（`src/features/dashboard/home-sections.ts`，存 `users/{uid}/privateState/homePrefs`）
 - **課程（Lesson MVP）**：`/learn/lesson/issue04-jessica-bulacan`（Jessica Lee vlog，3 個情境同一堂；規劃見 `docs/lesson-mvp-plan.md`）。學生底部導覽「學習」→ `/study`，分「課程／從影片學習」。前 3 步免登入、跟讀前要登入；離開時存進度（`users/{uid}/lessonProgress/{slug}`），可「從上次進度開始」
@@ -998,6 +1000,7 @@ firebase deploy --only firestore:rules --project english-app-c1097
   - **新增課程時**：在 `content/` 加一個檔案並加進 `lesson-progress.ts` 的 `LESSONS`，影片時間取自該影片的 YouTube 字幕；`tests/lesson-videos.test.mjs` 會檢查每堂課的影片 id 格式與片段時間合理
   - ⚠️ YouTube 播放器：iframe 還沒出現時 player key 要傳 `null`；呼叫播放/暫停前要檢查 `ready`。Firestore 不接受 `undefined` 欄位，進度合併時沒有值的欄位要省略
 - **訂閱頁**：Portaly 金流已上線，訂閱頁改版（目前方案＋用量條、免費／Fluent+ 兩張方案卡、比較表、3 步驟、FAQ）。依使用者決定，SRS 與跟讀**維持不限制**（比較表雖列為 Fluent+）
+- **⏳ 免費版每月影片分析暫時 10 → 30 支（2026-11-26，使用者決定，之後要改回 10）**：只改 `src/features/payments/subscription-policy.ts` 的 `FLUENT_PLUS.freeVideoLimit` 一個值；伺服器額度檢查、訂閱頁比較表／用量條、服務條款文字都讀它（`subscription-usage.ts` 原本把用量條寫死 `60:10`，已改成讀常數；`tests/subscription-usage.test.mjs` 也改成讀常數，改回時不用動測試）
 - **有期限的代碼（`timed_access`，2026-11-24）**：`accessCodes/{code}` 新增 `grantType: "timed_access"`，兌換後 `speaking.durationDays` 天內開通 AI 口說（每月 30 次）＋影片分析不受每月 10 支限制，用 `promo` 來源所以到期真的會關。學生在訂閱頁／口說頁的「輸入邀請碼」欄位兌換（已有資格的帳號也看得到這個欄位）。已建一組給目前活躍學生：90 天、30 名額、2027/1/31 前兌換、campaign `active-students-ai-speaking-2026-11`（代碼本身在 Firestore，不寫在這裡）
   - ⚠️ 三種開通來源行為不同：`invite`（舊邀請碼）兌換過的帳號 **AI 口說永久開著**（`hasOpenInviteAccess`，不看到期日）；`promoCodes` 集合的優惠碼兌換後**永久有效**且前端沒有輸入介面；`timed_access` 才會到期
   - 查正式資料庫只做唯讀統計，使用者同意「只算人數，不看個人內容」
