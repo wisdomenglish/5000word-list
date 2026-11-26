@@ -912,13 +912,17 @@ firebase deploy --only firestore:rules --project english-app-c1097
 3. 每次刪除重建 backend 後，要重新跑一次 `secrets:grantaccess`（雖然通常是同一個 auto-provision 的 service account，但養成習慣重新確認比較保險）
 4. `apphosting.yaml` 裡的 `NEXT_PUBLIC_APP_URL` 要跟著 backend 名稱/region 變動同步更新（網址格式是 `{backend}--{project}.{region}.hosted.app`）
 
-### 字幕來源架構（2026-10-04 起 Gemini 優先）
+### 字幕來源架構（2026-10-26 起 TranscriptAPI 優先，Gemini 已移除）
 
-**現行順序：Gemini → Supadata → TranscriptAPI → yt-dlp**（`reliable-transcript-provider.ts`）。
-- **Gemini**（`gemini-transcript-provider.ts`，模型 `gemini-3.8-flash`）：由 Google 端直接讀公開 YouTube 網址轉寫，不受機房 IP 封鎖／cookies 影響。先用 **YouTube Data API v3** 取長度/公開狀態/是否直播（太長、直播、非公開的影片在花錢轉寫前就擋掉；非公開影片會往下交給其他供應商）。金鑰 `GEMINI_API_KEY`（Secret Manager），是一把只限 Gemini API + YouTube Data API 的金鑰（GCP 金鑰顯示名稱「Fluent transcripts (Gemini + YouTube Data)」）。實測對照人工字幕：用字約 98–99%、時間戳 ±0.7 秒；成本約 US$0.05/15 分鐘影片（2027 起約翻倍）。輸出是 Gemini 自己的語音辨識，不是 YouTube 原生字幕軌。`gemini-2.5-flash` 對新金鑰已 404
-- **TranscriptAPI**：方案 2026-09-24 到期、**刻意不續訂**，LINE 通知已從健康檢查移除（只留「全部供應商都失敗」那則）
-- 健康檢查改用 19 秒短片 `jNQXAC9IVRw`，每次約 US$0.0015
+**現行順序：全域快取 → TranscriptAPI → Supadata → yt-dlp → 手動貼逐字稿**（`reliable-transcript-provider.ts`，詳細維運說明在 `youtube-english/docs/transcript-provider-operations.md`）。三家都是取 **YouTube 影片本身的字幕軌**（含自動字幕），不是自己做語音辨識。
+- **全域快取** `globalVideoTranscripts/{videoId}`：成功的字幕存 7 天，同一支影片所有學生共用，不重複花錢
+- **TranscriptAPI**：付費主線（US$5/月 1,000 次）。2026-09-24 方案沒預警到期，10-26 重新訂閱並恢復為主線。**沒有查餘額的 API**，只能等請求回 402 才知道，所以每日健康檢查若不是由 TranscriptAPI 回應就推 LINE
+- **Supadata**：免費方案每月 100 次的緊急備援；**yt-dlp** 最後（cookies 幾小時就失效）
+- **Gemini 轉寫已刻意排除**（程式還在但正式環境沒啟用）。`GEMINI_API_KEY` 現在只當 YouTube Data API 金鑰用（`apphosting.yaml` 的 `YOUTUBE_DATA_API_KEY` 綁的就是它），例如查影片長度、更多頻道、課程影片檢查
+- **AI 重新斷句（2026-11-26）**：`lib/openai/caption-resegmenter.ts` + `lib/transcript/caption-resegment.ts`，在 `video-preparation-service.ts` 抓到新字幕後、寫入快取前執行，所以每支影片只做一次。**只有沒標點、被時間硬切的自動字幕才會做**（`needsResegmentation`：超過 30% 的段落不是以句號結尾）；YouTube 現在多數自動字幕已有標點，原本的規則式合併就能切好句子，不會送 AI。做法：AI（`gpt-5.6-luna`，可用 `OPENAI_CAPTION_RESEGMENT_MODEL` 覆寫）只負責加標點、大小寫和決定斷句；程式用 LCS 對齊 AI 與原字幕的字，**最後的字一律是原字幕的字**（AI 改的字會被換回原字，例如把 "jessica" 擅自補成 "Jessica Soho"），AI 改動超過 3% 才整段放棄。時間點不讓 AI 給，從原字幕每行時間依字長推算，並修正自動字幕行與行重疊的問題。每 500 字一段、最多 6 段並行，被拒的段落有時間就重試一次；請求開始超過 120 秒就不做（分析 API 上限 180 秒）。成功時字幕來源會加上 `+ai-seg`。實測 24 分鐘影片約 10 秒、7/7 段通過。成本估計每支約 US$0.001–0.005
+- 健康檢查用 19 秒短片 `jNQXAC9IVRw`
 - ⚠️ **新增 secret 的順序**：一定要先 `firebase apphosting:secrets:set` + `grantaccess`，再在 `apphosting.yaml` 引用。2026-09-24～10-02 因 `apphosting.yaml` 引用了不存在的 `AZURE_SPEECH_KEY`，App Hosting 建置連續失敗一週、正式站停在舊版（已將 Azure 兩項註解掉）。push 後要看 commit 的「App Hosting - Rollout」檢查是否成功，CI 綠燈不代表有部署成功
+- **2026-10-04～10-26 曾經 Gemini 優先**（Google 端直接轉寫公開影片，用字約 98–99%、時間戳 ±0.7 秒，約 US$0.05/15 分鐘），後來改回 TranscriptAPI；當時的細節見 git 歷史
 
 以下為 2026-09-07 的舊架構說明（順序已被上方取代，細節仍可參考）：
 
@@ -984,12 +988,14 @@ firebase deploy --only firestore:rules --project english-app-c1097
 - Logo：`src/components/layout/brand.tsx` 裡的 `FluentMark`（inline SVG，靛藍開口圓弧 + 琥珀箭頭），取代原本用 CSS `::before`/`::after` 畫的交叉線標記
 - **2026-11 新外觀（Home refresh）**：白卡、紫色小標（`#6a4ae0`）、粗體無襯線標題、近黑按鈕、主卡用黑框＋實心下陰影。各頁用獨立 CSS 檔、只作用在該頁根 class，刪檔＋移除 `layout.tsx` 的 import 即還原：`home-refresh.css`（`.dashboard-page`）、`upgrade.css`（訂閱頁 `.fp-page`）、`lessons.css`、`speaking-refresh.css`（AI 口說設定頁 `.speaking-page`，對話中的畫面不受影響）。舊 `globals.css` 規則特異性很高（例如 `.speaking-setup-grid .speaking-mode-panel …`），覆蓋時選擇器要同等或更高
 
-### 2026-11 進度（11/18–11/25）
+### 2026-11 進度（11/18–11/26）
 
-- **頻道與影片**：更多頻道新增 31 個；每天 9:00 後第一次開啟跳出「今日推薦影片」（加入今日影片／下一支），加入後顯示在首頁「今日影片」列
+- **頻道與影片**：更多頻道新增 31 個，11/26 再加 15 個（共 79 個，`src/lib/channels/featured-channels.ts`；程度／類型／語速是看各頻道最近 50 支影片判斷的）；每天 9:00 後第一次開啟跳出「今日推薦影片」（加入今日影片／下一支），加入後顯示在首頁「今日影片」列
 - **測驗 tab**：底部導覽獨立「測驗」，每日先考昨天的字，不夠再補更早到期的字
 - **首頁**：改成新外觀；區塊可在設定裡勾選顯示、上下排序（`src/features/dashboard/home-sections.ts`，存 `users/{uid}/privateState/homePrefs`）
 - **課程（Lesson MVP）**：`/learn/lesson/issue04-jessica-bulacan`（Jessica Lee vlog，3 個情境同一堂；規劃見 `docs/lesson-mvp-plan.md`）。學生底部導覽「學習」→ `/study`，分「課程／從影片學習」。前 3 步免登入、跟讀前要登入；離開時存進度（`users/{uid}/lessonProgress/{slug}`），可「從上次進度開始」
+  - **課程影片可用性檢查（2026-11-26，⏸ 尚未啟用每日排程）**：課程的字幕和片段時間是寫死在 `src/features/lessons/content/*.ts` 裡的，創作者刪片、改私人、關閉嵌入、年齡限制、台灣封鎖或把影片剪短，課程頁還是會打開但影片播不出來。`/api/health/lesson-videos`（`lib/lessons/lesson-video-check.ts`，用 YouTube Data API 一次查全部課程影片）會逐項檢查，有問題時由 `refresh-channels.yml` 的 `lesson-videos` job 推 LINE（說明是哪一堂課、什麼問題）。**使用者決定等課程變多再每天自動跑**，目前 job 有 `if: github.event_name == 'workflow_dispatch'`，只在手動觸發時執行（GitHub → Actions → Refresh featured channels → Run workflow，會順便更新頻道）。**要啟用每日檢查：刪掉那一行 `if:` 即可**。2026-11-26 手動執行過一次，正常
+  - **新增課程時**：在 `content/` 加一個檔案並加進 `lesson-progress.ts` 的 `LESSONS`，影片時間取自該影片的 YouTube 字幕；`tests/lesson-videos.test.mjs` 會檢查每堂課的影片 id 格式與片段時間合理
   - ⚠️ YouTube 播放器：iframe 還沒出現時 player key 要傳 `null`；呼叫播放/暫停前要檢查 `ready`。Firestore 不接受 `undefined` 欄位，進度合併時沒有值的欄位要省略
 - **訂閱頁**：Portaly 金流已上線，訂閱頁改版（目前方案＋用量條、免費／Fluent+ 兩張方案卡、比較表、3 步驟、FAQ）。依使用者決定，SRS 與跟讀**維持不限制**（比較表雖列為 Fluent+）
 - **有期限的代碼（`timed_access`，2026-11-24）**：`accessCodes/{code}` 新增 `grantType: "timed_access"`，兌換後 `speaking.durationDays` 天內開通 AI 口說（每月 30 次）＋影片分析不受每月 10 支限制，用 `promo` 來源所以到期真的會關。學生在訂閱頁／口說頁的「輸入邀請碼」欄位兌換（已有資格的帳號也看得到這個欄位）。已建一組給目前活躍學生：90 天、30 名額、2027/1/31 前兌換、campaign `active-students-ai-speaking-2026-11`（代碼本身在 Firestore，不寫在這裡）
