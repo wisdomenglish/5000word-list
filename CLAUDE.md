@@ -991,6 +991,21 @@ firebase deploy --only firestore:rules --project english-app-c1097
 ### 2026-11 進度（11/18–11/27）
 
 - **頻道與影片**：更多頻道新增 31 個，11/26 再加 15 個（共 79 個，`src/lib/channels/featured-channels.ts`；程度／類型／語速是看各頻道最近 50 支影片判斷的）；每天 9:00 後第一次開啟跳出「今日推薦影片」（加入今日影片／下一支），加入後顯示在首頁「今日影片」列
+- **今日推薦影片（2026-11-27，`4421906`／`77dc6e6`／`88392ec`）**
+  - **選片**（`daily-video-policy.ts` 的 `dailyVideoCandidates`）：加權隨機，種子＝uid＋當天日期，所以彈窗與首頁同一天順序一致、隔天換。範圍用老師的程度範圍，沒有老師就用學生程度和下一級（C1 → B2–C1）。加權看自己的程度、喜歡的類型／語速、最近看過的頻道與同類型頻道；頻道輪流出片，同頻道較新的影片機率較高。共用載入在 `daily-recommendations.ts`（`loadRecommendationInputs` 快取 10 分鐘）
+  - **首頁輪播**（`daily-video-carousel.tsx`，首頁區塊 id `dailyPicks`，排在最前面，可在多元設定隱藏／排序）：一批 10 支（`picksBatch`）、「換一批」換下一批；程度範圍內的片用完就接其他頻道，不重複。每支標題下有中文翻譯（`POST /api/channels/title-translations` → `title-translation-store.ts`：只翻「更多頻道」快照裡的標題、不收用戶端文字，結果存 Firestore `videoTitleTranslations/{videoId}` 全站共用，標題變了才重翻；用 `translateCaptionBatch`）
+  - **動態**（Material 3）：投影片用 shared axis X（依方向左右滑出滑入）、縮圖從略放大落定、作用中的點像計時器填滿、換一批 fade through、觸控可左右滑。減少動態效果時不動也不自動輪播。滑鼠停在上面或鍵盤焦點在裡面會暫停，另有暫停鈕
+  - **「永駐」**：看過的片**不會**被拿掉（右上角標「看過」，`keepWatched`），當天順序存在本機 `fluent:today-picks-order:{uid}`（`keepTodaysOrder`），看完一支也不會重排或變空；載入中顯示骨架、失敗有「重新載入」、沒有片時指向更多頻道，只有在多元設定取消勾選才會不見
+  - 「加入今日影片」只給學生；⚠️ 測驗時 `innerText` 讀不到 `visibility:hidden` 的投影片（會得到空字串），要用 `textContent`
+- **老師首頁改成學生首頁的樣子（2026-11-27，`88392ec`）**：`TeacherClassDashboard`（非 standalone）外層加 `dashboard-page teacher-home`，最上面換成 `teacher-home-top.tsx`（日期＋問候、今日推薦影片、影片教學／更多頻道／老師學習頻道磚），原本深色「教師工作室」大橫幅只留在「我的班級」頁（standalone）。下面的班級區塊用 `home-refresh.css` 的 `.dashboard-page.teacher-home` 規則改成粗體無襯線標題、紫色小標、白卡；學生看板在首頁不再重複問候（`TeacherStudentBoard` 的 `greet={standalone}`，改成「學生練習／今天的練習狀況」）。老師的多元設定多一個 `TeacherHomeSectionsSetting`（只有今日推薦影片一項）
+  - 已知未改：學生看板「今天有 N 位同學完成練習」是用 `lastActiveAtMs` 算，只要今天有開 App 就算
+- **首頁卡片 ✕（2026-11-27，`4421906`）**：「繼續上次練習」（`LessonHomeCard dismissible`）與「待完成作業」右上角 ✕，只關掉卡片上現有的課程／作業，新課程或新作業出現會再顯示；存在本機（`home-dismissals.ts`，`fluent:home-dismissed:{lesson|assignment}:{uid}`）
+- **學習頁「繼續學習」（2026-11-27，`b519606`）**：每條右邊 ✕（`DELETE /api/moments/progress?momentId=`，刪自己的 `users/{uid}/momentProgress/{id}`）；開始後 7 天自動刪除（`continue-learning.ts` 的 `isContinueExpired`，讀清單時順便刪）。標題保留講者原字，但片段開頭加「…」（如「…than I was anticipating」）、完整句子補句點（`displayMomentTitle`，有 X／sb／V-ing 的句型不動）。**沒有把 anticipating 改成 expecting**，因為要跟片段聲音一致
+- **待複習移到鈴鐺（`b519606`）**：學習頁的「複習」區塊拿掉，首頁鈴鐺顯示「複習：N 個單字待複習」
+- **逐字稿工作區隱藏＋預先翻譯小按鈕（`b519606`）**：影片頁的「逐字稿工作區」在自動取得字幕時不顯示（程式保留，`video-learning-flow.tsx` 的 `SHOW_TRANSCRIPT_WORKSPACE = false`；抓不到字幕時仍顯示，給人工貼逐字稿）。「影片已準備」旁邊的「預先翻譯全部字幕」按鈕＝原本的「分析逐字稿」（`analyzeTranscript`，manualTranscript 是空的會改用自動字幕），會顯示「翻譯中 N/M」，完成後變「全部字幕已翻譯」並打開下方 AI 分析
+- **更多頻道引導（`77dc6e6`）**：頁首紫色卡「變更頻道喜好排序」→ `/personalization#channel-preference`（設定頁「我喜歡的頻道類型」區塊加了 id，抵達時閃一下紫框）
+- **畫面導覽（spotlight tour，2026-11-27，`6767159`／`6e8a14c`）**：`spotlight-tour.tsx` 改成可放多組導覽的引擎（`TOURS`：`home` 3 步、`video` 7 步），畫面變暗＋脈動框＋M3 卡片（第 N 步、進度點、略過／上一步／下一步）。影片頁導覽在字幕出現且播放器連上後才開始，每一步都會暫停影片（`SPOTLIGHT_PAUSE_VIDEO_EVENT`）；按鈕用 `data-tour="caption-step|caption-repeat|caption-shadow|caption-settings"` 定位。每個導覽每人看一次（`fluent:spotlight-tour:v1:{uid}`／`fluent:spotlight-tour:video:v1:{uid}`），「操作指南」裡「在畫面上帶我看一次」可重看。只給學生
+  - **桌機「操作指南」**：≥1024px 改成側欄語言切換那一列右邊的圓形「?」（`SidebarGuideButton`），浮動按鈕只在平板／手機出現。原因：固定在側欄底部的按鈕在側欄比視窗高時會蓋住中／EN
 - **字幕片語標示＋拖曳選取（2026-11-27，`e227f56`，參考 HiShadow／Subword）**：看影片時，`live-caption-workspace.tsx` 依 24 行一段（與翻譯同一批次）呼叫 `/api/video-learning/caption-phrases`，AI（`lib/openai/caption-phrase-finder.ts`，`gpt-5.6-luna`，可用 `OPENAI_CAPTION_PHRASE_MODEL` 覆寫）找出片語／慣用語，字幕上加淡虛線（`[data-phrase]`，樣式在 `caption-card.css`）。route 只接受準備影片時伺服器記錄過的字幕（`preparedCaptionBatchMatches`，沒有 hash 的舊準備一律拒絕），結果依字幕雜湊存 Firestore `captionPhraseBatches/{batchHash}`（60 天，所有學生共用）。AI 提的片語要能在該行原樣找到連續 2–8 字才收（`caption-phrases.ts` 的 `groundCaptionPhrases`，重疊取長、每行最多 3 個）。點片語裡的字＝選起整個片語並顯示中文意思，可按「只存「字」」改存單字；拖曳（只算橫向，`touch-action: pan-y` 讓直向仍可捲動）選 2–8 個連續字。**規則改變**：`captionSelectionKind` 原本只接受內建約 100 個片語，現在任何 2–8 個連續字都算 phrase。實測每段 4–9 秒。觸控裝置儲存框按鈕 ≥44px（`pointer: coarse`）；`youtube-player-controller.ts` 的 pause/play/seek 在播放器還沒 ready 時不再拋 `pauseVideo is not a function`
   - **本機實測登入後的影片頁**：瀏覽器在測試環境不會自己送出 prepare 請求（原因未查），改成腳本用同一個模擬器學生打 `/api/video-learning/prepare`，再把結果寫進 sessionStorage `fluent:{uid}:video:current:v1`（`{prepared, manualTranscript:"", acceptedTranscript:null, playerPositionSeconds, preparedAtClientMillis}`），開 `/learn?video=...` 就會直接還原；字幕先放進模擬器的 `globalVideoTranscripts/{videoId}`，就不用打付費字幕服務
 - **測驗 tab**：底部導覽獨立「測驗」，每日先考昨天的字，不夠再補更早到期的字
@@ -1016,7 +1031,7 @@ firebase deploy --only firestore:rules --project english-app-c1097
   - API：`/api/chat`（總覽）、`/api/chat/[classId]/[threadId]`（GET `?after=`、POST）、`.../voice`、`.../[messageId]`（PATCH：react／delete／report）、`.../[messageId]/audio`；測試 `tests/class-chat.test.mjs`（在 test:phase11）
   - ⚠️ 坑：氣泡裡不能把播放鈕包在整顆氣泡 button 裡（巢狀 button 會同時開選單），現在是 `.chat-bubble-wrap` div＋`⋯` 按鈕；Enter 只在桌機送出、輸入法選字中不送
   - **尚未實機測**：iPhone Safari 錄音、手機推播（iPhone 要先加到主畫面）、LINE 分享
-- **CI**：3c03eaf、3669fd1、5bcf174、829e35e 都是 CI＋App Hosting rollout 綠燈
+- **CI**：3c03eaf、3669fd1、5bcf174、829e35e、6767159、6e8a14c、4421906、b519606、77dc6e6、88392ec 都是 CI＋App Hosting rollout 綠燈
 
 ## yt-dlp 字幕擷取工具
 
