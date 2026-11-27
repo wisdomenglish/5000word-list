@@ -1006,7 +1006,17 @@ firebase deploy --only firestore:rules --project english-app-c1097
   - 查正式資料庫只做唯讀統計，使用者同意「只算人數，不看個人內容」
 - **AI 口說設定頁改版（2026-11-24，commit `3669fd1`）**：照使用者提供的截圖改成新外觀——米色分段軌道＋黑色選中、情境與「AI 如何幫你練習」兩個下拉並排、自動語速旁紫色程度徽章、開始鈕改成跟在練習時間後面（原本會黏在畫面底部）、最近練習米色列、資格卡黑框
   - **待使用者決定**：頂部深色「口說練習室」橫幅要不要拿掉或改樣式；「對話教練」是否改名「面試官」；狀態格「完成對話」是否改成「今日使用」
-- **CI**：3c03eaf、3669fd1 都是 CI＋App Hosting rollout 綠燈
+- **班級同學動態＋看完影片分享（2026-11-27，phase 1，`5bcf174`）**：教室頁 `class-peer-board`（`/api/classes/[classId]/peers`，`class-peers-policy.ts`／`class-peers-store.ts`），**使用者決定同學之間只看得到「活動」、不顯示分數**。看完影片的收尾步驟加分享（`video-share.ts`、`video-share-options.tsx`：LINE＋分享到班級群組）。樣式 `classroom-social.css`
+- **班級聊天室（2026-11-27，phase 2，`829e35e`）**：`/chat`（`?class=&t=`），入口在「訊息」頁上方的「聊天室｜老師通知」切換，以及教室頁的「班級聊天室」卡（`class-chat-link.tsx`）。每班一個群組＋同班成員一對一私訊
+  - **資料**：`classChats/{classId}/threads/{group|a~b}`（私訊 id＝兩個 uid 排序後用 `~` 連接，`directThreadId`）＋ `messages` 子集合；已讀標記 `users/{uid}/chatReads/{classId}__{threadId}`；限速 `users/{uid}/privateState/chatRate`（每分鐘 20 則）；檢舉 `classChats/{classId}/reports/{messageId}_{uid}`。純邏輯在 `src/features/chat/chat-policy.ts`，伺服器在 `src/lib/firebase/class-chat-store.ts`
+  - **權限全在伺服器（Admin SDK）**，前端不直接讀 `classChats`，所以**沒有改 firestore.rules**。老師必須是班級擁有者、學生必須是成員；私訊只有兩位成員可讀寫，**老師可唯讀監看學生私訊**（不能發言）並可移除任何訊息（顯示「老師已移除」）；學生可收回自己的訊息、檢舉別人（推播給老師）
+  - **使用者決定的規格**：只用內建 emoji（5 組＋6 個快速回應，每人每則一個回應）；語音訊息最多 30 秒、保留 30 天（存 Storage `private/class-chat/{到期日}/...`，由既有的 `sentence-audio-cleanup` 排程一起清，過期回 410）
+  - **即時性**：用輪詢不是 onSnapshot——開著的對話 4 秒、聊天列表 20 秒、底部導覽未讀數 45 秒（`use-chat.ts`）。要改成即時得改 firestore.rules。推播用 `sendPushToUser`，對方 45 秒內看過該對話就不推
+  - **作業卡片**：老師出作業時 `postAssignmentToClassChat` 在群組貼卡片（看作業／一起看），訊息 id 用作業 id 的 sha256 前 20 碼，重試不會重複
+  - API：`/api/chat`（總覽）、`/api/chat/[classId]/[threadId]`（GET `?after=`、POST）、`.../voice`、`.../[messageId]`（PATCH：react／delete／report）、`.../[messageId]/audio`；測試 `tests/class-chat.test.mjs`（在 test:phase11）
+  - ⚠️ 坑：氣泡裡不能把播放鈕包在整顆氣泡 button 裡（巢狀 button 會同時開選單），現在是 `.chat-bubble-wrap` div＋`⋯` 按鈕；Enter 只在桌機送出、輸入法選字中不送
+  - **尚未實機測**：iPhone Safari 錄音、手機推播（iPhone 要先加到主畫面）、LINE 分享
+- **CI**：3c03eaf、3669fd1、5bcf174、829e35e 都是 CI＋App Hosting rollout 綠燈
 
 ## yt-dlp 字幕擷取工具
 
